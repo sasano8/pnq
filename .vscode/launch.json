@@ -1,0 +1,24 @@
+{
+  // https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Python: Current File",
+      "type": "python",
+      "request": "launch",
+      "program": "${file}",
+      "console": "integratedTerminal",
+      "env": {
+        "PYTHONPATH": "${workspaceRoot}"
+      },
+      "justMyCode": false,
+    },
+    {
+      "name": "Debug Tests",
+      "type": "python",
+      "request": "test",
+      "console": "integratedTerminal",
+      "justMyCode": false
+    }
+  ]
+}

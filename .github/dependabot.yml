@@ -1,0 +1,27 @@
+version: 2
+
+updates:
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 5
+    ignore:
+      - dependency-name: black
+        versions:
+          - ">=20.0" # テスト中
+      - dependency-name: flake8
+        versions:
+          - ">=3.9.0" # テスト中
+      - dependency-name: mypy
+        versions:
+          - ">=0.8" # テスト中
+      - dependency-name: pytest
+        versions:
+          - ">=6.2.2" # テスト中
+
+    # target-branch: main
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

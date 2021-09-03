@@ -1,0 +1,13 @@
+.venv
+dist
+*.egg-info
+.mypy_cache
+.pytest_cache
+__pycache__
+.env
+.idea
+.hypothesis
+*.db
+datalake
+secret_firebase.json
+site
