@@ -1,7 +1,10 @@
+from asyncio import sleep as asleep
 from functools import wraps
+from time import sleep
 from typing import (
     TYPE_CHECKING,
     Any,
+    AsyncIterator,
     Callable,
     Dict,
     Generic,
@@ -15,6 +18,7 @@ from typing import (
 )
 
 from .exceptions import NoElementError, NotOneError
+from .getter import attrgetter, itemgetter
 
 T = TypeVar("T")
 K = TypeVar("K")
@@ -46,7 +50,30 @@ class Lazy(Generic[T]):
         return wrapper
 
 
+class AsyncLazy(Generic[T]):
+    def __init__(self, func: Callable[..., AsyncIterator[T]], *args, **kwargs):
+        self.func = func
+        self.args = args
+        self.kwargs = kwargs
+
+    def __call__(self) -> AsyncIterator[T]:
+        return self.func(*self.args, **self.kwargs)
+
+    async def __aiter__(self) -> AsyncIterator[T]:
+        async for elm in self():
+            yield elm
+
+    @classmethod
+    def decolate(cls, func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            return cls(func, *args, **kwargs)
+
+        return wrapper
+
+
 lazy = Lazy.decolate
+alazy = AsyncLazy.decolate
 
 
 class Query(Iterable[T]):
@@ -128,26 +155,16 @@ class Query(Iterable[T]):
     def order(self: Iterable[T], selector, desc: bool = False) -> "Query[T]":
         return Query(Query._order(self, selector, desc))
 
-    def order_by_attrs(self: Iterable[T], *attrs: str, desc: bool = False):
-        if len(attrs) == 0:
-            raise ValueError("required attrs at least one.")
-        elif len(attrs) == 1:
-            key = attrs[0]
-            selector = lambda x: getattr(x, key)
-        else:
-            selector = lambda x: tuple((getattr(x, key) for key in attrs))
-
+    def order_by_attrs(
+        self: Iterable[T], *attrs: str, desc: bool = False
+    ) -> "Query[T]":
+        selector = attrgetter(*attrs)
         return Query.order(self, selector, desc=desc)
 
-    def order_by_index(self: Iterable[T], *indexes: Any, desc: bool = False):
-        if len(indexes) == 0:
-            raise ValueError("required indexes at least one.")
-        elif len(indexes) == 1:
-            key = indexes[0]
-            selector = lambda x: x[key]
-        else:
-            selector = lambda x: tuple((x[key] for key in indexes))
-
+    def order_by_items(
+        self: Iterable[T], *items: Any, desc: bool = False
+    ) -> "Query[T]":
+        selector = itemgetter(*items)
         return Query.order(self, selector, desc=desc)
 
     def __reversed__(self: Iterable[T]):
@@ -256,6 +273,26 @@ class Query(Iterable[T]):
         # to_lookupは即時実行groupingが遅延評価
         raise NotImplementedError()
 
+    @staticmethod
+    @lazy
+    def _sleep(source: Iterable[T], seconds: float):
+        for elm in source:
+            yield elm
+            sleep(seconds)
+
+    def sleep(self: Iterable[T], seconds: float = 0) -> "Query[T]":
+        return Query(Query._sleep(self, seconds))
+
+    @staticmethod
+    @alazy
+    async def _asleep(source: Iterable[T], seconds: float):
+        for elm in source:
+            yield elm
+            await asleep(seconds)
+
+    def asleep(self: Iterable[T], seconds: float = 0) -> AsyncLazy[T]:
+        return Query._asleep(self, seconds)
+
 
 class QueryTuple(Query[Tuple[K, V]], Iterable[Tuple[K, V]], Generic[K, V]):
     pass
@@ -281,6 +318,11 @@ class QuerableDict(QueryTuple[K, V]):
 
     def len(self):
         return len(self.source)
+
+    def __reversed__(self):
+        source: dict = self.source  # type: ignore
+        for key in source.__reversed__():
+            yield key, source[key]
 
     def save(self):
         raise NotImplementedError()
@@ -354,9 +396,17 @@ def pnq(source):
 KT = TypeVar("KT", bound=Any)
 
 
-def get_first(source: Iterable[Tuple[KT, V]]) -> Tuple[KT, V]:
+# def get_first(source: Iterable[Tuple[KT, V]]) -> Tuple[KT, V]:
+#     ...
+
+
+def get_first(source: Iterable[Tuple[K, V]]) -> Tuple[K, V]:
     ...
 
 
 # TODO: Tuple[Literal, Literal]が返ってきてしまう
+# a = get_first([(1, 2)])
+
 a = get_first([(1, 2)])
+print(a)
+a = (2, 3)

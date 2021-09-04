@@ -151,13 +151,27 @@ def test_get():
 
 def test_sort():
     @block
+    def test_validate():
+        with pytest.raises(TypeError):
+            pnq([]).order_by_attrs()
+
+        pnq([]).order_by_attrs("id")
+        pnq([]).order_by_attrs("id", "name")
+
+        with pytest.raises(TypeError):
+            pnq([]).order_by_items()
+
+        pnq([]).order_by_items("id")
+        pnq([]).order_by_items("id", "name")
+
+    @block
     def case_no_elements():
         assert pnq([]).reverse().to_list() == []
         assert list(reversed(pnq([]))) == []
         assert pnq({}).reverse().to_list() == []
         assert list(reversed(pnq({}))) == []
         assert pnq([]).order_by_attrs("id").to_list() == []
-        assert pnq([]).order_by_index("id").to_list() == []
+        assert pnq([]).order_by_items("id").to_list() == []
         assert pnq([]).order(lambda x: x).to_list() == []
 
     class Hoge:
@@ -174,8 +188,8 @@ def test_sort():
         assert pnq({1: "a"}).reverse().to_list() == [(1, "a")]
         assert list(reversed(pnq({1: "a"}))) == [(1, "a")]
         assert pnq([obj]).order_by_attrs("id").to_list() == [obj]
-        assert pnq([tuple([10])]).order_by_index(0).to_list() == [(10,)]
-        assert pnq({1: "a"}).order_by_index(1).to_list() == [(1, "a")]
+        assert pnq([tuple([10])]).order_by_items(0).to_list() == [(10,)]
+        assert pnq({1: "a"}).order_by_items(1).to_list() == [(1, "a")]
         assert pnq([obj]).order(lambda x: x.id).to_list() == [obj]
 
     @block
@@ -189,10 +203,10 @@ def test_sort():
         assert list(reversed(pnq({2: "a", 1: "a"}))) == [(1, "a"), (2, "a")]
         assert pnq([obj2, obj1]).order_by_attrs("id").to_list() == [obj1, obj2]
         assert pnq([obj1, obj2]).order_by_attrs("id").to_list() == [obj1, obj2]
-        assert pnq([(2, 0), (1, 100)]).order_by_index(0).to_list() == [(1, 100), (2, 0)]
-        assert pnq([(2, 0), (1, 100)]).order_by_index(1).to_list() == [(2, 0), (1, 100)]
-        assert pnq({2: "a", 1: "b"}).order_by_index(0).to_list() == [(1, "b"), (2, "a")]
-        assert pnq({2: "a", 1: "b"}).order_by_index(1).to_list() == [(2, "a"), (1, "b")]
+        assert pnq([(2, 0), (1, 100)]).order_by_items(0).to_list() == [(1, 100), (2, 0)]
+        assert pnq([(2, 0), (1, 100)]).order_by_items(1).to_list() == [(2, 0), (1, 100)]
+        assert pnq({2: "a", 1: "b"}).order_by_items(0).to_list() == [(1, "b"), (2, "a")]
+        assert pnq({2: "a", 1: "b"}).order_by_items(1).to_list() == [(2, "a"), (1, "b")]
         assert pnq([obj2, obj1]).order(lambda x: x.id).to_list() == [obj1, obj2]
         assert pnq([obj2, obj1]).order(lambda x: x.name).to_list() == [obj2, obj1]
 
@@ -228,13 +242,32 @@ def test_sort():
         dic2 = dict(id=20, name="a")
         dic3 = dict(id=30, name="a")
 
-        assert pnq([dic3, dic2, dic1]).order_by_index("id", "name").to_list() == [
+        assert pnq([dic3, dic2, dic1]).order_by_items("id", "name").to_list() == [
             dic1,
             dic2,
             dic3,
         ]
-        assert pnq([dic3, dic2, dic1]).order_by_index("name", "id").to_list() == [
+        assert pnq([dic3, dic2, dic1]).order_by_items("name", "id").to_list() == [
             dic2,
             dic3,
             dic1,
         ]
+
+
+def test_sleep():
+    @block
+    def test_sync():
+        pnq([1, 2, 3]).sleep(0).to_list() == [1, 2, 3]
+
+    @block
+    def test_async():
+        import asyncio
+
+        results = []
+
+        async def func():
+            async for elm in pnq([1, 2, 3]).asleep(0):
+                results.append(elm)
+
+        asyncio.run(func())
+        assert results == [1, 2, 3]
