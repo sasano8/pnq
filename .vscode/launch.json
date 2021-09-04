@@ -11,14 +11,14 @@
       "env": {
         "PYTHONPATH": "${workspaceRoot}"
       },
-      "justMyCode": false,
+      "justMyCode": true,
     },
     {
       "name": "Debug Tests",
       "type": "python",
       "request": "test",
       "console": "integratedTerminal",
-      "justMyCode": false
+      "justMyCode": true
     }
   ]
 }
