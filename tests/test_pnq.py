@@ -37,6 +37,15 @@ def test_easy():
     # assert obj[3] == {"key": 3, "name": "test"}
 
 
+def test_aggregator():
+    assert pnq([]).len() == 0
+    assert pnq({}).len() == 0
+    assert pnq([1]).len() == 1
+    assert pnq({1: 1}).len() == 1
+    assert pnq([1, 2]).len() == 2
+    assert pnq({1: 1, 2: 2}).len() == 2
+
+
 def test_slice():
     assert pnq([]).slice(0, 100).to_list() == []
     assert pnq([1]).slice(0, 0).to_list() == []

@@ -59,6 +59,9 @@ class Query(Iterable[T]):
     def __iter__(self) -> Iterator[T]:
         return self.source.__iter__()
 
+    def len(self):
+        return len(list(self))
+
     @staticmethod
     def _first(source):
         it = iter(source)
@@ -275,6 +278,9 @@ class QuerableDict(QueryTuple[K, V]):
 
     def __iter__(self) -> Iterator[Tuple[K, V]]:
         return self.source.items().__iter__()
+
+    def len(self):
+        return len(self.source)
 
     def save(self):
         raise NotImplementedError()
