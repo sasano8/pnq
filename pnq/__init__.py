@@ -1,2 +1,2 @@
 from . import exceptions, getter
-from .main import QuerableDict, Query, pnq, undefined
+from .main import Pnq, QuerableDict, Query, pnq, undefined

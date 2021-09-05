@@ -12,11 +12,13 @@ from typing import (
     Iterator,
     Mapping,
     Tuple,
+    Type,
     TypeVar,
     Union,
     overload,
 )
 
+from . import reflectors
 from .exceptions import NoElementError, NotOneError
 from .getter import attrgetter, itemgetter
 
@@ -155,16 +157,16 @@ class Query(Iterable[T]):
     def order(self: Iterable[T], selector, desc: bool = False) -> "Query[T]":
         return Query(Query._order(self, selector, desc))
 
-    def order_by_attrs(
-        self: Iterable[T], *attrs: str, desc: bool = False
-    ) -> "Query[T]":
-        selector = attrgetter(*attrs)
-        return Query.order(self, selector, desc=desc)
-
     def order_by_items(
         self: Iterable[T], *items: Any, desc: bool = False
     ) -> "Query[T]":
         selector = itemgetter(*items)
+        return Query.order(self, selector, desc=desc)
+
+    def order_by_attrs(
+        self: Iterable[T], *attrs: str, desc: bool = False
+    ) -> "Query[T]":
+        selector = attrgetter(*attrs)
         return Query.order(self, selector, desc=desc)
 
     def __reversed__(self: Iterable[T]):
@@ -195,6 +197,16 @@ class Query(Iterable[T]):
     def filter(self, func):
         return Query(Query._filter(self, func))
 
+    def filter_type(self: Iterable[T], *types: Type[R]) -> "Query[R]":
+        def normalize(type):
+            if type is None:
+                return None.__class__
+            else:
+                return type
+
+        types = tuple((normalize(x) for x in types))
+        return Query(Query._filter(self, lambda x: isinstance(x, *types)))
+
     @staticmethod
     @lazy
     def _map(source: Iterable[T], selector: Callable[[T], R]) -> Iterator[R]:
@@ -202,32 +214,102 @@ class Query(Iterable[T]):
 
     @staticmethod
     @lazy
-    def _map_unpack(source: Iterable[T], selector: Callable[..., R]) -> Iterator[R]:
+    def _unpack(source: Iterable[T], selector: Callable[..., R]) -> Iterator[R]:
         for elm in source:
             yield selector(*elm)  # type: ignore
 
     @staticmethod
     @lazy
-    def _map_unpack_kw(source: Iterable[T], selector: Callable[..., R]) -> Iterator[R]:
+    def _unpack_kw(source: Iterable[T], selector: Callable[..., R]) -> Iterator[R]:
         for elm in source:
             yield selector(**elm)  # type: ignore
 
     def map(self, selector: Callable[[T], R]) -> "Query[R]":
+        if selector is str:
+            selector = reflectors.to_str
         return Query(Query._map(self, selector))
 
-    def map_unpack(self, selector: Callable[..., R]) -> "Query[R]":
-        return Query(Query._map_unpack(self, selector))
+    def unpack(self, selector: Callable[..., R]) -> "Query[R]":
+        return Query(Query._unpack(self, selector))
 
-    def map_unpack_kw(self, selector: Callable[..., R]) -> "Query[R]":
-        return Query(Query._map_unpack_kw(self, selector))
+    def unpack_kw(self, selector: Callable[..., R]) -> "Query[R]":
+        return Query(Query._unpack_kw(self, selector))
+
+    def select(self, item):
+        return Query(Query._map(self, lambda x: x[item]))
+
+    def select_attr(self, attr: str):
+        return Query(Query._map(self, lambda x: getattr(x, attr)))
+
+    def select_attrs(self, *attrs: Any):
+        if len(attrs) == 1:
+            # attrgetterは引数が１の時、タプルでなくそのセレクトされた値を直接返す
+            # タプルを返すべき
+            raise NotImplementedError()
+
+        selector = attrgetter(*attrs)
+        return Query(Query._map(self, selector))
+
+    def select_items(self, *items: str):
+        if len(items) == 1:
+            # itemgetterは引数が１の時、タプルでなくそのセレクトされた値を直接返す
+            # タプルを返すべき
+            raise NotImplementedError()
+
+        selector = itemgetter(*items)
+        return Query(Query._map(self, selector))
+
+    def cast(self: "Query[T]", type: Type[R]) -> "Query[R]":
+        return self  # type: ignore
 
     @staticmethod
     @lazy
-    def _slice(source: Iterable[T], start, end) -> Iterator[T]:
+    def _skip(self, count: int):
+        it = iter(self)
+        current = 0
+
+        try:
+            while current < count:
+                next(it)
+                current += 1
+        except StopIteration:
+            return
+
+        for elm in it:
+            yield elm
+
+    def skip(self, count: int):
+        return Query(Query._skip(self, count))
+
+    @staticmethod
+    @lazy
+    def _take(self, count: int):
+        it = iter(self)
+        current = 0
+
+        try:
+            while current < count:
+                yield next(it)
+                current += 1
+        except StopIteration:
+            return
+
+    def take(self, count: int):
+        return Query(Query._take(self, count))
+
+    @staticmethod
+    @lazy
+    def _range(self, start: int = 0, stop: int = None):
+        it = iter(self)
         if start < 0:
             start = 0
 
-        it = iter(source)
+        if stop is None:
+            stop = float("inf")  # type: ignore
+        elif stop < 0:
+            stop = 0
+        else:
+            pass
 
         current = 0
 
@@ -235,32 +317,48 @@ class Query(Iterable[T]):
             while current < start:
                 next(it)
                 current += 1
+        except StopIteration:
+            return
 
-            while current < end:
+        try:
+            while current < stop:  # type: ignore
                 yield next(it)
                 current += 1
-
         except StopIteration:
-            pass
+            return
 
-    def slice(self, start: int = 0, end: int = None) -> "Query[T]":
-        if start == 0 and end is None:
-            return self
+    def range(self, start: int = 0, stop: int = None) -> "Query[T]":
+        return Query(Query._range(self, start, stop))
 
-        end = float("inf") if end is None else end  # type: ignore
-        return Query(Query._slice(self, start, end))
+    @staticmethod
+    def _page_calc(page: int, size: int):
+        if size < 0:
+            raise ValueError("size must be >= 0")
+        start = (page - 1) * size
+        stop = start + size
+        return start, stop
+
+    def page(self, page: int = 1, size: int = 0) -> "Query[T]":
+        start, stop = Query._page_calc(page, size)
+        return Query.range(self, start, stop)
+
+    start = 0 * 1
+    stop = 0 + 50 - 1
 
     def save(self):
         return Query(list(self))
+
+    def save_index(self):
+        raise NotImplementedError()
+
+    def to_index(self: Iterable[Tuple[K, V]]) -> "QuerableDict[K, V]":
+        return QuerableDict(self)
 
     def to_list(self):
         return list(self)
 
     def to_dict(self: Iterable[Tuple[K, V]]):
         return dict(iter(self))
-
-    def to_index(self: Iterable[Tuple[K, V]]) -> "QuerableDict[K, V]":
-        return QuerableDict(self)
 
     def to_lookup(
         self, selector: Callable[[T], R] = None
@@ -271,6 +369,9 @@ class Query(Iterable[T]):
     def grouping(self, selector: Callable[[T], R]):
         # to_lookupとあまり変わらないが
         # to_lookupは即時実行groupingが遅延評価
+        raise NotImplementedError()
+
+    def aggregate(self):
         raise NotImplementedError()
 
     @staticmethod
@@ -299,13 +400,13 @@ class QueryTuple(Query[Tuple[K, V]], Iterable[Tuple[K, V]], Generic[K, V]):
 
 
 class QuerableDict(QueryTuple[K, V]):
-    @overload
-    def __init__(self, source: Mapping[K, V]):
-        pass
+    # @overload
+    # def __init__(self, source: Mapping[K, V]):
+    #     pass
 
-    @overload
-    def __init__(self, source: Iterable[Tuple[K, V]]):
-        pass
+    # @overload
+    # def __init__(self, source: Iterable[Tuple[K, V]]):
+    #     pass
 
     def __init__(self, source):
         if isinstance(source, Mapping):
@@ -386,27 +487,263 @@ def pnq(source: Iterable[T]) -> Query[T]:
     ...
 
 
-def pnq(source):
-    if isinstance(source, Mapping):
-        return QuerableDict(source)
+def pnq(  # type: ignore
+    iterable_or_mapping: Union[Mapping[K, V], Iterable[Tuple[K, V]], Iterable[T]]
+) -> Union[QuerableDict[K, V], Query[T]]:
+    """
+    シーケンス操作のAPIを備えたクエリオブジェクトを返します。
+    `Mapping[K, V]`を渡した場合、クエリオブジェクトの`\_\_iter\_\_`は`Tuple[K, V]`を
+    返します。
+
+    **Parameters:**
+
+    * **iterable_or_mapping** - `Query` オブジェクトが操作するソース
+
+    **Returns:** `Query`
+
+    Usage:
+    ```
+    >>> from pnq import pnq
+    >>> iterable = pnq([1])
+    >>> iterable_key_value = pnq({1, "a"})
+    >>> [x for x in iterable]
+    [1]
+    >>> [x for x in iterable_key_value]
+    [(1, "a")]
+    ```
+    """
+    if isinstance(iterable_or_mapping, Mapping):
+        return QuerableDict(iterable_or_mapping)
     else:
-        return Query(source)
+        return Query(iterable_or_mapping)  # type: ignore
 
 
-KT = TypeVar("KT", bound=Any)
+class Pnq:
+    """シーケンス走査APIを備えたクエリオブジェクト
+
+    Usage:
+    ```
+    >>> from pnq import pnq
+    >>> iterable = pnq([1])
+    >>> iterable_key_value = pnq({1, "a"})
+    >>> [x for x in iterable]
+    [1]
+    >>> [x for x in iterable_key_value]
+    [(1, "a")]
+    ```
+    """
+
+    def query(iterable_or_mapping) -> "Pnq":
+        """シーケンス走査APIを備えたクエリオブジェクトを返します。
+        Mapping[K, V]を渡した場合、クエリオブジェクトの__iter__はTuple[K, V]を 返します。"""
+        pass
+
+    def filter(self, predicate):
+        """述語に基づいて値のシーケンスをフィルター処理します。
+
+        **Parameters:**
+
+        * **self** - `Query` オブジェクト自身またはIterable[T]
+        * **predicate: Callable[[T], bool]** - 各要素に対する検証関数
+
+        **Returns:** `Query` | `QueryDict[K, V]`
+
+        Usage:
+        ```
+        >>> import pnq
+        >>> pnq.query([1, 2]).filter(lambda x: x == 1)
+        [1]
+        ```
+        """
+        pass
+
+    def map(self, selector):
+        """シーケンスの各要素を新しいフォームに射影します。
+        また、利便性のたにstr関数を渡した場合のみ、Pythonの標準と異なる挙動をします（Usageを参照）。
+
+        **Parameters:**
+
+        * **self** - `Query` オブジェクト自身またはIterable[T]
+        * **selector: Callable[[T], R]** - 各要素に対する変換関数
 
 
-# def get_first(source: Iterable[Tuple[KT, V]]) -> Tuple[KT, V]:
-#     ...
+        **Returns:** `Query` | `QueryDict[K, V]`
+
+        Usage:
+        ```
+        >>> import pnq
+        >>> pnq.query([1]).map(lambda x: x * 2)
+        [2]
+        >>> pnq.query([None]).map(str)
+        [""]
+        ```
+        """
+        pass
+
+    def unpack(self, selector):
+        """シーケンスの各要素をアンパックし、新しいフォームに射影します。
+
+        **Parameters:**
+
+        * **self** - `Query` オブジェクト自身またはIterable[T]
+        * **selector: Callable[[...], R]** - 各要素に対する変換関数
+
+        **Returns:** `Query` | `QueryDict[K, V]`
+
+        Usage:
+        ```
+        >>> import pnq
+        >>> pnq.query([(1, 2)]).unpack(lambda a1, *_: a1)
+        [1]
+        ```
+        """
+        pass
+
+    def unpack_kw(self, selector):
+        """シーケンスの各要素をキーワードアンパックし、新しいフォームに射影します。
+
+        **Parameters:**
+
+        * **self** - `Query` オブジェクト自身またはIterable[T]
+        * **selector: Callable[[...], R]** - 各要素に対する変換関数
+
+        **Returns:** `Query` | `QueryDict[K, V]`
+
+        Usage:
+        ```
+        >>> import pnq
+        >>> pnq.query([dict(id=1, name="a")]).unpack_kw(lambda name, **_: name)
+        ["a"]
+        >>> pnq.query([dict(id=1, name="a")]).unpack_kw(lambda name, **_: locals())
+        [{"a": "a", "_": 1}]
+        ```
+        """
+        pass
+
+    def select(self, item):
+        """シーケンスの各要素からひとつのアイテムを選択し新しいフォームに射影します。
+
+        **Parameters:**
+
+        * **self** - `Query` オブジェクト自身またはIterable[T]
+        * **item: str** - 選択するアイテム
+
+        **Returns:** `Query` | `QueryDict[K, V]`
+
+        Usage:
+        ```
+        >>> import pnq
+        >>> pnq.query([(1, 2)]).select(0)
+        [1]
+        >>> pnq.query([dict(id=1, name="a", age=5)]).select("name")
+        ["a"]
+        ```
+        """
+        pass
+
+    def select_attr(self, item):
+        """シーケンスの各要素からひとつの属性を選択し新しいフォームに射影します。
+
+        **Parameters:**
+
+        * **self** - `Query` オブジェクト自身またはIterable[T]
+        * **item: str** - 選択する属性
+
+        **Returns:** `Query` | `QueryDict[K, V]`
+
+        Usage:
+        ```
+        >>> import pnq
+        >>> pnq.query([(str)]).select_attr("__name__")
+        ["name"]
+        ```
+        """
+        pass
+
+    def select_items(self, *items):
+        """シーケンスの各要素から複数のアイテムを選択し新しいフォームに射影します。
+
+        **Parameters:**
+
+        * **self** - `Query` オブジェクト自身またはIterable[T]
+        * **\*items: str** - 選択するアイテム
+
+        **Returns:** `Query` | `QueryDict[K, V]`
+
+        Usage:
+        ```
+        >>> import pnq
+        >>> pnq.query([dict(id=1, name="a", age=5)]).select_items("name", "age")
+        [("a", 5)]
+        ```
+        """
+        pass
+
+    def select_attrs(self, *attrs):
+        """シーケンスの各要素から複数の属性を選択し新しいフォームに射影します。
+
+        **Parameters:**
+
+        * **self** - `Query` オブジェクト自身またはIterable[T]
+        * **\*attrs: str** - 選択する属性
+
+        **Returns:** `Query` | `QueryDict[K, V]`
+
+        Usage:
+        ```
+        >>> import pnq
+        >>> pnq.query([str]).select_attrs("__class__", "__name__")
+        [(<class 'type'>, 'str')]
+        ```
+        """
+        pass
+
+    def cast(self, type):
+        """シーケンスの型注釈を変更します。この関数は、エディタの型解釈を助けるためだけに存在し、実行速度に影響を及ぼしません。
+        実際に型を変更する場合は、`map`を使用してください。
+
+        **Parameters:**
+
+        * **self** - `Query` オブジェクト自身またはIterable[T]
+        * **type: str** - 新しい型注釈
+
+        **Returns:** `Query` | `QueryDict[K, V]`
+
+        Usage:
+        ```
+        >>> import pnq
+        >>> pnq.query([1]).cast(float)
+        ```
+        """
+        pass
+
+    def skip(self, count: int):
+        pass
+
+    def take(self, count: int):
+        pass
+
+    def range(self, from_: int, to: int = None):
+        pass
+
+    def pagenate(self, *, page: int, size: int):
+        from_ = (page - 1) * size
+        to = from_ + size
+        self.range(from_, to)
 
 
-def get_first(source: Iterable[Tuple[K, V]]) -> Tuple[K, V]:
-    ...
-
-
-# TODO: Tuple[Literal, Literal]が返ってきてしまう
-# a = get_first([(1, 2)])
-
-a = get_first([(1, 2)])
-print(a)
-a = (2, 3)
+"""
+filter
+map
+select
+select_attr
+select_items
+select_attrs
+unpack
+unpack_kw
+cast
+skip
+take
+pagenate
+range
+"""

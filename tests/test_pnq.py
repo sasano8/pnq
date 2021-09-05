@@ -9,7 +9,19 @@ def block(func):
     return func
 
 
-def test_pnq():
+def test_type():
+    from typing import Iterable, Mapping
+
+    q1 = pnq([])
+    q2 = pnq({})
+
+    assert isinstance(q1, Iterable)
+
+    # 辞書のインターフェースを実装したいが、辞書にすると初期化時に誤動作するのでMappingと認識されないようにする
+    assert not isinstance(q2, Mapping)
+
+
+def test_init():
     assert pnq([]).to_list() == []
     assert pnq([]).to_dict() == {}
     assert pnq({}).to_list() == []
@@ -25,16 +37,70 @@ def test_pnq():
 
 
 def test_easy():
-    assert pnq([1]).map(lambda x: x * 2).to_list() == [2]
-    assert pnq([1]).filter(lambda x: x == 1).to_list() == [1]
-    assert pnq([1]).filter(lambda x: x == 0).to_list() == []
-    assert pnq([1]).filter(lambda x: x == 0).to_list() == []
-    assert pnq([1]).enumerate().to_list() == [(0, 1)]
+
     # assert pnq([{"key": 3, "name": "test"}]).lookup(lambda x: x["key"]).to_list() == [
     #     (3, {"key": 3, "name": "test"})
     # ]
     # obj = pnq([{"key": 3, "name": "test"}]).lookup(lambda x: x["key"]).to_dict()
     # assert obj[3] == {"key": 3, "name": "test"}
+    pass
+
+
+class TestFilter:
+    def test_filter(self):
+        assert pnq([1]).filter(lambda x: x == 1).to_list() == [1]
+        assert pnq([1]).filter(lambda x: x == 0).to_list() == []
+        assert pnq([1]).filter(lambda x: x == 0).to_list() == []
+
+    def test_filter_type(self):
+        assert pnq([1]).filter_type(int).to_list() == [1]
+        assert pnq([1]).filter_type(str).to_list() == []
+        assert pnq([1]).filter_type(bool).to_list() == []
+        assert pnq([True]).filter_type(bool).to_list() == [True]
+        assert pnq([True]).filter_type(int).to_list() == [
+            True
+        ]  # pythonの仕様でboolはintを継承しているヒットしてしまう
+
+
+class TestMap:
+    def test_map(self):
+        assert pnq([1]).map(lambda x: x * 2).to_list() == [2]
+        assert pnq([None]).map(str).to_list() == [""]
+        assert str(None) == "None"
+
+    def test_select(self):
+        assert pnq([{"name": "a"}]).select("name").to_list() == ["a"]
+        assert pnq([str]).select_attr("__name__").to_list() == ["str"]
+        # assert pnq([dict(id=1)]).select_items("id").to_list() == [(1,)]
+        assert pnq([dict(id=1, name="a")]).select_items("id", "name").to_list() == [
+            (1, "a")
+        ]
+        assert pnq([dict(id=1, name="a", age=5)]).select_items(
+            "id", "name"
+        ).to_list() == [(1, "a")]
+        # assert pnq([str]).select_attrs("__name__").to_list() == [("str",)]
+        assert pnq([str]).select_attrs("__name__", "__class__").to_list() == [
+            ("str", type)
+        ]
+
+    def test_unpack(self):
+        with pytest.raises(
+            TypeError, match="missing 1 required positional argument: 'v'"
+        ):
+            pnq([(1, 2)]).map(lambda k, v: k).to_list()
+        assert pnq([(1, 2)]).unpack(lambda k, v: k).to_list() == [1]
+        assert pnq([{"name": "test", "age": 20}]).unpack_kw(
+            lambda name, age: name
+        ).to_list() == ["test"]
+
+    def test_enumrate(self):
+        assert pnq([1]).enumerate().to_list() == [(0, 1)]
+
+    def test_cast(self):
+        # castは型注釈を誤魔化す
+        # 内部的に何もしないため、同じクエリオブジェクトを参照していることを検証する
+        q = pnq([1])
+        assert q.cast(str) == q
 
 
 def test_aggregator():
@@ -46,17 +112,101 @@ def test_aggregator():
     assert pnq({1: 1, 2: 2}).len() == 2
 
 
-def test_slice():
-    assert pnq([]).slice(0, 100).to_list() == []
-    assert pnq([1]).slice(0, 0).to_list() == []
-    assert pnq([1]).slice(0, 1).to_list() == [1]
-    assert pnq([1]).slice(0).to_list() == [1]
-    assert pnq([1]).slice(-1, 1).to_list() == [1]
-    assert pnq([1, 2]).slice(0, 1).to_list() == [1]
-    assert pnq([1, 2, 3]).slice(1, 1).to_list() == []
-    assert pnq([1, 2, 3]).slice(1, 2).to_list() == [2]
-    assert pnq([1, 2, 3]).slice(1, 3).to_list() == [2, 3]
-    assert pnq([1, 2, 3]).slice(1).to_list() == [2, 3]
+class TestSkipTakeRangePage:
+    def test_skip(self):
+        assert pnq([]).skip(0).to_list() == []
+        assert pnq([]).skip(1).to_list() == []
+        assert pnq([1]).skip(0).to_list() == [1]
+        assert pnq([1]).skip(1).to_list() == []
+        assert pnq([1, 2]).skip(0).to_list() == [1, 2]
+        assert pnq([1, 2]).skip(1).to_list() == [2]
+        assert pnq([1, 2]).skip(2).to_list() == []
+
+    def test_take(self):
+        assert pnq([]).take(0).to_list() == []
+        assert pnq([]).take(1).to_list() == []
+        assert pnq([1]).take(0).to_list() == []
+        assert pnq([1]).take(1).to_list() == [1]
+        assert pnq([1, 2]).take(0).to_list() == []
+        assert pnq([1, 2]).take(1).to_list() == [1]
+        assert pnq([1, 2]).take(2).to_list() == [1, 2]
+
+    def test_range(self):
+        q = pnq([1, 2, 3, 4, 5, 6])
+
+        assert q.range(0, -1).to_list() == []
+        assert q.range(0, 0).to_list() == []
+
+        assert q.range(-1, 0).to_list() == []
+        assert q.range(0, 1).to_list() == [1]
+        assert q.range(1, 2).to_list() == [2]
+        assert q.range(2, 3).to_list() == [3]
+
+        assert q.range(-2, 0).to_list() == []
+        assert q.range(0, 2).to_list() == [1, 2]
+        assert q.range(2, 4).to_list() == [3, 4]
+        assert q.range(4, 6).to_list() == [5, 6]
+
+        assert q.range(5, 6).to_list() == [6]
+        assert q.range(5, 7).to_list() == [6]
+        assert q.range(6, 7).to_list() == []
+
+    def test_page(self):
+        from pnq import Query
+
+        with pytest.raises(ValueError):
+            Query._page_calc(0, -1)
+
+        assert Query._page_calc(-1, 0) == (0, 0)
+
+        assert Query._page_calc(0, 0) == (0, 0)
+        assert Query._page_calc(1, 0) == (0, 0)
+        assert Query._page_calc(2, 0) == (0, 0)
+        assert Query._page_calc(3, 0) == (0, 0)
+
+        assert Query._page_calc(0, 1) == (-1, 0)
+        assert Query._page_calc(1, 1) == (0, 1)
+        assert Query._page_calc(2, 1) == (1, 2)
+        assert Query._page_calc(3, 1) == (2, 3)
+
+        assert Query._page_calc(0, 2) == (-2, 0)
+        assert Query._page_calc(1, 2) == (0, 2)
+        assert Query._page_calc(2, 2) == (2, 4)
+        assert Query._page_calc(3, 2) == (4, 6)
+
+        arr = [1, 2, 3, 4, 5, 6]
+
+        assert arr[0:0] == []
+        assert arr[0:0] == []
+        assert arr[0:0] == []
+        assert arr[0:0] == []
+
+        assert arr[-1:0] == []
+        assert arr[0:1] == [1]
+        assert arr[1:2] == [2]
+        assert arr[2:3] == [3]
+
+        assert arr[-2:0] == []
+        assert arr[0:2] == [1, 2]
+        assert arr[2:4] == [3, 4]
+        assert arr[4:6] == [5, 6]
+
+        q = pnq(arr)
+
+        assert q.page(0, 0).to_list() == []
+        assert q.page(1, 0).to_list() == []
+        assert q.page(2, 0).to_list() == []
+        assert q.page(3, 0).to_list() == []
+
+        assert q.page(0, 1).to_list() == []
+        assert q.page(1, 1).to_list() == [1]
+        assert q.page(2, 1).to_list() == [2]
+        assert q.page(3, 1).to_list() == [3]
+
+        assert q.page(0, 2).to_list() == []
+        assert q.page(1, 2).to_list() == [1, 2]
+        assert q.page(2, 2).to_list() == [3, 4]
+        assert q.page(3, 2).to_list() == [5, 6]
 
 
 def test_indexing():
@@ -85,15 +235,6 @@ def test_indexing():
 
     with pytest.raises(NotImplementedError):
         db.save()
-
-
-def test_unpack():
-    with pytest.raises(TypeError, match="missing 1 required positional argument: 'v'"):
-        pnq([(1, 2)]).map(lambda k, v: (k, v)).to_dict()
-    assert pnq([(1, 2)]).map_unpack(lambda k, v: (k, v)).to_dict() == {1: 2}
-    assert pnq([{"name": "test", "age": 20}]).map_unpack_kw(
-        lambda name, age: (name, age)
-    ).to_list() == [("test", 20)]
 
 
 def test_get():
@@ -149,9 +290,14 @@ def test_get():
         assert q.last_or_default(3) == 10
 
 
-def test_sort():
-    @block
-    def test_validate():
+class Hoge:
+    def __init__(self, id, name=""):
+        self.id = id
+        self.name = name
+
+
+class TestSort:
+    def test_validate(self):
         with pytest.raises(TypeError):
             pnq([]).order_by_attrs()
 
@@ -164,8 +310,7 @@ def test_sort():
         pnq([]).order_by_items("id")
         pnq([]).order_by_items("id", "name")
 
-    @block
-    def case_no_elements():
+    def test_no_elements(self):
         assert pnq([]).reverse().to_list() == []
         assert list(reversed(pnq([]))) == []
         assert pnq({}).reverse().to_list() == []
@@ -174,13 +319,7 @@ def test_sort():
         assert pnq([]).order_by_items("id").to_list() == []
         assert pnq([]).order(lambda x: x).to_list() == []
 
-    class Hoge:
-        def __init__(self, id, name=""):
-            self.id = id
-            self.name = name
-
-    @block
-    def case_one_elements():
+    def test_one_elements(self):
         obj = Hoge(id=10)
 
         assert pnq([1]).reverse().to_list() == [1]
@@ -192,8 +331,7 @@ def test_sort():
         assert pnq({1: "a"}).order_by_items(1).to_list() == [(1, "a")]
         assert pnq([obj]).order(lambda x: x.id).to_list() == [obj]
 
-    @block
-    def case_two_elements():
+    def test_two_elements(self):
         obj1 = Hoge(id=10, name="b")
         obj2 = Hoge(id=20, name="a")
 
@@ -210,8 +348,7 @@ def test_sort():
         assert pnq([obj2, obj1]).order(lambda x: x.id).to_list() == [obj1, obj2]
         assert pnq([obj2, obj1]).order(lambda x: x.name).to_list() == [obj2, obj1]
 
-    @block
-    def case_multi_value():
+    def test_multi_value(self):
         obj1 = Hoge(id=10, name="b")
         obj2 = Hoge(id=20, name="a")
         obj3 = Hoge(id=30, name="a")
@@ -254,13 +391,11 @@ def test_sort():
         ]
 
 
-def test_sleep():
-    @block
-    def test_sync():
+class TestSleep:
+    def test_sync(self):
         pnq([1, 2, 3]).sleep(0).to_list() == [1, 2, 3]
 
-    @block
-    def test_async():
+    def test_async(self):
         import asyncio
 
         results = []
