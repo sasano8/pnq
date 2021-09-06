@@ -4,36 +4,31 @@ from pnq import pnq
 from pnq.exceptions import NoElementError, NotOneError
 
 
-def block(func):
-    func()
-    return func
+class TestInit:
+    def test_type(self):
+        from typing import Iterable, Mapping
 
+        q1 = pnq([])
+        q2 = pnq({})
 
-def test_type():
-    from typing import Iterable, Mapping
+        assert isinstance(q1, Iterable)
 
-    q1 = pnq([])
-    q2 = pnq({})
+        # 辞書のインターフェースを実装したいが、辞書にすると初期化時に誤動作するのでMappingと認識されないようにする
+        assert not isinstance(q2, Mapping)
 
-    assert isinstance(q1, Iterable)
+    def test_init(self):
+        assert pnq([]).to_list() == []
+        assert pnq([]).to_dict() == {}
+        assert pnq({}).to_list() == []
+        assert pnq({}).to_dict() == {}
 
-    # 辞書のインターフェースを実装したいが、辞書にすると初期化時に誤動作するのでMappingと認識されないようにする
-    assert not isinstance(q2, Mapping)
-
-
-def test_init():
-    assert pnq([]).to_list() == []
-    assert pnq([]).to_dict() == {}
-    assert pnq({}).to_list() == []
-    assert pnq({}).to_dict() == {}
-
-    assert pnq([1]).to_list() == [1]
-    with pytest.raises(TypeError):
-        assert pnq([1]).to_dict() == {}
-    assert pnq({1: "a"}).to_list() == [(1, "a")]
-    assert pnq({1: "a"}).to_dict() == {1: "a"}
-    assert pnq([(1, 2)]).to_list() == [(1, 2)]
-    assert pnq([(1, 2)]).to_dict() == {1: 2}
+        assert pnq([1]).to_list() == [1]
+        with pytest.raises(TypeError):
+            assert pnq([1]).to_dict() == {}
+        assert pnq({1: "a"}).to_list() == [(1, "a")]
+        assert pnq({1: "a"}).to_dict() == {1: "a"}
+        assert pnq([(1, 2)]).to_list() == [(1, 2)]
+        assert pnq([(1, 2)]).to_dict() == {1: 2}
 
 
 def test_easy():
@@ -57,9 +52,9 @@ class TestFilter:
         assert pnq([1]).filter_type(str).to_list() == []
         assert pnq([1]).filter_type(bool).to_list() == []
         assert pnq([True]).filter_type(bool).to_list() == [True]
-        assert pnq([True]).filter_type(int).to_list() == [
-            True
-        ]  # pythonの仕様でboolはintを継承しているヒットしてしまう
+
+        # pythonの仕様でboolはintを継承しているのでヒットしてしまう
+        assert pnq([True]).filter_type(int).to_list() == [True]
 
 
 class TestMap:
@@ -103,16 +98,17 @@ class TestMap:
         assert q.cast(str) == q
 
 
-def test_aggregator():
-    assert pnq([]).len() == 0
-    assert pnq({}).len() == 0
-    assert pnq([1]).len() == 1
-    assert pnq({1: 1}).len() == 1
-    assert pnq([1, 2]).len() == 2
-    assert pnq({1: 1, 2: 2}).len() == 2
+class TestAggregator:
+    def test_len(self):
+        assert pnq([]).len() == 0
+        assert pnq({}).len() == 0
+        assert pnq([1]).len() == 1
+        assert pnq({1: 1}).len() == 1
+        assert pnq([1, 2]).len() == 2
+        assert pnq({1: 1, 2: 2}).len() == 2
 
 
-class TestSkipTakeRangePage:
+class TestSlicer:
     def test_skip(self):
         assert pnq([]).skip(0).to_list() == []
         assert pnq([]).skip(1).to_list() == []
@@ -209,37 +205,8 @@ class TestSkipTakeRangePage:
         assert q.page(3, 2).to_list() == [5, 6]
 
 
-def test_indexing():
-    def assert_query(db):
-        assert db[1] == "a"
-        assert db.get(1) == "a"
-        assert db.get_or_default(1, 10) == "a"
-        assert db.get_or_none(1) == "a"
-        with pytest.raises(KeyError):
-            assert db.get(-1)
-        assert db.get_or_default(-1, 10) == 10
-        assert db.get_or_none(-1) == None
-        assert db.get_many(1, 2).to_list() == [(1, "a"), (2, "b")]
-        assert db.get_many(4).to_list() == []
-        assert db.keys().to_list() == [1, 2, 3]
-        assert db.values().to_list() == ["a", "b", "c"]
-        assert db.items().to_list() == [(1, "a"), (2, "b"), (3, "c")]
-
-    db = pnq({1: "a", 2: "b", 3: "c"})
-    assert_query(db)
-    from_tuple = pnq([(1, "a"), (2, "b"), (3, "c")])
-    assert_query(from_tuple.to_index())
-
-    with pytest.raises(NotImplementedError):
-        db.to_index()
-
-    with pytest.raises(NotImplementedError):
-        db.save()
-
-
-def test_get():
-    @block
-    def case_no_elements():
+class TestGetter:
+    def test_no_elements(self):
         q = pnq([])  # type: ignore
 
         with pytest.raises(NoElementError):
@@ -258,8 +225,7 @@ def test_get():
         assert q.one_or_default(2) == 2
         assert q.last_or_default(3) == 3
 
-    @block
-    def case_one_elements():
+    def test_one_elements(self):
         q = pnq([5])
 
         assert q.first() == 5
@@ -273,8 +239,7 @@ def test_get():
         assert q.one_or_default(2) == 5
         assert q.last_or_default(3) == 5
 
-    @block
-    def case_two_elements():
+    def test_two_elements(self):
         q = pnq([-10, 10])
 
         assert q.first() == -10
@@ -406,3 +371,48 @@ class TestSleep:
 
         asyncio.run(func())
         assert results == [1, 2, 3]
+
+
+class TestDict:
+    @staticmethod
+    def db():
+        return pnq({1: "a", 2: "b", 3: "c"})
+
+    def test_init(self):
+        obj1 = pnq({1: "a", 2: "b", 3: "c"})
+        obj2 = pnq([(1, "a"), (2, "b"), (3, "c")]).to_index()
+        obj3 = pnq([(1, "a"), (2, "b"), (3, "c")])
+
+        cls = obj1.__class__
+
+        assert isinstance(obj1, cls)
+        assert isinstance(obj2, cls)
+        assert not isinstance(obj3, cls)
+
+    def test_get(self):
+        db = self.db()
+        assert db[1] == "a"
+        assert db.get(1) == "a"
+        assert db.get_or_default(1, 10) == "a"
+        assert db.get_or_none(1) == "a"
+        with pytest.raises(KeyError):
+            assert db.get(-1)
+        assert db.get_or_default(-1, 10) == 10
+        assert db.get_or_none(-1) == None
+
+    def test_get_many(self):
+        db = self.db()
+        assert db.get_many(1, 2).to_list() == [(1, "a"), (2, "b")]
+        assert db.get_many(4).to_list() == []
+
+    def test_other(self):
+        db = self.db()
+        assert db.keys().to_list() == [1, 2, 3]
+        assert db.values().to_list() == ["a", "b", "c"]
+        assert db.items().to_list() == [(1, "a"), (2, "b"), (3, "c")]
+
+        with pytest.raises(NotImplementedError):
+            db.to_index()
+
+        with pytest.raises(NotImplementedError):
+            db.save()
