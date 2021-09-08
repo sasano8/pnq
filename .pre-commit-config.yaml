@@ -12,6 +12,7 @@ repos:
     rev: 20.8b1
     hooks:
       - id: black
+        # setup.cfgに書きたいがpre commitが読んでくれない
         args:
           - "--exclude=exclude_from_black.py"
   # - repo: https://github.com/pre-commit/mirrors-mypy

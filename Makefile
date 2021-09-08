@@ -26,5 +26,4 @@ doc-serve: doc-build
 
 generate:
 	@poetry run python3 pnq_template/generate.py -i pnq_template/template.py -o pnq/types.py
-	# @poetry run python3 pnq_template/generate.py -i pnq_template/template.jinja2 -o pnq/types.py
 	@make format
