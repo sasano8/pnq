@@ -24,8 +24,24 @@ mkdocs = "^1.2.2"
 mkautodoc = "^0.1.0"
 mkdocs-material = "^7.2.2"
 pymdown-extensions = "^8.2"
+Jinja2 = "^3.0.1"
 
 
 [build-system]
 requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"
+
+ [tool.black]
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | pnq_template
+)/
+'''

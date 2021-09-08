@@ -1,20 +1,19 @@
 import pytest
 
-from pnq import QuerableDict, pnq
+from pnq import QuerableDict
 from pnq.exceptions import NoElementError, NotOneError
+from pnq.types import DictEx, IndexQuery, ListEx, PairQuery, Query, SetEx, query
+
+pnq = query
 
 
 class TestInit:
     def test_type(self):
         from typing import Iterable, Mapping
 
-        q1 = pnq([])
-        q2 = pnq({})
-
-        assert isinstance(q1, Iterable)
-
-        # 辞書のインターフェースを実装したいが、辞書にすると初期化時に誤動作するのでMappingと認識されないようにする
-        assert not isinstance(q2, Mapping)
+        assert isinstance(pnq([]), Iterable)
+        assert not isinstance(pnq([]), Mapping)
+        assert isinstance(pnq({}), Mapping)
 
     def test_init(self):
         assert pnq([]).to_list() == []
@@ -29,6 +28,13 @@ class TestInit:
         assert pnq({1: "a"}).to_dict() == {1: "a"}
         assert pnq([(1, 2)]).to_list() == [(1, 2)]
         assert pnq([(1, 2)]).to_dict() == {1: 2}
+
+    def test_behavior(self):
+        # クエリメソッドで実行する際は、キーバリューを返すように標準化しているが、
+        # デフォルトの挙動は変えない
+        q = pnq({1: "a", 2: "b"})
+        assert [x for x in q] == [1, 2]
+        assert [x for x in reversed(q)] == [2, 1]
 
 
 def test_easy():
@@ -115,7 +121,7 @@ class TestAggregator:
         assert pnq({}).len() == 0
         assert pnq([1]).len() == 1
         assert pnq({1: 1}).len() == 1
-        assert pnq([1, 2]).len() == 2
+        assert pnq([1, 2]).map(lambda x: x).map(lambda x: x).len() == 2
         assert pnq({1: 1, 2: 2}).len() == 2
 
 
@@ -303,7 +309,8 @@ class TestSort:
         assert pnq([1]).reverse().to_list() == [1]
         assert list(reversed(pnq([1]))) == [1]
         assert pnq({1: "a"}).reverse().to_list() == [(1, "a")]
-        assert list(reversed(pnq({1: "a"}))) == [(1, "a")]
+        # pythonの標準動作はreversedはキーのみを返す
+        assert list(reversed(pnq({1: "a"}))) == [1]
         assert pnq([obj]).order_by_attrs("id").to_list() == [obj]
         assert pnq([tuple([10])]).order_by_items(0).to_list() == [(10,)]
         assert pnq({1: "a"}).order_by_items(1).to_list() == [(1, "a")]
@@ -316,7 +323,8 @@ class TestSort:
         assert pnq([2, 1]).reverse().to_list() == [1, 2]
         assert list(reversed(pnq([2, 1]))) == [1, 2]
         assert pnq({2: "a", 1: "a"}).reverse().to_list() == [(1, "a"), (2, "a")]
-        assert list(reversed(pnq({2: "a", 1: "a"}))) == [(1, "a"), (2, "a")]
+        # pythonの標準動作はreversedはキーのみを返す
+        assert list(reversed(pnq({2: "a", 1: "a"}))) == [1, 2]
         assert pnq([obj2, obj1]).order_by_attrs("id").to_list() == [obj1, obj2]
         assert pnq([obj1, obj2]).order_by_attrs("id").to_list() == [obj1, obj2]
         assert pnq([(2, 0), (1, 100)]).order_by_items(0).to_list() == [(1, 100), (2, 0)]
@@ -379,7 +387,7 @@ class TestSleep:
         results = []
 
         async def func():
-            async for elm in pnq([1, 2, 3]).asleep(0):
+            async for elm in pnq([1, 2, 3]).sleep_async(0):
                 results.append(elm)
 
         asyncio.run(func())
@@ -393,7 +401,7 @@ class TestDict:
 
     def test_init(self):
         obj1 = pnq({1: "a", 2: "b", 3: "c"})
-        obj2 = pnq([(1, "a"), (2, "b"), (3, "c")]).to_index()
+        obj2 = pnq([(1, "a"), (2, "b"), (3, "c")]).to_dict()
         obj3 = pnq([(1, "a"), (2, "b"), (3, "c")])
 
         cls = obj1.__class__
@@ -424,7 +432,4 @@ class TestDict:
         assert db.values().to_list() == ["a", "b", "c"]
         assert db.items().to_list() == [(1, "a"), (2, "b"), (3, "c")]
 
-        assert isinstance(db.to_index(), QuerableDict)
-
-        with pytest.raises(NotImplementedError):
-            db.save()
+        assert isinstance(db.to_dict(), DictEx)

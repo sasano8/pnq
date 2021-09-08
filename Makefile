@@ -8,7 +8,7 @@ format-black:
 format-isort:
 	@echo [isort] && poetry run isort --profile black --filter-files .
 
-test:
+test: generate
 	@echo [pytest] && poetry run pytest .
 
 # documentation:
@@ -22,3 +22,9 @@ doc-build:
 doc-serve: doc-build
 	# @poetry run mkdocs build
 	@poetry run mkdocs serve -a localhost:8001
+
+
+generate:
+	@poetry run python3 pnq_template/generate.py -i pnq_template/template.py -o pnq/types.py
+	# @poetry run python3 pnq_template/generate.py -i pnq_template/template.jinja2 -o pnq/types.py
+	@make format

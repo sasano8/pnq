@@ -1,5 +1,8 @@
+import statistics
 from asyncio import sleep as asleep
+from collections import defaultdict
 from functools import wraps
+from itertools import zip_longest
 from time import sleep
 from typing import (
     TYPE_CHECKING,
@@ -10,6 +13,7 @@ from typing import (
     Generic,
     Iterable,
     Iterator,
+    List,
     Mapping,
     Tuple,
     Type,
@@ -26,7 +30,8 @@ T = TypeVar("T")
 K = TypeVar("K")
 V = TypeVar("V")
 R = TypeVar("R")
-KV = TypeVar("KV", bound=Tuple[Any, Any], covariant=True)
+R2 = TypeVar("R2")
+T_OTHER = TypeVar("T_OTHER")
 F = TypeVar("F", bound=Callable)
 undefined = object()
 
@@ -76,6 +81,13 @@ class AsyncLazy(Generic[T]):
 
 lazy = Lazy.decolate
 alazy = AsyncLazy.decolate
+
+
+class Transform(Iterable[T]):
+    pass
+
+
+dummy = lambda x: x
 
 
 class Query(Iterable[T]):
@@ -194,7 +206,7 @@ class Query(Iterable[T]):
     def _filter(source, func):
         return filter(func, source)
 
-    def filter(self, func):
+    def filter(self, func) -> "Query[T]":
         return Query(Query._filter(self, func))
 
     def filter_type(self: Iterable[T], *types: Type[R]) -> "Query[R]":
@@ -235,32 +247,83 @@ class Query(Iterable[T]):
     def unpack_kw(self, selector: Callable[..., R]) -> "Query[R]":
         return Query(Query._unpack_kw(self, selector))
 
-    def select(self, item):
+    def select(self, item) -> "Query[Any]":
         return Query(Query._map(self, lambda x: x[item]))
 
-    def select_attr(self, attr: str):
+    def select_item(self, item) -> "Query[Any]":
+        return Query.select(self, item)
+
+    def select_attr(self, attr: str) -> "Query[Any]":
         return Query(Query._map(self, lambda x: getattr(x, attr)))
 
-    def select_attrs(self, *attrs: Any):
-        if len(attrs) == 1:
-            # attrgetterは引数が１の時、タプルでなくそのセレクトされた値を直接返す
-            # タプルを返すべき
-            raise NotImplementedError()
+    def select_attrs(self, *attrs: Any) -> "Query[Tuple]":
+        if len(attrs) == 0:
+            selector = lambda x: tuple()  # type: ignore
+        elif len(attrs) == 1:
+            # itemgetter/getattrは引数が１の時、タプルでなくそのセレクトされた値を直接返のでタプルで返すようにする
+            name = attrs[0]
+            selector = lambda x: (getattr(x, name),)
+        else:
+            selector = attrgetter(*attrs)
 
-        selector = attrgetter(*attrs)
         return Query(Query._map(self, selector))
 
-    def select_items(self, *items: str):
-        if len(items) == 1:
-            # itemgetterは引数が１の時、タプルでなくそのセレクトされた値を直接返す
-            # タプルを返すべき
-            raise NotImplementedError()
-
-        selector = itemgetter(*items)
+    def select_items(self, *items: str) -> "Query[Tuple]":
+        if len(items) == 0:
+            selector = lambda x: tuple()  # type: ignore
+        elif len(items) == 1:
+            # itemgetter/getattrは引数が１の時、タプルでなくそのセレクトされた値を直接返のでタプルで返すようにする
+            name = items[0]
+            selector = lambda x: (x[name],)
+        else:
+            selector = itemgetter(*items)
         return Query(Query._map(self, selector))
 
     def cast(self: "Query[T]", type: Type[R]) -> "Query[R]":
         return self  # type: ignore
+
+    def reduce(
+        self: Iterable[T],
+        accumulator: Callable[[T, T], T],
+        seed: T = undefined
+        # self: Iterable[T], accumulator: Callable[[R, R], R], seed: R = undefined
+    ) -> R:
+        from functools import reduce
+
+        if seed is undefined:
+            return reduce(accumulator, self)
+        else:
+            return reduce(accumulator, self, seed)
+
+    @staticmethod
+    @lazy
+    def _must_unique(source: Iterable[T], selector: Callable[[T], R]):
+        seen = set()
+        duplicated = []
+        for elm in source:
+            if selector(elm) in seen:
+                duplicated.append(elm)
+            else:
+                seen.add(selector(elm))
+
+        if duplicated:
+            raise ValueError(f"Duplicated elements: {duplicated}")
+
+        for elm in source:
+            yield elm
+
+    def must_unique(
+        self: Iterable[T], selector: Callable[[T], R] = lambda x: x
+    ) -> "Query[T]":
+        return Query(set(self))
+
+    def zip(
+        self: Iterable[T],
+        *others: T_OTHER,
+        short: bool = False,
+        fillvalue: Any = undefined,
+    ) -> "Query[Tuple]":
+        raise NotImplementedError()
 
     @staticmethod
     @lazy
@@ -352,10 +415,11 @@ class Query(Iterable[T]):
         raise NotImplementedError()
 
     def to_index(self: Iterable[Tuple[K, V]]) -> "QuerableDict[K, V]":
-        return QuerableDict(self)
+        source = {k: v for k, v in self}
+        return QuerableDict(source)
 
     def to_list(self):
-        return list(self)
+        return list(iter(self))
 
     def to_dict(self: Iterable[Tuple[K, V]]):
         return dict(iter(self))
@@ -366,10 +430,25 @@ class Query(Iterable[T]):
         # 指定したキーを集約する
         raise NotImplementedError()
 
-    def grouping(self, selector: Callable[[T], R]):
+    @staticmethod
+    @lazy
+    def _group_by(
+        source: Iterable[T], selector: Callable[[T], Tuple[K, V]]
+    ) -> "Iterable[Tuple[K, List[V]]]":
+        results: Dict[K, List[V]] = defaultdict(list)
+        for elm in source:
+            k, v = selector(elm)
+            results[k].append(v)
+
+        for k, v in results.items():  # type: ignore
+            yield k, v  # type: ignore
+
+    def group_by(
+        self: Iterable[T], selector: Callable[[T], Tuple[K, V]] = lambda kv: kv  # type: ignore
+    ):
         # to_lookupとあまり変わらないが
         # to_lookupは即時実行groupingが遅延評価
-        raise NotImplementedError()
+        return QuerableDictAdapter(Query._group_by(self, selector))
 
     def aggregate(self):
         raise NotImplementedError()
@@ -399,66 +478,151 @@ class QueryTuple(Query[Tuple[K, V]], Iterable[Tuple[K, V]], Generic[K, V]):
     pass
 
 
-class QuerableDict(QueryTuple[K, V]):
-    # @overload
-    # def __init__(self, source: Mapping[K, V]):
-    #     pass
+class QuerableDictAdapter(QueryTuple[K, V]):
+    def __init__(self, source: Iterable[Tuple[K, V]]):
+        self.source = source
 
-    # @overload
-    # def __init__(self, source: Iterable[Tuple[K, V]]):
-    #     pass
+    def __getitem__(self, key):
+        source = {k: v for k, v in self}
+        return source[key]
 
+    # 共通
+    def __iter__(self) -> Iterator[Tuple[K, V]]:
+        yield from ((k, v) for k, v in self.source)
+
+    @staticmethod
+    @lazy
+    def _keys(self):
+        yield from (k for k, v in self)
+
+    @staticmethod
+    @lazy
+    def _values(self):
+        yield from (v for k, v in self)
+
+    @staticmethod
+    @lazy
+    def _items(self):
+        raise NotImplementedError()
+
+    def keys(self) -> Query[K]:
+        return Query(QuerableDictAdapter._keys(self))
+
+    def values(self) -> Query[V]:
+        return Query(QuerableDictAdapter._values(self))
+
+    def items(self) -> "QuerableDictAdapter[K, V]":
+        return self
+
+
+class DictWrapper:
     def __init__(self, source):
-        if isinstance(source, Mapping):
-            self.source = source
-        else:
-            self.source = {k: v for k, v in source}
+        self.source = source
 
     def __iter__(self) -> Iterator[Tuple[K, V]]:
         return self.source.items().__iter__()
 
-    def len(self):
+    def __len__(self):
         return len(self.source)
 
     def __reversed__(self):
-        source: dict = self.source  # type: ignore
+        source: dict = self.source
         for key in source.__reversed__():
             yield key, source[key]
+
+    def keys(self):
+        return self.source.keys()
+
+    def values(self):
+        return self.source.values()
+
+    def items(self):
+        return self.source.items()
+
+    def __getitem__(self, key):
+        return self.source[key]
+
+
+class QuerableDict(QueryTuple[K, V]):
+    def __init__(self, source):
+        if isinstance(source, QuerableDict):
+            self.source = source
+        elif isinstance(source, QuerableDictAdapter):
+            self.source = source
+        elif isinstance(source, DictWrapper):
+            self.source = source
+        elif isinstance(source, Mapping):
+            self.source = DictWrapper(source)
+        else:
+            # self.source = {k: v for k, v in source}
+            raise TypeError("source must be a mapping")
+
+    def len(self):
+        if hasattr(self.source, "__len__"):
+            return len(self.source)
+        else:
+            return len(dict(self.source))
+
+    def __reversed__(self):
+        return self.source.__reversed__()
 
     def save(self):
         raise NotImplementedError()
 
     def to_index(self):
-        raise NotImplementedError()
-
-    def keys(self) -> Query[K]:
-        return Query(self.source.keys())
-
-    def values(self) -> Query[V]:
-        return Query(self.source.values())
-
-    def items(self) -> Query[Tuple[K, V]]:
-        return self
+        if isinstance(self, QuerableDict):
+            return self
+        elif isinstance(self, Mapping):
+            return QuerableDict(self)
+        else:
+            raise TypeError()
 
     def __getitem__(self, key):
         return self.source[key]  # type: ignore
 
+    # 共通
+    def __iter__(self) -> Iterator[Tuple[K, V]]:
+        yield from ((k, v) for k, v in self.source)
+
+    @staticmethod
+    @lazy
+    def _keys(self):
+        yield from (k for k, v in self)
+
+    @staticmethod
+    @lazy
+    def _values(self):
+        yield from (v for k, v in self)
+
+    @staticmethod
+    @lazy
+    def _items(self):
+        raise NotImplementedError()
+
+    def keys(self) -> Query[K]:
+        return Query(QuerableDictAdapter._keys(self))
+
+    def values(self) -> Query[V]:
+        return Query(QuerableDictAdapter._values(self))
+
+    def items(self) -> "QuerableDict[K, V]":
+        return self
+
     def get(self, key) -> V:
-        return self[key]
+        return self.__getitem__(key)
 
     def get_or_none(self, key) -> Union[V, None]:
         return self.get_or_default(key, None)
 
     def get_or_default(self, key, default: R = None) -> Union[V, R, None]:
         try:
-            return self[key]
+            return self.get(key)
         except KeyError:
             return default
 
     def get_many(self, *keys, duplicate: bool = True) -> Query[Tuple[K, V]]:
-        if not duplicate:
-            keys = set(keys)  # type: ignore
-        return Query(QuerableDict._get_many(self, keys))
+        keys = set(keys)  # type: ignore
+        return QuerableDictAdapter(QuerableDict._get_many(self, keys))
 
     def get_many_or_raise(self, *keys, duplicate: bool = True) -> Query[Tuple[K, V]]:
         raise NotImplementedError()
@@ -466,6 +630,7 @@ class QuerableDict(QueryTuple[K, V]):
     @staticmethod
     @lazy
     def _get_many(source: "QuerableDict", keys: Iterable) -> Iterator:
+        source = source.to_index()
         for id in keys:
             obj = source.get_or_default(id, undefined)
             if not obj is undefined:
