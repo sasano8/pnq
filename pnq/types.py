@@ -3,13 +3,13 @@
 from functools import wraps
 from operator import attrgetter, itemgetter
 from typing import (
-    TYPE_CHECKING,
     Any,
     Callable,
     Dict,
     Generic,
     Iterable,
     List,
+    Literal,
     Mapping,
     Sequence,
     Set,
@@ -33,7 +33,16 @@ V2 = TypeVar("V2")
 R = TypeVar("R")
 
 
-__all__ = ["Query", "PairQuery", "IndexQuery", "ListEx", "DictEx", "SetEx"]
+__all__ = [
+    "Query",
+    "PairQuery",
+    "IndexQuery",
+    "ListEx",
+    "DictEx",
+    "SetEx",
+    "query",
+    "undefined",
+]
 
 
 def lazy_iterate(func):
@@ -52,27 +61,35 @@ def lazy_reference(func):
     return wrapper
 
 
-class Query(Generic[T]):
-    pass
+class Query(Generic[T], Iterable[T]):
+    def to_list(self) -> "ListEx[T]":
+        pass
+
+    def to_dict(self) -> "DictEx[Any, Any]":
+        pass
 
 
-class PairQuery(Generic[K, V]):
-    pass
+class PairQuery(Generic[K, V], Iterable[Tuple[K, V]]):
+    def to_list(self) -> "ListEx[Tuple[K, V]]":
+        pass
+
+    def to_dict(self) -> "DictEx[K, V]":
+        pass
 
 
 class IndexQuery(Generic[K, V]):
     pass
 
 
-class ListEx(Generic[T]):
+class ListEx(Generic[T], Sequence[T]):
     pass
 
 
-class DictEx(Generic[K, V]):
+class DictEx(Generic[K, V], Mapping[K, V]):
     pass
 
 
-class SetEx(Generic[K, V]):
+class SetEx(Generic[T], Iterable[T]):
     pass
 
 
@@ -261,12 +278,36 @@ class Query(Generic[T]):
         except NoElementError:
             return default
 
+    @overload
+    def cast(self, type: Type[Tuple[K2, V2]]) -> PairQuery[K2, V2]:
+        pass
+
+    @overload
+    def cast(self, type: Type[R]) -> Query[R]:
+        pass
+
+    @overload
+    def cast(self, type: Callable[[T], Tuple[K2, V2]]) -> PairQuery[K2, V2]:
+        pass
+
+    @overload
+    def cast(self, type: Callable[[T], R]) -> Query[R]:
+        pass
+
     def cast(self, type: Type[R]) -> Query[R]:
         return self
 
     @lazy_iterate
     def enumerate(self, start: int = 0) -> PairQuery[int, T]:
         yield from enumerate(self, start)
+
+    @overload
+    def map(self, type: Callable[[T], Tuple[K2, V2]]) -> PairQuery[K2, V2]:
+        pass
+
+    @overload
+    def map(self, type: Callable[[T], R]) -> Query[R]:
+        pass
 
     @lazy_iterate
     def map(self, selector: Callable[[T], R]) -> Query[R]:
@@ -278,17 +319,48 @@ class Query(Generic[T]):
     def pairs(self, selector: Callable[[T], Tuple[K, V]]) -> PairQuery[K2, V2]:
         yield from map(selector, self)
 
-    @lazy_iterate
+    @overload
     def select(self, item) -> "Query[Any]":
-        yield from map(lambda x: x[item], self)
+        ...
+
+    @overload
+    def select(self, item, *items) -> "Query[Tuple]":
+        ...
 
     @lazy_iterate
-    def select_item(self, item) -> "Query[Any]":
-        yield from map(lambda x: x[item], self)
+    def select(self, *items) -> "Query[Any]":
+        selector = itemgetter(*items)
+        yield from map(lambda x: selector(x), self)
 
-    @lazy_iterate
+    select_item = select
+
+    @overload
     def select_attr(self, attr: str) -> "Query[Any]":
-        yield from map(lambda x: getattr(x, attr), self)
+        ...
+
+    @overload
+    def select_attr(self, attr: str, *attrs: str) -> "Query[Tuple]":
+        ...
+
+    @lazy_iterate
+    def select_attr(self, *attrs: str) -> "Query[Any]":
+        selector = attrgetter(*attrs)
+        yield from map(lambda x: selector(x), self)
+
+    def select_items(self, *items) -> "Query[Tuple]":
+        if len(items) == 0:
+            selector = lambda x: tuple()  # type: ignore
+        elif len(items) == 1:
+            # itemgetter/getattrは引数が１の時、タプルでなくそのセレクトされた値を直接返のでタプルで返すようにする
+            name = items[0]
+            selector = lambda x: (x[name],)
+        else:
+            selector = itemgetter(*items)
+
+        def pmap(self, selector):
+            yield from map(selector, self)
+
+        return LazyIterate(pmap, self, selector)
 
     def select_attrs(self, *attrs: Any) -> "Query[Tuple]":
         if len(attrs) == 0:
@@ -299,21 +371,6 @@ class Query(Generic[T]):
             selector = lambda x: (getattr(x, name),)
         else:
             selector = attrgetter(*attrs)
-
-        def pmap(self, selector):
-            yield from map(selector, self)
-
-        return LazyIterate(pmap, self, selector)
-
-    def select_items(self, *items: str) -> "Query[Tuple]":
-        if len(items) == 0:
-            selector = lambda x: tuple()  # type: ignore
-        elif len(items) == 1:
-            # itemgetter/getattrは引数が１の時、タプルでなくそのセレクトされた値を直接返のでタプルで返すようにする
-            name = items[0]
-            selector = lambda x: (x[name],)
-        else:
-            selector = itemgetter(*items)
 
         def pmap(self, selector):
             yield from map(selector, self)
@@ -354,6 +411,19 @@ class Query(Generic[T]):
         pass
 
     @lazy_iterate
+    def distinct(self, selector: Callable[[T], Any], msg: str = ...) -> Query[T]:
+        duplicate = set()
+        for elm in self:
+            value = selector(elm)
+            if not value in duplicate:
+                duplicate.add(value)
+                yield elm
+
+    @lazy_iterate
+    def zip(self):
+        raise NotImplementedError()
+
+    @lazy_iterate
     def filter(self, predicate: Callable[[T], bool]) -> Query[T]:
         yield from filter(predicate, self)  # type: ignore
 
@@ -377,13 +447,20 @@ class Query(Generic[T]):
             yield elm
 
     @lazy_iterate
-    def unique(self, selector: Callable[[T], Any], msg: str = ...) -> Query[T]:
-        duplicate = set()
-        for elm in self:
-            value = selector(elm)
-            if not value in duplicate:
-                duplicate.add(value)
-                yield elm
+    def must_unique(self, selector: Callable[[T], R]):
+        seen = set()
+        duplicated = []
+        for elm in source:
+            if selector(elm) in seen:
+                duplicated.append(elm)
+            else:
+                seen.add(selector(elm))
+
+        if duplicated:
+            raise ValueError(f"Duplicated elements: {duplicated}")
+
+        for elm in source:
+            yield elm
 
     @lazy_iterate
     def skip(self, count: int) -> Query[T]:
@@ -440,14 +517,7 @@ class Query(Generic[T]):
 
     @lazy_reference
     def page(self, page: int = ..., size: int = ...) -> Query[T]:
-        def _page_calc(page: int, size: int):
-            if size < 0:
-                raise ValueError("size must be >= 0")
-            start = (page - 1) * size
-            stop = start + size
-            return start, stop
-
-        start, stop = _page_calc(page, size)
+        start, stop = page_calc(page, size)
         yield from self.range(start, stop)
 
     @lazy_reference
@@ -677,12 +747,36 @@ class PairQuery(Generic[K, V]):
         except NoElementError:
             return default
 
+    @overload
+    def cast(self, type: Type[Tuple[K2, V2]]) -> PairQuery[K2, V2]:
+        pass
+
+    @overload
+    def cast(self, type: Type[R]) -> Query[R]:
+        pass
+
+    @overload
+    def cast(self, type: Callable[[Tuple[K, V]], Tuple[K2, V2]]) -> PairQuery[K2, V2]:
+        pass
+
+    @overload
+    def cast(self, type: Callable[[Tuple[K, V]], R]) -> Query[R]:
+        pass
+
     def cast(self, type: Type[R]) -> Query[R]:
         return self
 
     @lazy_iterate
     def enumerate(self, start: int = 0) -> PairQuery[int, Tuple[K, V]]:
         yield from enumerate(self, start)
+
+    @overload
+    def map(self, type: Callable[[Tuple[K, V]], Tuple[K2, V2]]) -> PairQuery[K2, V2]:
+        pass
+
+    @overload
+    def map(self, type: Callable[[Tuple[K, V]], R]) -> Query[R]:
+        pass
 
     @lazy_iterate
     def map(self, selector: Callable[[Tuple[K, V]], R]) -> Query[R]:
@@ -696,17 +790,56 @@ class PairQuery(Generic[K, V]):
     ) -> PairQuery[K2, V2]:
         yield from map(selector, self)
 
-    @lazy_iterate
+    @overload
+    def select(self, item: Literal[0]) -> "Query[K]":
+        ...
+
+    @overload
+    def select(self, item: Literal[1]) -> "Query[V]":
+        ...
+
+    @overload
     def select(self, item) -> "Query[Any]":
-        yield from map(lambda x: x[item], self)
+        ...
+
+    @overload
+    def select(self, item, *items) -> "Query[Tuple]":
+        ...
 
     @lazy_iterate
-    def select_item(self, item) -> "Query[Any]":
-        yield from map(lambda x: x[item], self)
+    def select(self, *items) -> "Query[Any]":
+        selector = itemgetter(*items)
+        yield from map(lambda x: selector(x), self)
 
-    @lazy_iterate
+    select_item = select
+
+    @overload
     def select_attr(self, attr: str) -> "Query[Any]":
-        yield from map(lambda x: getattr(x, attr), self)
+        ...
+
+    @overload
+    def select_attr(self, attr: str, *attrs: str) -> "Query[Tuple]":
+        ...
+
+    @lazy_iterate
+    def select_attr(self, *attrs: str) -> "Query[Any]":
+        selector = attrgetter(*attrs)
+        yield from map(lambda x: selector(x), self)
+
+    def select_items(self, *items) -> "Query[Tuple]":
+        if len(items) == 0:
+            selector = lambda x: tuple()  # type: ignore
+        elif len(items) == 1:
+            # itemgetter/getattrは引数が１の時、タプルでなくそのセレクトされた値を直接返のでタプルで返すようにする
+            name = items[0]
+            selector = lambda x: (x[name],)
+        else:
+            selector = itemgetter(*items)
+
+        def pmap(self, selector):
+            yield from map(selector, self)
+
+        return LazyIterate(pmap, self, selector)
 
     def select_attrs(self, *attrs: Any) -> "Query[Tuple]":
         if len(attrs) == 0:
@@ -717,21 +850,6 @@ class PairQuery(Generic[K, V]):
             selector = lambda x: (getattr(x, name),)
         else:
             selector = attrgetter(*attrs)
-
-        def pmap(self, selector):
-            yield from map(selector, self)
-
-        return LazyIterate(pmap, self, selector)
-
-    def select_items(self, *items: str) -> "Query[Tuple]":
-        if len(items) == 0:
-            selector = lambda x: tuple()  # type: ignore
-        elif len(items) == 1:
-            # itemgetter/getattrは引数が１の時、タプルでなくそのセレクトされた値を直接返のでタプルで返すようにする
-            name = items[0]
-            selector = lambda x: (x[name],)
-        else:
-            selector = itemgetter(*items)
 
         def pmap(self, selector):
             yield from map(selector, self)
@@ -772,6 +890,21 @@ class PairQuery(Generic[K, V]):
         pass
 
     @lazy_iterate
+    def distinct(
+        self, selector: Callable[[Tuple[K, V]], Any], msg: str = ...
+    ) -> PairQuery[K, V]:
+        duplicate = set()
+        for elm in self:
+            value = selector(elm)
+            if not value in duplicate:
+                duplicate.add(value)
+                yield elm
+
+    @lazy_iterate
+    def zip(self):
+        raise NotImplementedError()
+
+    @lazy_iterate
     def filter(self, predicate: Callable[[Tuple[K, V]], bool]) -> PairQuery[K, V]:
         yield from filter(predicate, self)  # type: ignore
 
@@ -797,15 +930,20 @@ class PairQuery(Generic[K, V]):
             yield elm
 
     @lazy_iterate
-    def unique(
-        self, selector: Callable[[Tuple[K, V]], Any], msg: str = ...
-    ) -> PairQuery[K, V]:
-        duplicate = set()
-        for elm in self:
-            value = selector(elm)
-            if not value in duplicate:
-                duplicate.add(value)
-                yield elm
+    def must_unique(self, selector: Callable[[T], R]):
+        seen = set()
+        duplicated = []
+        for elm in source:
+            if selector(elm) in seen:
+                duplicated.append(elm)
+            else:
+                seen.add(selector(elm))
+
+        if duplicated:
+            raise ValueError(f"Duplicated elements: {duplicated}")
+
+        for elm in source:
+            yield elm
 
     @lazy_iterate
     def skip(self, count: int) -> PairQuery[K, V]:
@@ -862,14 +1000,7 @@ class PairQuery(Generic[K, V]):
 
     @lazy_reference
     def page(self, page: int = ..., size: int = ...) -> PairQuery[K, V]:
-        def _page_calc(page: int, size: int):
-            if size < 0:
-                raise ValueError("size must be >= 0")
-            start = (page - 1) * size
-            stop = start + size
-            return start, stop
-
-        start, stop = _page_calc(page, size)
+        start, stop = page_calc(page, size)
         yield from self.range(start, stop)
 
     @lazy_reference
@@ -944,6 +1075,12 @@ class IndexQuery(Generic[K, V]):
 
     def get_or_none(self, key):
         return self.get(key, None)  # type: ignore
+
+    def to_list(self) -> ListEx[Tuple[K, V]]:
+        return ListEx(piter(self))
+
+    def to_dict(self) -> DictEx[K, V]:
+        return DictEx(piter(self))
 
 
 # 継承時は右側に基底クラスを指定し、左へ上書きしていくイメージ
@@ -1029,3 +1166,31 @@ def query(source: T) -> T:
         return ListEx(source)
     else:
         raise Exception()
+
+
+def repeat(func, *args, **kwargs):
+    def iterate():
+        while True:
+            yield func(*args, **kwargs)
+
+    return LazyIterate(iterate())
+
+
+def count(start=0, step=1):
+    from itertools import count
+
+    return LazyIterate(count(start, step))
+
+
+def cycle(iterable, repeat=None):
+    from itertools import cycle
+
+    return LazyIterate(cycle(iterable))
+
+
+def page_calc(page: int, size: int):
+    if size < 0:
+        raise ValueError("size must be >= 0")
+    start = (page - 1) * size
+    stop = start + size
+    return start, stop

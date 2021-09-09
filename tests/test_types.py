@@ -1,6 +1,7 @@
+from typing import Iterable, Mapping, Tuple
+
 import pytest
 
-from pnq import QuerableDict
 from pnq.exceptions import NoElementError, NotOneError
 from pnq.types import DictEx, IndexQuery, ListEx, PairQuery, Query, SetEx, query
 
@@ -167,27 +168,27 @@ class TestSlicer:
         assert q.range(6, 7).to_list() == []
 
     def test_page(self):
-        from pnq import Query
+        from pnq.types import page_calc
 
         with pytest.raises(ValueError):
-            Query._page_calc(0, -1)
+            page_calc(0, -1)
 
-        assert Query._page_calc(-1, 0) == (0, 0)
+        assert page_calc(-1, 0) == (0, 0)
 
-        assert Query._page_calc(0, 0) == (0, 0)
-        assert Query._page_calc(1, 0) == (0, 0)
-        assert Query._page_calc(2, 0) == (0, 0)
-        assert Query._page_calc(3, 0) == (0, 0)
+        assert page_calc(0, 0) == (0, 0)
+        assert page_calc(1, 0) == (0, 0)
+        assert page_calc(2, 0) == (0, 0)
+        assert page_calc(3, 0) == (0, 0)
 
-        assert Query._page_calc(0, 1) == (-1, 0)
-        assert Query._page_calc(1, 1) == (0, 1)
-        assert Query._page_calc(2, 1) == (1, 2)
-        assert Query._page_calc(3, 1) == (2, 3)
+        assert page_calc(0, 1) == (-1, 0)
+        assert page_calc(1, 1) == (0, 1)
+        assert page_calc(2, 1) == (1, 2)
+        assert page_calc(3, 1) == (2, 3)
 
-        assert Query._page_calc(0, 2) == (-2, 0)
-        assert Query._page_calc(1, 2) == (0, 2)
-        assert Query._page_calc(2, 2) == (2, 4)
-        assert Query._page_calc(3, 2) == (4, 6)
+        assert page_calc(0, 2) == (-2, 0)
+        assert page_calc(1, 2) == (0, 2)
+        assert page_calc(2, 2) == (2, 4)
+        assert page_calc(3, 2) == (4, 6)
 
         arr = [1, 2, 3, 4, 5, 6]
 

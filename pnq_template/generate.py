@@ -2,10 +2,13 @@ from jinja2 import Environment, FileSystemLoader
 
 
 class Info:
-    def __init__(self, name, *typevars: str, is_index: bool = False):
+    def __init__(
+        self, name, *typevars: str, is_index: bool = False, is_pair: bool = False
+    ):
         self.name = name
         self.typevars = typevars
         self.is_index = is_index
+        self.is_pair = is_pair
 
     def get_typevars(self):
         typevars = ",".join(self.typevars)
@@ -82,9 +85,21 @@ class Info:
             return "lambda x: x"
 
 
+"""
+templateで利用するプロパティは次のような文字が返る
+query.cls = "PairQuery(Generic[K, V])"
+query.str = "PairQuery[K, V]"
+query.name = "PairQuery"
+query.selector = "lambda k, v: (k, v)"
+query.row = "Tuple[K, V]"
+query.K = "K"
+query.V = "K, V"
+"""
+
+
 Query = Info("Query", "T")
-PairQuery = Info("PairQuery", "K", "V")
-IndexQuery = Info("IndexQuery", "K", "V", is_index=True)
+PairQuery = Info("PairQuery", "K", "V", is_pair=True)
+IndexQuery = Info("IndexQuery", "K", "V", is_index=True, is_pair=True)
 
 
 data = {
