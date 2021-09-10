@@ -1,5 +1,5 @@
 # pnq
-pnq is a Python implementation like Language Integrated Query (LINQ).
+PNQ is a Python implementation like Language Integrated Query (LINQ).
 
 # Requirement
 
@@ -8,6 +8,7 @@ pnq is a Python implementation like Language Integrated Query (LINQ).
 # Installation
 
 ``` shell
+pip install pnq
 ```
 
 # Getting started

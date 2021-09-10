@@ -20,6 +20,7 @@ from typing import (
     overload,
 )
 
+from . import actions
 from .core import LazyIterate as _LazyIterate
 from .core import LazyReference as _LazyReference
 from .core import piter, undefined
@@ -298,8 +299,8 @@ class Query(Generic[T]):
         return self
 
     @lazy_iterate
-    def enumerate(self, start: int = 0) -> PairQuery[int, T]:
-        yield from enumerate(self, start)
+    def enumerate(self, start: int = 0, step: int = 1) -> PairQuery[int, T]:
+        yield from (x * step for x in enumerate(self, start))
 
     @overload
     def map(self, type: Callable[[T], Tuple[K2, V2]]) -> PairQuery[K2, V2]:
@@ -313,10 +314,6 @@ class Query(Generic[T]):
     def map(self, selector: Callable[[T], R]) -> Query[R]:
         if selector is str:
             selector = lambda x: "" if x is None else str(x)
-        yield from map(selector, self)
-
-    @lazy_iterate
-    def pairs(self, selector: Callable[[T], Tuple[K, V]]) -> PairQuery[K2, V2]:
         yield from map(selector, self)
 
     @overload
@@ -522,13 +519,7 @@ class Query(Generic[T]):
 
     @lazy_reference
     def reverse(self) -> Query[T]:
-        if hasattr(self, "__reversed__"):
-            if isinstance(self, Mapping):
-                yield from ((k, self[k]) for k in self.__reversed__())
-            else:
-                yield from self.__reversed__()
-        else:
-            yield from list(piter(self)).__reversed__()
+        yield actions.reverse(self)
 
     @lazy_iterate
     def order(self, selector, desc: bool = False) -> Query[T]:
@@ -557,6 +548,35 @@ class Query(Generic[T]):
         for elm in self:
             yield elm
             await sleep(seconds)
+
+    class SyncAsync:
+        def __init__(self, sync_func, async_func, *args, **kwargs) -> None:
+            self.sync_func = sync_func
+            self.async_func = async_func
+            self.args = args
+            self.kwargs = kwargs
+
+        def __iter__(self):
+            return self.async_func(*self.args, **self.kwargs)
+
+        def __aiter__(self):
+            return self.async_func(*self.args, **self.kwargs)
+
+    def sleep2(self, seconds: float):
+        from asyncio import sleep as asleep
+        from time import sleep
+
+        def sleep_sync(self, seconds):
+            for elm in self:
+                yield elm
+                sleep(seconds)
+
+        async def sleep_async(self, seconds):
+            for elm in self:
+                yield elm
+                await sleep(seconds)
+
+        return sleep_sync, sleep_async, seconds
 
 
 class PairQuery(Generic[K, V]):
@@ -767,8 +787,8 @@ class PairQuery(Generic[K, V]):
         return self
 
     @lazy_iterate
-    def enumerate(self, start: int = 0) -> PairQuery[int, Tuple[K, V]]:
-        yield from enumerate(self, start)
+    def enumerate(self, start: int = 0, step: int = 1) -> PairQuery[int, Tuple[K, V]]:
+        yield from (x * step for x in enumerate(self, start))
 
     @overload
     def map(self, type: Callable[[Tuple[K, V]], Tuple[K2, V2]]) -> PairQuery[K2, V2]:
@@ -782,12 +802,6 @@ class PairQuery(Generic[K, V]):
     def map(self, selector: Callable[[Tuple[K, V]], R]) -> Query[R]:
         if selector is str:
             selector = lambda x: "" if x is None else str(x)
-        yield from map(selector, self)
-
-    @lazy_iterate
-    def pairs(
-        self, selector: Callable[[Tuple[K, V]], Tuple[K, V]]
-    ) -> PairQuery[K2, V2]:
         yield from map(selector, self)
 
     @overload
@@ -1005,13 +1019,7 @@ class PairQuery(Generic[K, V]):
 
     @lazy_reference
     def reverse(self) -> PairQuery[K, V]:
-        if hasattr(self, "__reversed__"):
-            if isinstance(self, Mapping):
-                yield from ((k, self[k]) for k in self.__reversed__())
-            else:
-                yield from self.__reversed__()
-        else:
-            yield from list(piter(self)).__reversed__()
+        yield actions.reverse(self)
 
     @lazy_iterate
     def order(self, selector, desc: bool = False) -> PairQuery[K, V]:
@@ -1042,6 +1050,35 @@ class PairQuery(Generic[K, V]):
         for elm in self:
             yield elm
             await sleep(seconds)
+
+    class SyncAsync:
+        def __init__(self, sync_func, async_func, *args, **kwargs) -> None:
+            self.sync_func = sync_func
+            self.async_func = async_func
+            self.args = args
+            self.kwargs = kwargs
+
+        def __iter__(self):
+            return self.async_func(*self.args, **self.kwargs)
+
+        def __aiter__(self):
+            return self.async_func(*self.args, **self.kwargs)
+
+    def sleep2(self, seconds: float):
+        from asyncio import sleep as asleep
+        from time import sleep
+
+        def sleep_sync(self, seconds):
+            for elm in self:
+                yield elm
+                sleep(seconds)
+
+        async def sleep_async(self, seconds):
+            for elm in self:
+                yield elm
+                await sleep(seconds)
+
+        return sleep_sync, sleep_async, seconds
 
 
 class IndexQuery(Generic[K, V]):
@@ -1102,22 +1139,26 @@ class LazyReference(Lazy, IndexQuery[int, T], Query[T], _LazyReference):
     pass
 
 
-class ListEx(IndexQuery[int, T], Query[T], List[T]):
+class Instance:
+    def len(self) -> int:
+        return len(self)
+
+    def exists(self) -> bool:
+        return len(self) > 0
+
+
+class ListEx(Instance, IndexQuery[int, T], Query[T], List[T]):
     def __piter__(self):
         return self.__iter__()
 
-    @property
-    def source(self):
-        return self
+    @lazy_reference
+    def reverse(self) -> "Query[T]":
+        yield from reversed(self)
 
 
-class DictEx(IndexQuery[K, V], PairQuery[K, V], Dict[K, V]):
+class DictEx(Instance, IndexQuery[K, V], PairQuery[K, V], Dict[K, V]):
     def __piter__(self):
         return self.items().__iter__()
-
-    @property
-    def source(self):
-        return self
 
     @lazy_reference
     def keys(self):
@@ -1131,20 +1172,25 @@ class DictEx(IndexQuery[K, V], PairQuery[K, V], Dict[K, V]):
     def items(self):
         yield from super().items()
 
+    @lazy_reference
+    def reverse(self) -> "PairQuery[K, V]":
+        for key in reversed(self):
+            yield key, self[key]
 
-class SetEx(IndexQuery[T, T], Query[T], Set[T]):
+
+class SetEx(Instance, IndexQuery[T, T], Query[T], Set[T]):
     def __piter__(self):
         return self.__iter__()
-
-    @property
-    def source(self):
-        return self
 
     def __getitem__(self, key: T):
         if key in self:
             return key
         else:
             raise KeyError(key)
+
+    @lazy_reference
+    def reverse(self) -> "Query[T]":
+        yield from reversed(self)
 
 
 @overload

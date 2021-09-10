@@ -13,3 +13,7 @@ class NoElementError(QueryException):
 
 class NotOneError(QueryException):
     pass
+
+
+class DuplicateError(QueryException):
+    pass

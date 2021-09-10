@@ -1,30 +1,18 @@
-site_name: HTTPX
-site_description: A next-generation HTTP client for Python.
-site_url: https://www.python-httpx.org/
+site_name: PNQ
+site_description: PNQ is a Python implementation like Language Integrated Query (LINQ).
+site_url: https://github.com/sasano8/pnq/
 
 theme:
   name: "material"
   language: "ja"
 
-repo_name: encode/httpx
-repo_url: https://github.com/encode/httpx/
+repo_name: sasano8/pnq
+repo_url: https://github.com/sasano8/pnq
 edit_uri: ""
 
 nav:
   - はじめに: "index.md"
-  - QuickStart: "quickstart.md"
-  - Advanced Usage: "advanced.md"
-  - Async Support: "async.md"
-  - HTTP/2 Support: "http2.md"
-  - Environment Variables: "environment_variables.md"
-  - Requests Compatibility: "compatibility.md"
-  - Developer Interface: "api.md"
-  - Exceptions: "exceptions.md"
-  - Troubleshooting: "troubleshooting.md"
-  - Third Party Packages: "third_party_packages.md"
-  - Contributing: "contributing.md"
-  - Code of Conduct: "code_of_conduct.md"
-
+  - インターフェース: "api.md"
 markdown_extensions:
   - admonition
   - codehilite:
@@ -43,6 +31,5 @@ extra_css:
 extra_javascript:
   - https://unpkg.com/mermaid@8.0.0/dist/mermaid.min.js
   # - https://unpkg.com/browse/mermaid@8.8.0/dist/mermaid.min.js
-
-  - "js/chat.js"
-  - "js/sidecar-1.5.0.js"
+  # - "js/chat.js"
+  # - "js/sidecar-1.5.0.js"
