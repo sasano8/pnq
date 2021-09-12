@@ -19,6 +19,8 @@ PNQ
 
 PNQ is a Python implementation like Language Integrated Query (LINQ).
 
+https://pypi.org/project/pnq/
+
 !!! danger
     PNQはベータ版です。
 
