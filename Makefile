@@ -18,6 +18,10 @@ test: generate
 
 doc-build:
 	@poetry run mkdocs build
+	@cat docs/index.md > README.md
+	@echo "" >> README.md
+	@echo "" >> README.md
+	@cat CHANGELOG.md >> README.md
 
 doc-serve: doc-build
 	# @poetry run mkdocs build

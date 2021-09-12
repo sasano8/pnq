@@ -1,11 +1,10 @@
 [tool.poetry]
 name = "pnq"
-version = "0.0.6"
+version = "0.0.7"
 description = ""
 authors = ["sasano8 <y-sasahara@ys-method.com>"]
 license = "MIT"
 readme = "README.md"
-include = ["CHANGELOG.md"]
 # repository = "https://github.com/sasano8/asy"
 
 [tool.poetry.dependencies]

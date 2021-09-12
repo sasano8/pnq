@@ -53,7 +53,7 @@ Install with pip:
 $ pip install pnq
 ```
 
-# Getting Started
+## Getting Started
 
 ```python
 import pnq
