@@ -7,7 +7,7 @@ PNQ
 <div align="center">
 <p>
 <a href="https://github.com/sasano8/pnq/actions">
-    <img src="https://github.com/sasano8/pnq/workflows/Test%20Suite/badge.svg" alt="Test Suite">
+    <img src="https://github.com/sasano8/pnq/actions/workflows/test.yml/badge.svg" alt="Test Suite">
 </a>
 <a href="https://pypi.org/project/pnq/">
     <img src="https://badge.fury.io/py/pnq.svg" alt="Package version">
@@ -19,11 +19,11 @@ PNQ
 
 PNQ is a Python implementation like Language Integrated Query (LINQ).
 
-
-!!! note
+!!! danger
     PNQはベータ版です。
 
-    PNQは鋭意開発中でAPIが頻繁に変更される恐れがあるため、本番環境では利用しないでください。
+    - 現在、ドキュメントとAPIが一致していません。
+    - PNQは鋭意開発中でAPIが頻繁に変更される恐れがあるため、本番環境では利用しないでください。
 
 ---
 
@@ -41,7 +41,7 @@ PNQ is a Python implementation like Language Integrated Query (LINQ).
 
 ## Dependencies
 
-- `pnq`
+- Python 3.7+
 
 ## Installation
 

@@ -144,7 +144,7 @@ class {{query.cls}}:
     def to_list(self) -> {{query.to_list}}:
         return ListEx(piter(self))
     def to_dict(self, duplicate: bool=...) -> {{query.to_dict}}:
-        return DictEx(self)
+        return DictEx(piter(self))
 
     @overload
     def one(self) -> {{query.row}}: ...

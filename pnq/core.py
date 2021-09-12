@@ -1,5 +1,5 @@
 import inspect
-from typing import Iterable, Mapping, TypeVar, no_type_check
+from typing import Iterable, List, Mapping, Set, Tuple, TypeVar, no_type_check
 
 undefined = object()
 
@@ -102,3 +102,21 @@ class LazyReference(QueryBase):
 class LazyQuery(QueryBase):
     def __init__(self, source):
         super().__init__(piter, source)
+
+
+class Argument:
+    def __init__(self, *args, **kwargs):
+        self.args = args
+        self.kwargs = kwargs
+
+    @staticmethod
+    def from_value(value):
+        if isinstance(value, dict):
+            return Argument(**value)
+        elif isinstance(value, tuple):
+            return Argument(*value)
+        else:
+            return Argument(value)
+
+    def push(self, func):
+        return func(*self.args, **self.kwargs)

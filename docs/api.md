@@ -13,6 +13,9 @@
 ::: pnq.actions.repeat
     :docstring:
 
+::: pnq.actions.value
+    :docstring:
+
 ::: pnq.actions.count
     :docstring:
 
@@ -69,21 +72,15 @@
 ::: pnq.actions.join
     :docstring:
 
+::: pnq.actions.request
+    :docstring:
+
 ## Filtering
 
 ::: pnq.actions.filter
     :docstring:
 
-::: pnq.actions.filter_type
-    :docstring:
-
-::: pnq.actions.filter_unique
-    :docstring:
-
-::: pnq.actions.filter_items
-    :docstring:
-
-::: pnq.actions.filter_attrs
+::: pnq.actions.unique
     :docstring:
 
 ## Validating
@@ -91,23 +88,63 @@
 ::: pnq.actions.must
     :docstring:
 
-::: pnq.actions.must_type
-    :docstring:
-
 ::: pnq.actions.must_unique
-    :docstring:
-
-::: pnq.actions.must_items
-    :docstring:
-
-::: pnq.actions.must_attrs
     :docstring:
 
 ## Sorting
 
+::: pnq.actions.reverse
+    :docstring:
+
+::: pnq.actions.order
+    :docstring:
+
+::: pnq.actions.order_by
+    :docstring:
+
+::: pnq.actions.shuffle
+    :docstring:
+
+
 ## Partitoning
 
+::: pnq.actions.take
+    :docstring:
+
+::: pnq.actions.take_while
+    :docstring:
+
+::: pnq.actions.skip
+    :docstring:
+
+::: pnq.actions.skip_while
+    :docstring:
+
+::: pnq.actions.from_to
+    :docstring:
+
+::: pnq.actions.page
+    :docstring:
+
 ## Aggregating
+
+::: pnq.actions.all
+    :docstring:
+
+::: pnq.actions.any
+    :docstring:
+
+::: pnq.actions.min
+    :docstring:
+
+::: pnq.actions.max
+    :docstring:
+
+::: pnq.actions.sum
+    :docstring:
+
+::: pnq.actions.average
+    :docstring:
 
 ## Expanding
 
@@ -134,5 +171,3 @@
 ::: pnq.actions.dispatch
     :docstring:
 
-::: pnq.actions.exec
-    :docstring:

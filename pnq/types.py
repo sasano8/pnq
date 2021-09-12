@@ -170,7 +170,7 @@ class Query(Generic[T]):
         return ListEx(piter(self))
 
     def to_dict(self, duplicate: bool = ...) -> DictEx[Any, Any]:
-        return DictEx(self)
+        return DictEx(piter(self))
 
     @overload
     def one(self) -> T:
@@ -658,7 +658,7 @@ class PairQuery(Generic[K, V]):
         return ListEx(piter(self))
 
     def to_dict(self, duplicate: bool = ...) -> DictEx[K, V]:
-        return DictEx(self)
+        return DictEx(piter(self))
 
     @overload
     def one(self) -> Tuple[K, V]:

@@ -1,4 +1,4 @@
-from typing import Mapping
+from typing import Literal, Mapping
 
 from .exceptions import DuplicateError
 
@@ -52,6 +52,45 @@ def iter(self):
             yield from iter(self.items())
         else:
             yield from iter(self)
+
+
+@mark
+def value(*args, **kwargs):
+    """１つの要素を返すイテレータを生成します。
+
+    Parameters:
+
+    * value: 返す値
+
+    Returns: 取得したイテレータを内包するクエリ
+
+    Usage:
+    ```
+    >>> pnq.value(1).to_list()
+    [1]
+    >>> pnq.value(name="test").to_list()
+    [{"naem": "test"}]
+    ```
+    """
+    if args and kwargs:
+        raise ValueError("value() can't accept both positional and keyword arguments")
+
+    if kwargs:
+        val = kwargs
+
+    elif len(args) > 1:
+        val = args
+
+    elif len(args) == 1:
+        val = args[0]
+
+    elif len(args) == 0:
+        val = None
+
+    else:
+        raise NotImplementedError()
+
+    yield val
 
 
 @mark
@@ -217,7 +256,7 @@ def unpack_pos(self, selector):
     * self: 変換対象のシーケンス
     * selector(*args): 各要素に対する変換関数
 
-    Returns: 変換関数で得られた要素を含むクエリ
+    Returns: 変換関数で得られた要素を返すクエリ
 
     Usage:
     ```
@@ -239,7 +278,7 @@ def unpack_kw(self, selector):
     * self: 変換対象のシーケンス
     * selector(kwargs): 各要素に対する変換関数
 
-    Returns: 変換関数で得られた要素を含むクエリ
+    Returns: 変換関数で得られた要素を返すクエリ
 
     Usage:
     ```
@@ -264,7 +303,7 @@ def select(self, item, *items):
     * item: 各要素から選択するアイテム
     * items: 各要素から選択するアイテム
 
-    Returns: 選択したアイテムまたは複数のアイテム（タプル）を含むクエリ
+    Returns: 選択したアイテムまたは複数のアイテム（タプル）を返すクエリ
 
     Usage:
     ```
@@ -272,6 +311,7 @@ def select(self, item, *items):
     [1]
     >>> pnq.query([{"id": 1, "name": "a"}]).select("id", "name").to_list()
     [(1, "a")]
+    >>> id, name = pnq.query([{"id": 1, "name": "a"}]).select("id", "name")
     ```
     """
     pass
@@ -287,7 +327,7 @@ def select_as_dict(self, *fields, attr: bool = False):
     * fields: 選択するアイテムまたは属性
     * attr: 属性から取得する場合はTrueとする
 
-    Returns: 選択したアイテムを含む辞書を含むクエリ
+    Returns: 選択したアイテムを含む辞書を返すクエリ
 
     Usage:
     ```
@@ -322,7 +362,7 @@ def select_attr(self, attr, *attrs):
     * attr: 各要素から選択する属性
     * attrs: 各要素から選択する属性
 
-    Returns: 選択した属性または複数の属性（タプル）を含むクエリ
+    Returns: 選択した属性または複数の属性（タプル）を返すクエリ
 
     Usage:
     ```
@@ -346,7 +386,7 @@ def select_items(self, *items):
     * self: 変換対象のシーケンス
     * items: 各要素から選択するアイテム
 
-    Returns: 複数のアイテム（タプル）を含むクエリ
+    Returns: 複数のアイテム（タプル）を返すクエリ
 
     Usage:
     ```
@@ -369,7 +409,7 @@ def select_attrs(self, *attrs):
     * self: 変換対象のシーケンス
     * attrs: 各要素から選択する属性
 
-    Returns: 複数の属性（タプル）を含むクエリ
+    Returns: 複数の属性（タプル）を返すクエリ
 
     Usage:
     ```
@@ -414,7 +454,7 @@ def enumerate(self, start: int = 0, step: int = 1):
     * start: 開始インデックス
     * step: 増分
 
-    Returns: インデックスと要素（タプル）を含むクエリ
+    Returns: インデックスと要素（タプル）を返すクエリ
 
     Usage:
     ```
@@ -439,7 +479,7 @@ def group_by(self, selector):
     * self: 変換対象のシーケンス
     * selector: キーとバリューを選択する関数
 
-    Returns: キーと要素（タプル）を含むクエリ
+    Returns: キーと要素（タプル）を返すクエリ
 
     Usage:
     ```
@@ -459,6 +499,51 @@ def group_by(self, selector):
 @mark
 def join(self, right, on, select):
     pass
+
+
+@mark
+def request(self, func, unpack: bool = True, timeout: float = None, retry: int = None):
+    """シーケンスから流れてくる値を関数に送出するように要求します。
+    例外はキャッチされ、実行結果を返すイテレータを生成します。
+    関数呼び出し時に要素がtupleまたはdictの場合、要素はデフォルトでアンパックされます。
+    関数に非同期関数も渡すことができます。
+
+    クエリの非同期実行についてを参照ください。
+
+    Parameters:
+
+    * self: フィルタ対象のシーケンス
+    * func: 値の送出先の関数
+    * unpack_kw: 値をアンパックする
+
+    Returns: 実行結果を含むタプル
+
+    Usage:
+    ```
+    >>> def do_something(id, val):
+    >>>   if val:
+    >>>     return 1
+    >>>   else:
+    >>>     raise ValueError(val)
+    >>>
+    >>> for elm, err, result, *_ in pnq.query([{"id": 1, "val": True}, {"id": 1, "val": False}]).request(do_something):
+    >>>   if not err:
+    >>>     print(elm, err, result)
+    True, None, 1
+    >>>   else:
+    >>>     print(elm, err, result)
+    False, ValueError("False"), None
+    ```
+    """
+    for elm in self:
+        err = None
+        result = None
+        try:
+            result = func(elm)
+        except Exception as err:  # noqa
+            pass
+
+        yield elm, err, result
 
 
 ###########################################
@@ -509,7 +594,7 @@ def filter(self, predicate):
     * self: フィルタ対象のシーケンス
     * predicate: 条件を満たすか検証する関数
 
-    Returns: 条件を満たす要素を含むクエリ
+    Returns: 条件を満たす要素を返すクエリ
 
     Usage:
     ```
@@ -532,7 +617,7 @@ def must(self, predicate):
     * self: フィルタ対象のシーケンス
     * predicate: 条件を満たすか検証する関数
 
-    Returns: 条件を満たす要素を含むクエリ
+    Returns: 全要素を返すクエリ（例外が発生しない限り）
 
     Usage:
     ```
@@ -550,6 +635,24 @@ def must(self, predicate):
 
 @mark
 def filter_type(self, *types):
+    """指定した型に一致するシーケンスの要素をフィルタ処理します。
+    型は複数指定することができ、`isinstance`の挙動に準じます。
+
+    Parameters:
+
+    * self: フィルタ対象のシーケンス
+    * types: フィルタする型
+
+    Returns: 指定した型の要素を返すクエリ
+
+    Usage:
+    ```
+    >>> pnq.query([1, False, "a"]).filter_type(int).to_list()
+    [1, False]
+    >>> pnq.query([1, False, "a"]).filter_type(str, bool).to_list()
+    [False, "a"]
+    ```
+    """
     for elm in self:
         if isinstance(elm, *types):
             yield elm
@@ -557,6 +660,23 @@ def filter_type(self, *types):
 
 @mark
 def must_type(self, *types):
+    """シーケンスの要素が指定した型のいずれかであるか検証します。
+    検証に失敗した場合、即時に例外が発生します。
+    型は複数指定することができ、`isinstance`の挙動に準じます。
+
+    Parameters:
+
+    * self: フィルタ対象のシーケンス
+    * types: フィルタする型
+
+    Returns: 全要素を返すクエリ（例外が発生しない限り）
+
+    Usage:
+    ```
+    >>> pnq.query([1, 2]).must_type(str, int).to_list()
+    raise ValueError("1 is not str")
+    ```
+    """
     for elm in self:
         if not isinstance(elm, *types):
             raise TypeError(f"{elm} is not {types}")
@@ -564,7 +684,25 @@ def must_type(self, *types):
 
 
 @mark
-def filter_unique(self, selector):
+def unique(self, selector):
+    """シーケンスの要素から重複する要素を除去する。
+    セレクタによって選択された値に対して重複が検証され、その値を返す。
+
+    Parameters:
+
+    * self: フィルタ対象のシーケンス
+    * selector: 重複を検証する値（複数の値を検証する場合はタプル）
+
+    Returns: 重複を含まない要素を返すクエリ
+
+    Usage:
+    ```
+    >>> pnq.query([1, 2, 1]).filter_unique().to_list()
+    [1, 2]
+    >>> pnq.query([(0 , 0 , 0), (0 , 1 , 1), (0 , 0 , 2)]).unique(lambda x: (x[0], x[1])).to_list()
+    [(0, 0), (0, 1)]
+    ```
+    """
     duplidate = set()
     for elm in self:
         value = selector(elm)
@@ -576,7 +714,24 @@ def filter_unique(self, selector):
 
 
 @mark
-def must_unique(self, selector):
+def must_unique(self, selector=lambda x: x, immediate: bool = True):
+    """シーケンスの要素から値を選択し、選択した値が重複していないか検証します。
+
+    Parameters:
+
+    * self: フィルタ対象のシーケンス
+    * selector: 検証する値を選択する関数
+    * immediate: 即時に例外を発生させる
+
+    Returns: 全要素を返すクエリ（例外が発生しない限り）
+
+    Usage:
+    ```
+    >>> pnq.query([1, 2, 1]).must_unique().to_list()
+    raise DuplicateError("1")
+    ```
+
+    """
     duplidate = set()
     for elm in self:
         value = selector(elm)
@@ -587,52 +742,116 @@ def must_unique(self, selector):
             yield elm
 
 
-@mark
-def filter_items(self, *items):
-    for elm in self:
-        if all(elm[x] for x in items):
-            yield elm
-
-
-@mark
-def must_items(self, *items):
-    for elm in self:
-        if all(elm[x] for x in items):
-            yield elm
-        else:
-            raise ValueError(elm)
-
-
-@mark
-def filter_attrs(self, *attrs):
-    for elm in self:
-        if all(getattr(elm, x) for x in attrs):
-            yield elm
-
-
-@mark
-def must_attrs(self, *attrs):
-    for elm in self:
-        if all(getattr(elm, x) for x in attrs):
-            yield elm
-        else:
-            raise ValueError(elm)
-
-
-@mark
-def get_many(self, *keys):
-    ...
-
-
 ###########################################
 # partitioning
 ###########################################
+
+
+@mark
+def take(self, count: int):
+    """シーケンスの先頭から、指定した要素数を返します。
+
+    Parameters:
+
+    * self: バイパス対象のシーケンス
+    * count: 取得する要素数
+
+    Returns: 取得された要素を返すクエリ
+
+    Usage:
+    ```
+    >>> pnq.query([1, 2, 3]).take(2).to_list()
+    [1, 2]
+    ```
+    """
+    pass
+
+
+@mark
+def take_while(self, predicate):
+    """シーケンスの先頭から、条件を満たしている間の要素を返します。
+
+    Parameters:
+
+    * self: バイパス対象のシーケンス
+    * predicate: 要素から条件を検証する関数
+
+    Returns: 取得された要素を返すクエリ
+
+    Usage:
+    ```
+    >>> pnq.query([1, 2, 3]).take_while(lambda  v: v < 3 ).to_list()
+    [1, 2]
+    ```
+    """
+    pass
+
+
+@mark
+def skip(self, count: int):
+    """シーケンス内の指定された数の要素をバイパスし、残りの要素を返します。
+
+    Parameters:
+
+    * self: バイパス対象のシーケンス
+    * predicate: バイパスする要素数
+
+    Returns: 取得された要素を返すクエリ
+
+    Usage:
+    ```
+    >>> pnq.query([1, 2, 3]).take_while(lambda  v: v < 3 ).to_list()
+    [1, 2]
+    ```
+    """
+    pass
+
+
+@mark
+def skip_while(self, predicate):
+    pass
+
+
+@mark
+def from_to(self, start: int, stop: int):
+    pass
+
+
+@mark
+def page(self, page: int, size: int):
+    pass
+
 
 ###########################################
 # aggregating
 ###########################################
 @mark
 def all(self):
+    pass
+
+
+@mark
+def any(self):
+    pass
+
+
+@mark
+def min(self):
+    pass
+
+
+@mark
+def max(self):
+    pass
+
+
+@mark
+def sum(self):
+    pass
+
+
+@mark
+def average(self):
     pass
 
 
@@ -644,20 +863,86 @@ def reverse(self):
     yield from reversed(list(iter(self)))
 
 
+@mark
+def order(self, selector, desc: bool = False):
+    yield from sorted(self, key=selector, reverse=desc)
+
+
+@mark
+def order_by(self, *fields, desc: bool = False, attr: bool = False):
+    selector = itemgetter(*items)
+    selector = attrgetter(*attrs)
+    return order(selector, desc)
+
+
+@mark
+def shuffle(self):
+    pass
+
+
 ###########################################
 # finalizer
 ###########################################
-@mark
-def dispatch(self, func):
-    for elm in self:
-        func(elm)
+
+
+def to_list(self):
+    return to(self, list)
+
+
+def to_dict(self):
+    return to(self, dict)
 
 
 @mark
-def exec(self, func, unpack_kw: bool = False):
-    """シーケンスから流れてくる値を関数に送出するように要求します。
-    例外はキャッチされ、実行結果を返すイテレータを生成します。
-    関数はイテレーションを要求されるまで実行されません。
+def to(self, finalizer):
+    """クエリを即時評価し、評価結果をファイナライザによって処理します。
+
+    Parameters:
+
+    * self: バイパス対象のシーケンス
+    * finalizer: イテレータを受け取るクラス・関数
+
+    Returns: ファイナライザが返す結果
+
+    Usage:
+    ```
+    >>> pnq.query([1, 2, 3]).to(list)
+    [1, 2]
+    >>> pnq.query({1: "a", 2: "b"}).to(dict)
+    {1: "a", 2: "b"}
+    ```
+    """
+    return finalizer(x for x in iter(self))
+
+
+@mark
+async def to_async(self, cls):
+    """クエリを即時評価し、評価結果をファイナライザによって処理します。
+    クエリが非同期処理を要求する場合のみ使用してください。
+
+    Parameters:
+
+    * self: バイパス対象のシーケンス
+    * finalizer: イテレータを受け取るクラス・関数
+
+    Returns: ファイナライザが返す結果
+
+    Usage:
+    ```
+    >>> await pnq.query([1, 2, 3]).to_async(list)
+    [1, 2]
+    >>> await pnq.query({1: "a", 2: "b"}).to_async(dict)
+    {1: "a", 2: "b"}
+    ```
+    """
+    return cls(x async for x in self)
+
+
+@mark
+def dispatch(self, func=lambda x: None, unpack: bool = True):
+    """シーケンスから流れてくる値を同期関数に送出します。
+    デフォルトで、要素から流れてくる値をアンパックして関数に送出します。
+    例外はコントロールされません。
 
     Parameters:
 
@@ -665,31 +950,50 @@ def exec(self, func, unpack_kw: bool = False):
     * func: 値の送出先の関数
     * unpack_kw: 値をキーワードアンパックする
 
-    Returns: 実行結果を含むタプル
+    Returns: `None`
 
     Usage:
     ```
-    >>> def do_something(val):
-    >>>   if val:
-    >>>     return 1
-    >>>   else:
-    >>>     raise ValueError(val)
-    >>>
-    >>> for elm, err, result in pnq.query([True, False]).exec(do_something):
-    >>>   if not err:
-    >>>     print(elm, err, result)
-    True, None, 1
-    >>>   else:
-    >>>     print(elm, err, result)
-    False, ValueError("False"), None
+    >>> pnq.query([1,2]).dispatch(print)
+    1
+    2
+    >>> @pnq.query([{"v1": 1, "v2": 2}]).dispatch
+    >>> def print_values(v1, v2):
+    >>>   print(v1, v2)
+    >>> 1, 2
     ```
     """
     for elm in self:
-        err = None
-        result = None
-        try:
-            result = func(elm)
-        except Exception as err:  # noqa
-            pass
+        yield func(elm)
 
-        yield elm, err, result
+
+@mark
+async def dispatch_async(self, func=lambda x: None, unpack: bool = True):
+    """シーケンスから流れてくる値を非同期関数に送出します。
+    内部イテレータは全て非同期の文脈で実行されます。
+    デフォルトで、要素から流れてくる値をアンパックして関数に送出します。
+    例外はコントロールされません。
+
+    Parameters:
+
+    * self: フィルタ対象のシーケンス
+    * func: 値の送出先の関数
+    * unpack_kw: 値をキーワードアンパックする
+
+    Returns: `None`
+
+    Usage:
+    ```
+    >>> results = []
+    >>> await pnq.query([1,2]).dispatch_async(results.append)
+    >>> print(results)
+    [1, 2]
+    ```
+    """
+    async for elm in self:
+        yield await func(elm)
+
+
+@mark
+def get_many(self, *keys):
+    ...

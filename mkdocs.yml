@@ -12,6 +12,8 @@ edit_uri: ""
 
 nav:
   - はじめに: "index.md"
+  - クイックスタート: "quick_start.md"
+  - 高度な使用方法: "advanced_usage.md"
   - インターフェース: "api.md"
 markdown_extensions:
   - admonition
