@@ -1210,6 +1210,8 @@ def query(source: T) -> T:
         return DictEx(source)
     elif isinstance(source, list):
         return ListEx(source)
+    elif hasattr(source, "__iter__"):
+        return LazyIterate(iter, source)
     else:
         raise Exception()
 

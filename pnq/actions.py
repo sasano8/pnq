@@ -242,6 +242,21 @@ def map(self, selector):
 
 
 @mark
+def map_flat(self, selector):
+    pass
+
+
+select_many = map_flat
+flat_map = map_flat
+
+
+@mark
+def map_recursive(self, selector):
+    "nodeを再帰的に取得する"
+    pass
+
+
+@mark
 def unpack(self, selector):
     """unpack_posかunpack_kwの別名にする予定です。"""
     pass
@@ -502,6 +517,11 @@ def join(self, right, on, select):
 
 
 @mark
+def group_join(self, right, on, select):
+    pass
+
+
+@mark
 def request(self, func, unpack: bool = True, timeout: float = None, retry: int = None):
     """シーケンスから流れてくる値を関数に送出するように要求します。
     例外はキャッチされ、実行結果を返すイテレータを生成します。
@@ -546,6 +566,18 @@ def request(self, func, unpack: bool = True, timeout: float = None, retry: int =
         yield elm, err, result
 
 
+@mark
+async def request_gather(
+    self,
+    func,
+    unpack: bool = True,
+    timeout: float = None,
+    retry: int = None,
+    pool: int = 3,
+):
+    pass
+
+
 ###########################################
 # Expander set operation
 ###########################################
@@ -567,6 +599,9 @@ def union(self, *iterables):
 def union_all(self):
     """全ての行を集合に含む"""
     pass
+
+
+concat = union_all
 
 
 @mark
@@ -713,6 +748,20 @@ def unique(self, selector):
             yield elm
 
 
+distinct = unique
+
+
+@mark
+def get(self, key):
+    pass
+
+
+@mark
+def get_many(self, *keys):
+    """"""
+    pass
+
+
 @mark
 def must_unique(self, selector=lambda x: x, immediate: bool = True):
     """シーケンスの要素から値を選択し、選択した値が重複していないか検証します。
@@ -826,12 +875,27 @@ def page(self, page: int, size: int):
 # aggregating
 ###########################################
 @mark
+def len(self):
+    pass
+
+
+@mark
+def exists(self):
+    pass
+
+
+@mark
 def all(self):
     pass
 
 
 @mark
 def any(self):
+    pass
+
+
+@mark
+def contains(self) -> bool:
     pass
 
 
@@ -852,6 +916,11 @@ def sum(self):
 
 @mark
 def average(self):
+    pass
+
+
+@mark
+def reduce(self):
     pass
 
 
@@ -916,6 +985,33 @@ def to(self, finalizer):
 
 
 @mark
+def lazy(self, finalizer):
+    """ファイナライザの実行するレイジーオブジェクトを返します。
+    レイジーオブジェクトをコールすると同期実行され、`await`すると非同期実行されます。
+
+    Parameters:
+
+    * self: バイパス対象のシーケンス
+    * finalizer: イテレータを受け取るクラス・関数
+
+    Returns: ファイナライザが返す結果
+
+    Usage:
+    ```
+    >>> lazy = pnq.query([1, 2, 3]).lazy(list)
+    >>> lazy()
+    [1, 2, 3]
+    >>> await lazy
+    [1, 2, 3]
+    >>> lazy = pnq.query([1, 2, 3]).lazy(pnq.actions.first)
+    >>> await lazy
+    1
+    ```
+    """
+    return finalizer(x for x in iter(self))
+
+
+@mark
 async def to_async(self, cls):
     """クエリを即時評価し、評価結果をファイナライザによって処理します。
     クエリが非同期処理を要求する場合のみ使用してください。
@@ -943,6 +1039,7 @@ def dispatch(self, func=lambda x: None, unpack: bool = True):
     """シーケンスから流れてくる値を同期関数に送出します。
     デフォルトで、要素から流れてくる値をアンパックして関数に送出します。
     例外はコントロールされません。
+    関数を指定しない場合、単にイテレーションを実行します。
 
     Parameters:
 
@@ -954,6 +1051,7 @@ def dispatch(self, func=lambda x: None, unpack: bool = True):
 
     Usage:
     ```
+    >>> pnq.query([1,2]).dispatch()
     >>> pnq.query([1,2]).dispatch(print)
     1
     2
@@ -961,6 +1059,7 @@ def dispatch(self, func=lambda x: None, unpack: bool = True):
     >>> def print_values(v1, v2):
     >>>   print(v1, v2)
     >>> 1, 2
+    >>> await pnq.query([1,2]).dispatch
     ```
     """
     for elm in self:
@@ -995,5 +1094,30 @@ async def dispatch_async(self, func=lambda x: None, unpack: bool = True):
 
 
 @mark
-def get_many(self, *keys):
-    ...
+def one(self):
+    pass
+
+
+@mark
+def first(self):
+    pass
+
+
+@mark
+def last(self):
+    pass
+
+
+@mark
+def one_or_default(self):
+    pass
+
+
+@mark
+def first_or_default(self):
+    pass
+
+
+@mark
+def last_or_default(self):
+    pass

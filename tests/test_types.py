@@ -30,6 +30,10 @@ class TestInit:
         assert pnq([(1, 2)]).to_list() == [(1, 2)]
         assert pnq([(1, 2)]).to_dict() == {1: 2}
 
+        query = filter(lambda x: x == 1, [1, 2])
+        assert pnq(query).to_list() == [1]
+        assert pnq(query).to_list() == []
+
     def test_behavior(self):
         # クエリメソッドで実行する際は、キーバリューを返すように標準化しているが、
         # デフォルトの挙動は変えない

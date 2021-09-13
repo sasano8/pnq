@@ -1,7 +1,3 @@
-# Developer Interface
-
----
-
 ## Generating
 
 ::: pnq.actions.iter
@@ -28,6 +24,12 @@
 ## Mapping
 
 ::: pnq.actions.map
+    :docstring:
+
+::: pnq.actions.map_flat
+    :docstring:
+
+::: pnq.actions.map_recursive
     :docstring:
 
 ::: pnq.actions.unpack
@@ -72,6 +74,9 @@
 ::: pnq.actions.join
     :docstring:
 
+::: pnq.actions.concat
+    :docstring:
+
 ::: pnq.actions.request
     :docstring:
 
@@ -91,6 +96,14 @@
 ::: pnq.actions.must_unique
     :docstring:
 
+## Indexing
+
+::: pnq.actions.get
+    :docstring:
+
+::: pnq.actions.get_many
+    :docstring:
+
 ## Sorting
 
 ::: pnq.actions.reverse
@@ -104,7 +117,6 @@
 
 ::: pnq.actions.shuffle
     :docstring:
-
 
 ## Partitoning
 
@@ -126,26 +138,6 @@
 ::: pnq.actions.page
     :docstring:
 
-## Aggregating
-
-::: pnq.actions.all
-    :docstring:
-
-::: pnq.actions.any
-    :docstring:
-
-::: pnq.actions.min
-    :docstring:
-
-::: pnq.actions.max
-    :docstring:
-
-::: pnq.actions.sum
-    :docstring:
-
-::: pnq.actions.average
-    :docstring:
-
 ## Expanding
 
 ::: pnq.actions.union
@@ -163,11 +155,68 @@
 ::: pnq.actions.zip
     :docstring:
 
+## Finalizing - Executing
 
-## Converting
+::: pnq.actions.to
+    :docstring:
 
-## Dispatching
+::: pnq.actions.to_list
+    :docstring:
+
+::: pnq.actions.to_dict
+    :docstring:
+
+::: pnq.actions.lazy
+    :docstring:
 
 ::: pnq.actions.dispatch
     :docstring:
 
+## Finalizing - Aggregating
+
+::: pnq.actions.len
+    :docstring:
+
+::: pnq.actions.exists
+    :docstring:
+
+::: pnq.actions.all
+    :docstring:
+
+::: pnq.actions.any
+    :docstring:
+
+::: pnq.actions.contains
+    :docstring:
+
+::: pnq.actions.min
+    :docstring:
+
+::: pnq.actions.max
+    :docstring:
+
+::: pnq.actions.sum
+    :docstring:
+
+::: pnq.actions.average
+    :docstring:
+
+::: pnq.actions.reduce
+    :docstring:
+
+## Finalizing - Getting
+
+::: pnq.actions.one
+    :docstring:
+
+::: pnq.actions.first
+    :docstring:
+
+::: pnq.actions.one_or_default
+    :docstring:
+
+::: pnq.actions.first_or_default
+    :docstring:
+
+::: pnq.actions.last_or_default
+    :docstring:

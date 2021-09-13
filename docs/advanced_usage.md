@@ -116,11 +116,9 @@ result_2 = list(it)
 # => []
 ```
 
-## 遅延評価・即時評価
+## 遅延評価・即時評価・キャッシュ
 
 
-
-## キャッシュ
 
 ## 非同期処理
 
@@ -234,4 +232,161 @@ for params, err, result, detail in some_requests:
         print(result)
 ```
 
+
+### 実装例
+
+``` python
+import asyncio
+import pnq
+import httpx
+
+SUCCESS = True
+ERROR = False
+
+params = pnq.query([
+    {"url": "test_url_1"},
+    {"url": "test_url_2"},
+])
+
+@params.request
+async def step_fetch(url):
+    async with httpx.AsyncClient() as client:
+        res = await client.get("url")
+        res.raise_for_status()
+        return res
+
+@step_fetch.group_by
+def step_finalize(res):
+    return ERROR if res.err else SUCCESS, res
+
+result = asyncio.run(step_finalize.lazy(dict))
+print(result[SUCCESS])
+print(result[ERROR])
+```
+
+
+
+## 性能評価
+
+### pnqのイテレーション性能
+
+`pnq`は基本的にPython標準の書き方より性能が遅くなります。
+処理の汎用化を図るためのオーバーヘッドが生じているためです。
+
+例を見てみましょう。
+
+``` python
+import pnq
+from pnq.models import StopWatch
+from decimal import Decimal, ROUND_HALF_UP
+
+
+RANGE = 100000000
+
+
+def dummy(x):
+    return x
+
+
+with StopWatch("内包表記") as result_1:
+    list(dummy(x) for x in range(RANGE) if x % 2)
+
+
+with StopWatch("イテレータ") as result_2:
+
+    def iterate():
+        for i in range(RANGE):
+            if i % 2:
+                yield dummy(i)
+
+    list(iterate())
+
+
+with StopWatch("pnq") as result_3:
+    pnq.query(range(RANGE)).filter(lambda x: x % 2).map(dummy).to_list()
+
+difference = Decimal(f"{result_1.elapsed}") - Decimal(f"{result_3.elapsed}")
+rate = Decimal(f"{result_3.elapsed}") / Decimal(f"{result_1.elapsed}")
+rate = rate.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+print(f"{result_1}")
+print(f"{result_2}")
+print(f"{result_3}")
+print(f"内包表記:pnq 性能差割 ：{rate}")
+```
+
+一般的に、内包表記が最も早くなります。
+`pnq`は性能では太刀打ちできないでしょう。
+
+```
+{'name': '内包表記', 'start': '2021-09-13T14:10:04.780085+00:00', 'end': '2021-09-13T14:10:11.907716+00:00', 'elapsed': 7.127631}
+{'name': 'イテレータ', 'start': '2021-09-13T14:10:11.907728+00:00', 'end': '2021-09-13T14:10:19.175027+00:00', 'elapsed': 7.267299}
+{'name': 'pnq', 'start': '2021-09-13T14:10:19.175040+00:00', 'end': '2021-09-13T14:10:30.971770+00:00', 'elapsed': 11.79673}
+内包表記:pnq 性能差 ：1.66
+```
+
+### 非同期イテレータの性能
+
+非同期イテレータは、同期イテレータより一般的に遅いです。
+例を見てみましょう。
+
+``` python
+import asyncio
+from decimal import Decimal, ROUND_HALF_UP
+
+from pnq.models import StopWatch
+
+
+class Range:
+    def __init__(self, count):
+        self.count = count
+
+    def __iter__(self):
+        for i in range(self.count):
+            yield i
+
+    async def __aiter__(self):
+        for i in range(self.count):
+            yield i
+
+
+calculator = Range(100000000)
+
+
+async def main():
+    with StopWatch() as result_1:
+        for i in calculator:
+            pass
+
+    with StopWatch() as result_2:
+        async for i in calculator:
+            pass
+
+    difference = Decimal(f"{result_1.elapsed}") - Decimal(f"{result_2.elapsed}")
+    rate = Decimal(f"{result_2.elapsed}") / Decimal(f"{result_1.elapsed}")
+    rate = rate.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
+    print(f"同期　　　　　：{result_1}")
+    print(f"非同期　　　　：{result_2}")
+    print(f"同期 - 非同期 ：{difference}")
+    print(f"性能差割合　　：{rate}")
+
+
+asyncio.run(main())
+```
+
+非同期イテレータは同期イテレータより性能が2.25倍程度遅くなりました。
+
+```
+同期　　　　　：{'start': '2021-09-13T10:28:55.240113+00:00', 'end': '2021-09-13T10:28:58.890342+00:00', 'elapsed': 3.650229}
+非同期　　　　：{'start': '2021-09-13T10:28:58.890577+00:00', 'end': '2021-09-13T10:29:07.085747+00:00', 'elapsed': 8.19517}
+同期 - 非同期 ：-4.544941
+性能劣化率　　：2.25
+
+```
+
+非同期イテレータが効力を発揮するケースは、ネットワークI/OやファイルI/Oなど待機時間が多く、
+その間に並列処理で時間を有効活用できる場合です。
+
+特に理由がない場合は、同期イテレータを積極的に使うようにしてください。
 
