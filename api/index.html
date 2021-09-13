@@ -69,7 +69,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#developer-interface" class="md-skip">
+        <a href="#generating" class="md-skip">
           コンテンツにスキップ
         </a>
       
@@ -260,8 +260,6 @@
       <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
       
       
-        
-      
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
           インターフェース
@@ -276,8 +274,6 @@
 <nav class="md-nav md-nav--secondary" aria-label="目次">
   
   
-  
-    
   
   
     <label class="md-nav__title" for="__toc">
@@ -315,6 +311,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#indexing" class="md-nav__link">
+    Indexing
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#sorting" class="md-nav__link">
     Sorting
   </a>
@@ -329,13 +332,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#aggregating" class="md-nav__link">
-    Aggregating
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#expanding" class="md-nav__link">
     Expanding
   </a>
@@ -343,15 +339,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#converting" class="md-nav__link">
-    Converting
+  <a href="#finalizing-executing" class="md-nav__link">
+    Finalizing - Executing
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#dispatching" class="md-nav__link">
-    Dispatching
+  <a href="#finalizing-aggregating" class="md-nav__link">
+    Finalizing - Aggregating
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#finalizing-getting" class="md-nav__link">
+    Finalizing - Getting
   </a>
   
 </li>
@@ -360,6 +363,21 @@
   
 </nav>
       
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../class/" class="md-nav__link">
+        クラス
+      </a>
     </li>
   
 
@@ -380,8 +398,6 @@
   
   
   
-    
-  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -418,6 +434,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#indexing" class="md-nav__link">
+    Indexing
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#sorting" class="md-nav__link">
     Sorting
   </a>
@@ -432,13 +455,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#aggregating" class="md-nav__link">
-    Aggregating
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#expanding" class="md-nav__link">
     Expanding
   </a>
@@ -446,15 +462,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#converting" class="md-nav__link">
-    Converting
+  <a href="#finalizing-executing" class="md-nav__link">
+    Finalizing - Executing
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#dispatching" class="md-nav__link">
-    Dispatching
+  <a href="#finalizing-aggregating" class="md-nav__link">
+    Finalizing - Aggregating
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#finalizing-getting" class="md-nav__link">
+    Finalizing - Getting
   </a>
   
 </li>
@@ -472,9 +495,9 @@
               
                 
                 
-                <h1 id="developer-interface">Developer Interface</h1>
-<hr />
-<h2 id="generating">Generating</h2>
+                  <h1>インターフェース</h1>
+                
+                <h2 id="generating">Generating</h2>
 <div class="autodoc">
 <div class="autodoc-signature"><code>pnq.actions.<strong>iter</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>イテラブルまたはマッピングからイテレータを取得します。
@@ -608,6 +631,14 @@ str関数を渡した場合、利便性のため<code>None</code>は<code>""</co
 &gt;&gt;&gt; pnq.query([None]).map(str).to_list()
 [&quot;&quot;]
 </code></pre></div></p></div>
+</div>
+<div class="autodoc">
+<div class="autodoc-signature"><code>pnq.actions.<strong>map_flat</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-docstring"></div>
+</div>
+<div class="autodoc">
+<div class="autodoc-signature"><code>pnq.actions.<strong>map_recursive</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-docstring"><p>nodeを再帰的に取得する</p></div>
 </div>
 <div class="autodoc">
 <div class="autodoc-signature"><code>pnq.actions.<strong>unpack</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector</em><span class="autodoc-punctuation">)</span></div>
@@ -804,6 +835,10 @@ str関数を渡した場合、利便性のため<code>None</code>は<code>""</co
 <div class="autodoc-docstring"></div>
 </div>
 <div class="autodoc">
+<div class="autodoc-signature"><code>pnq.actions.<strong>concat</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-docstring"><p>全ての行を集合に含む</p></div>
+</div>
+<div class="autodoc">
 <div class="autodoc-signature"><code>pnq.actions.<strong>request</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">func</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">unpack=True</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">timeout=None</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">retry=None</em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>シーケンスから流れてくる値を関数に送出するように要求します。
 例外はキャッチされ、実行結果を返すイテレータを生成します。
@@ -886,7 +921,7 @@ raise ValueError(&quot;(2, False)&quot;)
 </code></pre></div></p></div>
 </div>
 <div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>must_unique</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7f052793c9d0></em><span class="autodoc-punctuation">, </span><em class="autodoc-param">immediate=True</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-signature"><code>pnq.actions.<strong>must_unique</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7f466b31d5e0></em><span class="autodoc-punctuation">, </span><em class="autodoc-param">immediate=True</em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>シーケンスの要素から値を選択し、選択した値が重複していないか検証します。</p>
 <p>Parameters:</p>
 <ul>
@@ -899,6 +934,15 @@ raise ValueError(&quot;(2, False)&quot;)
 <div class="highlight"><pre><span></span><code>&gt;&gt;&gt; pnq.query([1, 2, 1]).must_unique().to_list()
 raise DuplicateError(&quot;1&quot;)
 </code></pre></div></p></div>
+</div>
+<h2 id="indexing">Indexing</h2>
+<div class="autodoc">
+<div class="autodoc-signature"><code>pnq.actions.<strong>get</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">key</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-docstring"></div>
+</div>
+<div class="autodoc">
+<div class="autodoc-signature"><code>pnq.actions.<strong>get_many</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">*keys</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-docstring"></div>
 </div>
 <h2 id="sorting">Sorting</h2>
 <div class="autodoc">
@@ -972,31 +1016,6 @@ raise DuplicateError(&quot;1&quot;)
 <div class="autodoc-signature"><code>pnq.actions.<strong>page</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">page</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">size</em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"></div>
 </div>
-<h2 id="aggregating">Aggregating</h2>
-<div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>all</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">)</span></div>
-<div class="autodoc-docstring"></div>
-</div>
-<div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>any</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">)</span></div>
-<div class="autodoc-docstring"></div>
-</div>
-<div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>min</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">)</span></div>
-<div class="autodoc-docstring"></div>
-</div>
-<div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>max</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">)</span></div>
-<div class="autodoc-docstring"></div>
-</div>
-<div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>sum</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">)</span></div>
-<div class="autodoc-docstring"></div>
-</div>
-<div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>average</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">)</span></div>
-<div class="autodoc-docstring"></div>
-</div>
 <h2 id="expanding">Expanding</h2>
 <div class="autodoc">
 <div class="autodoc-signature"><code>pnq.actions.<strong>union</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">*iterables</em><span class="autodoc-punctuation">)</span></div>
@@ -1019,13 +1038,58 @@ exceptと同じ意味</p></div>
 <div class="autodoc-signature"><code>pnq.actions.<strong>zip</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">*iterables</em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"></div>
 </div>
-<h2 id="converting">Converting</h2>
-<h2 id="dispatching">Dispatching</h2>
+<h2 id="finalizing-executing">Finalizing - Executing</h2>
 <div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>dispatch</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">func=<function \<lambda> at 0x7f0527931670></em><span class="autodoc-punctuation">, </span><em class="autodoc-param">unpack=True</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-signature"><code>pnq.actions.<strong>to</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">finalizer</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-docstring"><p>クエリを即時評価し、評価結果をファイナライザによって処理します。</p>
+<p>Parameters:</p>
+<ul>
+<li>self: バイパス対象のシーケンス</li>
+<li>finalizer: イテレータを受け取るクラス・関数</li>
+</ul>
+<p>Returns: ファイナライザが返す結果</p>
+<p>Usage:
+<div class="highlight"><pre><span></span><code>&gt;&gt;&gt; pnq.query([1, 2, 3]).to(list)
+[1, 2]
+&gt;&gt;&gt; pnq.query({1: &quot;a&quot;, 2: &quot;b&quot;}).to(dict)
+{1: &quot;a&quot;, 2: &quot;b&quot;}
+</code></pre></div></p></div>
+</div>
+<div class="autodoc">
+<div class="autodoc-signature"><code>pnq.actions.<strong>to_list</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-docstring"></div>
+</div>
+<div class="autodoc">
+<div class="autodoc-signature"><code>pnq.actions.<strong>to_dict</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-docstring"></div>
+</div>
+<div class="autodoc">
+<div class="autodoc-signature"><code>pnq.actions.<strong>lazy</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">finalizer</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-docstring"><p>ファイナライザの実行するレイジーオブジェクトを返します。
+レイジーオブジェクトをコールすると同期実行され、<code>await</code>すると非同期実行されます。</p>
+<p>Parameters:</p>
+<ul>
+<li>self: バイパス対象のシーケンス</li>
+<li>finalizer: イテレータを受け取るクラス・関数</li>
+</ul>
+<p>Returns: ファイナライザが返す結果</p>
+<p>Usage:
+<div class="highlight"><pre><span></span><code>&gt;&gt;&gt; lazy = pnq.query([1, 2, 3]).lazy(list)
+&gt;&gt;&gt; lazy()
+[1, 2, 3]
+&gt;&gt;&gt; await lazy
+[1, 2, 3]
+&gt;&gt;&gt; lazy = pnq.query([1, 2, 3]).lazy(pnq.actions.first)
+&gt;&gt;&gt; await lazy
+1
+</code></pre></div></p></div>
+</div>
+<div class="autodoc">
+<div class="autodoc-signature"><code>pnq.actions.<strong>dispatch</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">func=<function \<lambda> at 0x7f466b31e550></em><span class="autodoc-punctuation">, </span><em class="autodoc-param">unpack=True</em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>シーケンスから流れてくる値を同期関数に送出します。
 デフォルトで、要素から流れてくる値をアンパックして関数に送出します。
-例外はコントロールされません。</p>
+例外はコントロールされません。
+関数を指定しない場合、単にイテレーションを実行します。</p>
 <p>Parameters:</p>
 <ul>
 <li>self: フィルタ対象のシーケンス</li>
@@ -1034,14 +1098,78 @@ exceptと同じ意味</p></div>
 </ul>
 <p>Returns: <code>None</code></p>
 <p>Usage:
-<div class="highlight"><pre><span></span><code>&gt;&gt;&gt; pnq.query([1,2]).dispatch(print)
+<div class="highlight"><pre><span></span><code>&gt;&gt;&gt; pnq.query([1,2]).dispatch()
+&gt;&gt;&gt; pnq.query([1,2]).dispatch(print)
 1
 2
 &gt;&gt;&gt; @pnq.query([{&quot;v1&quot;: 1, &quot;v2&quot;: 2}]).dispatch
 &gt;&gt;&gt; def print_values(v1, v2):
 &gt;&gt;&gt;   print(v1, v2)
 &gt;&gt;&gt; 1, 2
+&gt;&gt;&gt; await pnq.query([1,2]).dispatch
 </code></pre></div></p></div>
+</div>
+<h2 id="finalizing-aggregating">Finalizing - Aggregating</h2>
+<div class="autodoc">
+<div class="autodoc-signature"><code>pnq.actions.<strong>len</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-docstring"></div>
+</div>
+<div class="autodoc">
+<div class="autodoc-signature"><code>pnq.actions.<strong>exists</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-docstring"></div>
+</div>
+<div class="autodoc">
+<div class="autodoc-signature"><code>pnq.actions.<strong>all</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-docstring"></div>
+</div>
+<div class="autodoc">
+<div class="autodoc-signature"><code>pnq.actions.<strong>any</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-docstring"></div>
+</div>
+<div class="autodoc">
+<div class="autodoc-signature"><code>pnq.actions.<strong>contains</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-docstring"></div>
+</div>
+<div class="autodoc">
+<div class="autodoc-signature"><code>pnq.actions.<strong>min</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-docstring"></div>
+</div>
+<div class="autodoc">
+<div class="autodoc-signature"><code>pnq.actions.<strong>max</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-docstring"></div>
+</div>
+<div class="autodoc">
+<div class="autodoc-signature"><code>pnq.actions.<strong>sum</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-docstring"></div>
+</div>
+<div class="autodoc">
+<div class="autodoc-signature"><code>pnq.actions.<strong>average</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-docstring"></div>
+</div>
+<div class="autodoc">
+<div class="autodoc-signature"><code>pnq.actions.<strong>reduce</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-docstring"></div>
+</div>
+<h2 id="finalizing-getting">Finalizing - Getting</h2>
+<div class="autodoc">
+<div class="autodoc-signature"><code>pnq.actions.<strong>one</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-docstring"></div>
+</div>
+<div class="autodoc">
+<div class="autodoc-signature"><code>pnq.actions.<strong>first</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-docstring"></div>
+</div>
+<div class="autodoc">
+<div class="autodoc-signature"><code>pnq.actions.<strong>one_or_default</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-docstring"></div>
+</div>
+<div class="autodoc">
+<div class="autodoc-signature"><code>pnq.actions.<strong>first_or_default</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-docstring"></div>
+</div>
+<div class="autodoc">
+<div class="autodoc-signature"><code>pnq.actions.<strong>last_or_default</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-docstring"></div>
 </div>
                 
               
@@ -1076,6 +1204,21 @@ exceptと同じ意味</p></div>
           </div>
         </a>
       
+      
+        
+        <a href="../class/" class="md-footer__link md-footer__link--next" aria-label="次: クラス" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                次
+              </span>
+              クラス
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
       
     </nav>
   
