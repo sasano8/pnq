@@ -24,7 +24,7 @@ from . import actions
 from .core import LazyIterate as _LazyIterate
 from .core import LazyReference as _LazyReference
 from .core import piter, undefined
-from .exceptions import NoElementError, NotOneError
+from .exceptions import NoElementError, NotOneElementError
 
 T = TypeVar("T")
 K = TypeVar("K")
@@ -159,7 +159,7 @@ class {{query.cls}}:
 
         try:
             next(it)
-            raise NotOneError()
+            raise NotOneElementError()
         except StopIteration:
             pass
 
@@ -204,7 +204,7 @@ class {{query.cls}}:
     def one_or_default(self, default=None) -> Any:
         try:
             return self.one()
-        except (NoElementError, NotOneError):
+        except (NoElementError, NotOneElementError):
             return default
     @overload
     def first_or_default(self) -> Union[{{query.row}}, None]: ...
@@ -675,6 +675,8 @@ def query(source: T) -> T:
         return DictEx(source)
     elif isinstance(source, list):
         return ListEx(source)
+    elif hasattr(source, "__iter__"):
+        return LazyIterate(iter, source)
     else:
         raise Exception()
 

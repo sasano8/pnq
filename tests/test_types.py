@@ -2,7 +2,7 @@ from typing import Iterable, Mapping, Tuple
 
 import pytest
 
-from pnq.exceptions import NoElementError, NotOneError
+from pnq.exceptions import NoElementError, NotOneElementError
 from pnq.types import DictEx, IndexQuery, ListEx, PairQuery, Query, SetEx, query
 
 pnq = query
@@ -267,7 +267,7 @@ class TestGetter:
         q = pnq([-10, 10])
 
         assert q.first() == -10
-        with pytest.raises(NotOneError):
+        with pytest.raises(NotOneElementError):
             q.one()
         assert q.last() == 10
 

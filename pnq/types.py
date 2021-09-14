@@ -24,7 +24,7 @@ from . import actions
 from .core import LazyIterate as _LazyIterate
 from .core import LazyReference as _LazyReference
 from .core import piter, undefined
-from .exceptions import NoElementError, NotOneError
+from .exceptions import NoElementError, NotOneElementError
 
 T = TypeVar("T")
 K = TypeVar("K")
@@ -189,7 +189,7 @@ class Query(Generic[T]):
 
         try:
             next(it)
-            raise NotOneError()
+            raise NotOneElementError()
         except StopIteration:
             pass
 
@@ -248,7 +248,7 @@ class Query(Generic[T]):
     def one_or_default(self, default=None) -> Any:
         try:
             return self.one()
-        except (NoElementError, NotOneError):
+        except (NoElementError, NotOneElementError):
             return default
 
     @overload
@@ -677,7 +677,7 @@ class PairQuery(Generic[K, V]):
 
         try:
             next(it)
-            raise NotOneError()
+            raise NotOneElementError()
         except StopIteration:
             pass
 
@@ -736,7 +736,7 @@ class PairQuery(Generic[K, V]):
     def one_or_default(self, default=None) -> Any:
         try:
             return self.one()
-        except (NoElementError, NotOneError):
+        except (NoElementError, NotOneElementError):
             return default
 
     @overload

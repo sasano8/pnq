@@ -46,7 +46,7 @@ class Response(NamedTuple):
 class StopWatch:
     """コンテキスト内の処理時間を計測します。
 
-    Parameters:
+    Args:
 
     * name: 任意の名前を付与できます
 

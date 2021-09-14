@@ -1,6 +1,6 @@
 from typing import Literal, Mapping, NoReturn
 
-from .exceptions import DuplicateError
+from .exceptions import DuplicateElementError
 
 
 class EmptyLambda:
@@ -894,12 +894,6 @@ distinct = unique
 
 
 @mark
-def get_many(self, *keys):
-    """"""
-    pass
-
-
-@mark
 def must_unique(self, selector=lambda x: x, immediate: bool = True):
     """シーケンスの要素から値を選択し、選択した値が重複していないか検証します。
 
@@ -926,6 +920,18 @@ def must_unique(self, selector=lambda x: x, immediate: bool = True):
         else:
             duplidate.add(value)
             yield elm
+
+
+@mark
+def get_many(self, *keys):
+    """"""
+    pass
+
+
+@mark
+def must_get_many(self, *keys):
+    """"""
+    pass
 
 
 ###########################################
@@ -1325,8 +1331,12 @@ reduce([], 1, op="/=")
 
 
 @mark
-def concat(self, delimiter=""):
+def concat(self, delimiter: str = ""):
     """シーケンスの要素を文字列として連結します。
+
+    Args:
+
+    * delimiter: 区切り文字
 
     Usage:
     ```

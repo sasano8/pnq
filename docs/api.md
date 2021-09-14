@@ -99,6 +99,9 @@
 ::: pnq.actions.must_unique
     :docstring:
 
+::: pnq.actions.must_get_many
+    :docstring:
+
 ## Sorting
 
 ::: pnq.actions.order_by

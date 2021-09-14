@@ -16,6 +16,7 @@ nav:
   - 高度な使用方法: "advanced_usage.md"
   - インターフェース: "api.md"
   - クラス: "class.md"
+  - 例外クラス: "exceptions.md"
 markdown_extensions:
   - admonition
   - codehilite:
