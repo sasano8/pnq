@@ -88,6 +88,9 @@
 ::: pnq.actions.unique
     :docstring:
 
+::: pnq.actions.get_many
+    :docstring:
+
 ## Validating
 
 ::: pnq.actions.must
@@ -96,26 +99,18 @@
 ::: pnq.actions.must_unique
     :docstring:
 
-## Indexing
-
-::: pnq.actions.get
-    :docstring:
-
-::: pnq.actions.get_many
-    :docstring:
-
 ## Sorting
-
-::: pnq.actions.reverse
-    :docstring:
-
-::: pnq.actions.order
-    :docstring:
 
 ::: pnq.actions.order_by
     :docstring:
 
-::: pnq.actions.shuffle
+::: pnq.actions.order_by_fields
+    :docstring:
+
+::: pnq.actions.order_by_reverse
+    :docstring:
+
+::: pnq.actions.order_by_shuffle
     :docstring:
 
 ## Partitoning
@@ -132,10 +127,10 @@
 ::: pnq.actions.skip_while
     :docstring:
 
-::: pnq.actions.from_to
+::: pnq.actions.take_range
     :docstring:
 
-::: pnq.actions.page
+::: pnq.actions.take_page
     :docstring:
 
 ## Expanding
@@ -204,12 +199,21 @@
 ::: pnq.actions.reduce
     :docstring:
 
+::: pnq.actions.concat
+    :docstring:
+
 ## Finalizing - Getting
+
+::: pnq.actions.get
+    :docstring:
 
 ::: pnq.actions.one
     :docstring:
 
 ::: pnq.actions.first
+    :docstring:
+
+::: pnq.actions.last
     :docstring:
 
 ::: pnq.actions.one_or_default
@@ -219,4 +223,16 @@
     :docstring:
 
 ::: pnq.actions.last_or_default
+    :docstring:
+
+::: pnq.actions.get_or_raise
+    :docstring:
+
+::: pnq.actions.one_or_raise
+    :docstring:
+
+::: pnq.actions.first_or_raise
+    :docstring:
+
+::: pnq.actions.last_or_raise
     :docstring:
