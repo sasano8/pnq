@@ -1,3 +1,4 @@
+from functools import wraps
 from typing import Iterable, Mapping, Tuple
 
 import pytest
@@ -6,6 +7,20 @@ from pnq.exceptions import NoElementError, NotOneElementError
 from pnq.types import DictEx, IndexQuery, ListEx, PairQuery, Query, SetEx, query
 
 pnq = query
+
+
+def catch(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        expect = kwargs.get("expect", None)
+        if isinstance(expect, Exception):
+            msg = str(expect)
+            with pytest.raises(expect.__class__, match=msg):
+                func(*args, **kwargs)
+        else:
+            func(*args, **kwargs)
+
+    return wrapper
 
 
 class TestInit:
@@ -110,24 +125,6 @@ class TestMap:
         # 内部的に何もしないため、同じクエリオブジェクトを参照していることを検証する
         q = pnq([1])
         assert q.cast(str) == q
-
-
-class TestAggregator:
-    def test_reduce(self):
-        from operator import add, mul
-
-        assert pnq([1, 2, 3, 4]).reduce(add) == 10
-        assert pnq([1, 2, 3, 4]).reduce(add, 3) == 13
-        assert pnq([1, 2, 3, 4]).reduce(mul) == 24
-        assert pnq([1, 2, 3, 4]).reduce(mul, 3) == 72
-
-    def test_len(self):
-        assert pnq([]).len() == 0
-        assert pnq({}).len() == 0
-        assert pnq([1]).len() == 1
-        assert pnq({1: 1}).len() == 1
-        assert pnq([1, 2]).map(lambda x: x).map(lambda x: x).len() == 2
-        assert pnq({1: 1, 2: 2}).len() == 2
 
 
 class TestSlicer:
@@ -438,3 +435,243 @@ class TestDict:
         assert db.items().to_list() == [(1, "a"), (2, "b"), (3, "c")]
 
         assert isinstance(db.to_dict(), DictEx)
+
+
+class TestAggregating:
+    @pytest.mark.parametrize(
+        "src, expect",
+        [
+            ([], 0),
+            ({}, 0),
+            (tuple(), 0),
+            (set(), 0),
+            (frozenset(), 0),
+            ([1], 1),
+            ({"a": 1}, 1),
+            (tuple([1]), 1),
+            (set([1]), 1),
+            (frozenset([1]), 1),
+        ],
+    )
+    def test_len(self, src, expect):
+        assert pnq(src).len() == expect
+        assert pnq(src).map(lambda x: x).len() == expect
+
+    @pytest.mark.parametrize(
+        "src, expect",
+        [
+            ([], False),
+            ({}, False),
+            (tuple(), False),
+            (set(), False),
+            (frozenset(), False),
+            ([1], True),
+            ({"a": 1}, True),
+            (tuple([1]), True),
+            (set([1]), True),
+            (frozenset([1]), True),
+        ],
+    )
+    def test_exists(self, src, expect):
+        assert pnq(src).exists() == expect
+        assert pnq(src).map(lambda x: x).exists() == expect
+
+    @pytest.mark.parametrize(
+        "src, expect",
+        [
+            ([], True),
+            ({}, True),
+            (tuple(), True),
+            (set(), True),
+            (frozenset(), True),
+            ([1], True),
+            ({"a": 1}, True),
+            (tuple([1]), True),
+            (set([1]), True),
+            (frozenset([1]), True),
+            ([0], False),
+            ([0, 1], False),
+            ([1, 1], True),
+        ],
+    )
+    def test_all(self, src, expect):
+        assert pnq(src).all() == expect
+        assert pnq(src).map(lambda x: x).all() == expect
+
+    @pytest.mark.parametrize(
+        "src, expect",
+        [
+            ([], False),
+            ({}, False),
+            (tuple(), False),
+            (set(), False),
+            (frozenset(), False),
+            ([1], True),
+            ({"a": 1}, True),
+            (tuple([1]), True),
+            (set([1]), True),
+            (frozenset([1]), True),
+            ([0], False),
+            ([0, 1], True),
+        ],
+    )
+    def test_any(self, src, expect):
+        assert pnq(src).any() == expect
+        assert pnq(src).map(lambda x: x).any() == expect
+
+    @pytest.mark.parametrize(
+        "src, value, expect",
+        [
+            ([], 1, False),
+            ({}, 1, False),
+            (tuple(), 1, False),
+            (set(), 1, False),
+            (frozenset(), 1, False),
+            ([1], 1, True),
+            ({1: "a"}, 1, False),
+            ({1: "a"}, (1, "a"), True),
+            (tuple([1]), 1, True),
+            (set([1]), 1, True),
+            (frozenset([1]), 1, True),
+        ],
+    )
+    def test_contains(self, src, value, expect):
+        assert pnq(src).contains(value) == expect
+        assert pnq(src).map(lambda x: x).contains(value) == expect
+
+    @pytest.mark.parametrize(
+        "src, expect",
+        [
+            ([], ValueError("arg is an empty sequence")),
+            ({}, ValueError("arg is an empty sequence")),
+            (tuple(), ValueError("arg is an empty sequence")),
+            (set(), ValueError("arg is an empty sequence")),
+            (frozenset(), ValueError("arg is an empty sequence")),
+            ([1], 1),
+            ({"a": 1}, ("a", 1)),
+            (tuple([1]), 1),
+            (set([1]), 1),
+            (frozenset([1]), 1),
+            ([1, 2], 1),
+            ([2, 1, 2], 1),
+        ],
+    )
+    @catch
+    def test_min(self, src, expect):
+        assert pnq(src).min() == expect
+        assert pnq(src).map(lambda x: x).min() == expect
+
+    def test_min_default(self):
+        assert pnq([]).min(default=-1) == -1
+        assert pnq([100]).min(default=-1) == 100  # 要素が存在する場合は要素が優先
+
+    @pytest.mark.parametrize(
+        "src, expect",
+        [
+            ([], ValueError("arg is an empty sequence")),
+            ({}, ValueError("arg is an empty sequence")),
+            (tuple(), ValueError("arg is an empty sequence")),
+            (set(), ValueError("arg is an empty sequence")),
+            (frozenset(), ValueError("arg is an empty sequence")),
+            ([1], 1),
+            ({"a": 1}, ("a", 1)),
+            (tuple([1]), 1),
+            (set([1]), 1),
+            (frozenset([1]), 1),
+            ([1, 2], 2),
+            ([1, 2, 1], 2),
+        ],
+    )
+    @catch
+    def test_max(self, src, expect):
+        assert pnq(src).max() == expect
+        assert pnq(src).map(lambda x: x).max() == expect
+
+    def test_max_default(self):
+        assert pnq([]).max(default=-1) == -1
+        assert pnq([1]).max(default=10) == 1  # 要素が存在する場合は要素が優先
+
+    @pytest.mark.parametrize(
+        "src, expect",
+        [
+            ([], 0),
+            ({}, 0),
+            (tuple(), 0),
+            (set(), 0),
+            (frozenset(), 0),
+            ([1], 1),
+            ({"a": 1}, TypeError("unsupported")),
+            (tuple([1]), 1),
+            (set([1]), 1),
+            (frozenset([1]), 1),
+        ],
+    )
+    @catch
+    def test_sum(self, src, expect):
+        assert pnq(src).sum() == expect
+        assert pnq(src).map(lambda x: x).sum() == expect
+
+    @pytest.mark.parametrize(
+        "src, expect",
+        [
+            ([], 0),
+            ({}, 0),
+            (tuple(), 0),
+            (set(), 0),
+            (frozenset(), 0),
+            ([1], 1),
+            ({"a": 1}, Exception("not a number")),
+            (tuple([1]), 1),
+            (set([1]), 1),
+            (frozenset([1]), 1),
+            ([1, 2], 1.5),
+        ],
+    )
+    @catch
+    def test_average(self, src, expect):
+        assert pnq(src).average() == expect
+        assert pnq(src).map(lambda x: x).average() == expect
+
+    @pytest.mark.parametrize(
+        "src, seed, op, expect",
+        [
+            ([], 0, "+=", 0),
+            ({}, 0, "+=", 0),
+            (tuple(), 0, "+=", 0),
+            (set(), 0, "+=", 0),
+            (frozenset(), 0, "+=", 0),
+            ([1], 0, "+=", 1),
+            ({"a": 1}, 0, "+=", TypeError("unsupported operand type")),
+            (tuple([1]), 0, "+=", 1),
+            (set([1]), 0, "+=", 1),
+            (frozenset([1]), 0, "+=", 1),
+        ],
+    )
+    @catch
+    def test_reduce(self, src, seed, op, expect):
+        assert pnq(src).reduce(seed, op) == expect
+        assert pnq(src).map(lambda x: x).reduce(seed, op) == expect
+
+    @pytest.mark.parametrize(
+        "src, expect",
+        [
+            ([], ""),
+            ({}, ""),
+            (tuple(), ""),
+            (set(), ""),
+            (frozenset(), ""),
+            ([1], "1"),
+            ({"a": 1}, "('a', 1)"),
+            (tuple([1]), "1"),
+            (set([1]), "1"),
+            (frozenset([1]), "1"),
+            (["a", "b", "c"], "abc"),
+        ],
+    )
+    def test_concat(self, src, expect):
+        assert pnq(src).concat() == expect
+        assert pnq(src).map(lambda x: x).concat() == expect
+
+    def test_concat_delimiter(self):
+        assert pnq(["a", "b", "c"]).concat(delimiter=",") == "a,b,c"
+        assert pnq(["a", "b", "c"]).map(lambda x: x).concat(delimiter=",") == "a,b,c"

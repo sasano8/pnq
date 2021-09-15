@@ -11,6 +11,7 @@ from typing import (
     List,
     Literal,
     Mapping,
+    NoReturn,
     Sequence,
     Set,
     Tuple,
@@ -25,6 +26,7 @@ from .core import LazyIterate as _LazyIterate
 from .core import LazyReference as _LazyReference
 from .core import piter, undefined
 from .exceptions import NoElementError, NotOneElementError
+from .op import TH_ASSIGN_OP
 
 T = TypeVar("T")
 K = TypeVar("K")
@@ -92,54 +94,55 @@ class SetEx(Generic[T], Iterable[T]):
 
 class {{query.cls}}:
     def len(self) -> int:
-        return len(self)
+        return actions.len(self)
 
     def exists(self) -> bool:
-        return len(self) > 0
+        return actions.exists(self)
 
-    def all(self, selector: Callable[[{{query.row}}], Any]={{query.selector}}) -> bool:
-        return all(map(selector, piter(self)))
+    def all(self, selector: Callable[[{{query.row}}], Any]=lambda x: x) -> bool:
+        return actions.all(self, selector)
 
-    def any(self, selector: Callable[[{{query.row}}], Any]={{query.selector}}) -> bool:
-        return any(map(selector, piter(self)))
+    def any(self, selector: Callable[[{{query.row}}], Any]=lambda x: x) -> bool:
+        return actions.any(self, selector)
 
-    @overload
-    def min(self) -> {{query.value}}: ...
-
-    @overload
-    def min(self, selector: Callable[[{{query.row}}], R]={{query.selector}}) -> R: ...
-    def min(self, selector: Callable[[{{query.row}}], R]={{query.selector}}) -> R:
-        return min(map(selector, piter(self)))
+    def contains(self, *values, selector: Callable[[{{query.row}}], Any]=lambda x: x) -> bool:
+        return actions.contains(self, *values, selector)
 
     @overload
-    def max(self) -> {{query.value}}: ...
+    def min(self, *, default=NoReturn) -> Union[{{query.value}}, NoReturn]: ...
+
     @overload
-    def max(self, selector: Callable[[{{query.row}}], R]={{query.selector}}) -> R: ...
-    def max(self, selector: Callable[[{{query.row}}], R]={{query.selector}}) -> R:
-        return max(map(selector, piter(self)))
+    def min(self, selector: Callable[[{{query.row}}], R]=lambda x: x, default=NoReturn) -> R: ...
+    def min(self, selector: Callable[[{{query.row}}], R]=lambda x: x, default=NoReturn) -> R:
+        return actions.min(self, selector, default)
+
+    @overload
+    def max(self, *, default=NoReturn) -> Union[{{query.value}}, NoReturn]: ...
+    @overload
+    def max(self, selector: Callable[[{{query.row}}], R]=lambda x: x, default=NoReturn) -> R: ...
+    def max(self, selector: Callable[[{{query.row}}], R]=lambda x: x, default=NoReturn) -> R:
+        return actions.max(self, selector, default)
 
     @overload
     def sum(self) -> {{query.value}}: ...
     @overload
-    def sum(self, selector: Callable[[{{query.row}}], R]={{query.selector}}) -> R: ...
-    def sum(self, selector: Callable[[{{query.row}}], R]={{query.selector}}) -> R:
-        return sum(map(selector, piter(self)))
+    def sum(self, selector: Callable[[{{query.row}}], R]=lambda x: x) -> R: ...
+    def sum(self, selector: Callable[[{{query.row}}], R]=lambda x: x) -> R:
+        return actions.sum(self, selector)
 
     @overload
     def average(self) -> {{query.value}}: ...
-    def average(self, selector: Callable[[{{query.row}}], R]={{query.selector}}) -> R: ...
     @overload
-    def average(self, selector: Callable[[{{query.row}}], R]={{query.selector}}) -> R:
-        import statistics
-        return statistics.mean(pmap(self, selector))  # type: ignore
+    def average(self, selector: Callable[[{{query.row}}], R]=lambda x: x) -> R: ...
+    def average(self, selector: Callable[[{{query.row}}], R]=lambda x: x) -> R:
+        return actions.average(self, selector)
 
-    def reduce(self, accumulator: Callable[[T, T], T], seed: T=undefined) -> Any:
-        from functools import reduce
+    def reduce(self, seed: T, op: Union[TH_ASSIGN_OP, Callable[[Any, Any], Any]] = "+=", selector=lambda x: x) -> T:
+        return actions.reduce(self, seed, op, selector)
 
-        if seed is undefined:
-            return reduce(accumulator, self)
-        else:
-            return reduce(accumulator, self, seed)
+    def concat(self, selector=lambda x: x, delimiter: str = "") -> str:
+        return actions.concat(self, selector, delimiter)
+
     def dispatch(self, func: Callable, selector: Callable[[{{query.row}}], Any], on_error: Callable=...) -> Tuple[int, int]: ...
     def to_list(self) -> {{query.to_list}}:
         return ListEx(piter(self))

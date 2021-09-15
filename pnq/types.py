@@ -11,6 +11,7 @@ from typing import (
     List,
     Literal,
     Mapping,
+    NoReturn,
     Sequence,
     Set,
     Tuple,
@@ -25,6 +26,7 @@ from .core import LazyIterate as _LazyIterate
 from .core import LazyReference as _LazyReference
 from .core import piter, undefined
 from .exceptions import NoElementError, NotOneElementError
+from .op import TH_ASSIGN_OP
 
 T = TypeVar("T")
 K = TypeVar("K")
@@ -96,38 +98,41 @@ class SetEx(Generic[T], Iterable[T]):
 
 class Query(Generic[T]):
     def len(self) -> int:
-        return len(self)
+        return actions.len(self)
 
     def exists(self) -> bool:
-        return len(self) > 0
+        return actions.exists(self)
 
     def all(self, selector: Callable[[T], Any] = lambda x: x) -> bool:
-        return all(map(selector, piter(self)))
+        return actions.all(self, selector)
 
     def any(self, selector: Callable[[T], Any] = lambda x: x) -> bool:
-        return any(map(selector, piter(self)))
+        return actions.any(self, selector)
+
+    def contains(self, *values, selector: Callable[[T], Any] = lambda x: x) -> bool:
+        return actions.contains(self, *values, selector)
 
     @overload
-    def min(self) -> T:
+    def min(self, *, default=NoReturn) -> Union[T, NoReturn]:
         ...
 
     @overload
-    def min(self, selector: Callable[[T], R] = lambda x: x) -> R:
+    def min(self, selector: Callable[[T], R] = lambda x: x, default=NoReturn) -> R:
         ...
 
-    def min(self, selector: Callable[[T], R] = lambda x: x) -> R:
-        return min(map(selector, piter(self)))
+    def min(self, selector: Callable[[T], R] = lambda x: x, default=NoReturn) -> R:
+        return actions.min(self, selector, default)
 
     @overload
-    def max(self) -> T:
+    def max(self, *, default=NoReturn) -> Union[T, NoReturn]:
         ...
 
     @overload
-    def max(self, selector: Callable[[T], R] = lambda x: x) -> R:
+    def max(self, selector: Callable[[T], R] = lambda x: x, default=NoReturn) -> R:
         ...
 
-    def max(self, selector: Callable[[T], R] = lambda x: x) -> R:
-        return max(map(selector, piter(self)))
+    def max(self, selector: Callable[[T], R] = lambda x: x, default=NoReturn) -> R:
+        return actions.max(self, selector, default)
 
     @overload
     def sum(self) -> T:
@@ -138,28 +143,29 @@ class Query(Generic[T]):
         ...
 
     def sum(self, selector: Callable[[T], R] = lambda x: x) -> R:
-        return sum(map(selector, piter(self)))
+        return actions.sum(self, selector)
 
     @overload
     def average(self) -> T:
         ...
 
+    @overload
     def average(self, selector: Callable[[T], R] = lambda x: x) -> R:
         ...
 
-    @overload
     def average(self, selector: Callable[[T], R] = lambda x: x) -> R:
-        import statistics
+        return actions.average(self, selector)
 
-        return statistics.mean(pmap(self, selector))  # type: ignore
+    def reduce(
+        self,
+        seed: T,
+        op: Union[TH_ASSIGN_OP, Callable[[Any, Any], Any]] = "+=",
+        selector=lambda x: x,
+    ) -> T:
+        return actions.reduce(self, seed, op, selector)
 
-    def reduce(self, accumulator: Callable[[T, T], T], seed: T = undefined) -> Any:
-        from functools import reduce
-
-        if seed is undefined:
-            return reduce(accumulator, self)
-        else:
-            return reduce(accumulator, self, seed)
+    def concat(self, selector=lambda x: x, delimiter: str = "") -> str:
+        return actions.concat(self, selector, delimiter)
 
     def dispatch(
         self, func: Callable, selector: Callable[[T], Any], on_error: Callable = ...
@@ -581,70 +587,84 @@ class Query(Generic[T]):
 
 class PairQuery(Generic[K, V]):
     def len(self) -> int:
-        return len(self)
+        return actions.len(self)
 
     def exists(self) -> bool:
-        return len(self) > 0
+        return actions.exists(self)
 
-    def all(self, selector: Callable[[Tuple[K, V]], Any] = lambda x: x[0]) -> bool:
-        return all(map(selector, piter(self)))
+    def all(self, selector: Callable[[Tuple[K, V]], Any] = lambda x: x) -> bool:
+        return actions.all(self, selector)
 
-    def any(self, selector: Callable[[Tuple[K, V]], Any] = lambda x: x[0]) -> bool:
-        return any(map(selector, piter(self)))
+    def any(self, selector: Callable[[Tuple[K, V]], Any] = lambda x: x) -> bool:
+        return actions.any(self, selector)
+
+    def contains(
+        self, *values, selector: Callable[[Tuple[K, V]], Any] = lambda x: x
+    ) -> bool:
+        return actions.contains(self, *values, selector)
 
     @overload
-    def min(self) -> V:
+    def min(self, *, default=NoReturn) -> Union[V, NoReturn]:
         ...
 
     @overload
-    def min(self, selector: Callable[[Tuple[K, V]], R] = lambda x: x[0]) -> R:
+    def min(
+        self, selector: Callable[[Tuple[K, V]], R] = lambda x: x, default=NoReturn
+    ) -> R:
         ...
 
-    def min(self, selector: Callable[[Tuple[K, V]], R] = lambda x: x[0]) -> R:
-        return min(map(selector, piter(self)))
+    def min(
+        self, selector: Callable[[Tuple[K, V]], R] = lambda x: x, default=NoReturn
+    ) -> R:
+        return actions.min(self, selector, default)
 
     @overload
-    def max(self) -> V:
+    def max(self, *, default=NoReturn) -> Union[V, NoReturn]:
         ...
 
     @overload
-    def max(self, selector: Callable[[Tuple[K, V]], R] = lambda x: x[0]) -> R:
+    def max(
+        self, selector: Callable[[Tuple[K, V]], R] = lambda x: x, default=NoReturn
+    ) -> R:
         ...
 
-    def max(self, selector: Callable[[Tuple[K, V]], R] = lambda x: x[0]) -> R:
-        return max(map(selector, piter(self)))
+    def max(
+        self, selector: Callable[[Tuple[K, V]], R] = lambda x: x, default=NoReturn
+    ) -> R:
+        return actions.max(self, selector, default)
 
     @overload
     def sum(self) -> V:
         ...
 
     @overload
-    def sum(self, selector: Callable[[Tuple[K, V]], R] = lambda x: x[0]) -> R:
+    def sum(self, selector: Callable[[Tuple[K, V]], R] = lambda x: x) -> R:
         ...
 
-    def sum(self, selector: Callable[[Tuple[K, V]], R] = lambda x: x[0]) -> R:
-        return sum(map(selector, piter(self)))
+    def sum(self, selector: Callable[[Tuple[K, V]], R] = lambda x: x) -> R:
+        return actions.sum(self, selector)
 
     @overload
     def average(self) -> V:
         ...
 
-    def average(self, selector: Callable[[Tuple[K, V]], R] = lambda x: x[0]) -> R:
+    @overload
+    def average(self, selector: Callable[[Tuple[K, V]], R] = lambda x: x) -> R:
         ...
 
-    @overload
-    def average(self, selector: Callable[[Tuple[K, V]], R] = lambda x: x[0]) -> R:
-        import statistics
+    def average(self, selector: Callable[[Tuple[K, V]], R] = lambda x: x) -> R:
+        return actions.average(self, selector)
 
-        return statistics.mean(pmap(self, selector))  # type: ignore
+    def reduce(
+        self,
+        seed: T,
+        op: Union[TH_ASSIGN_OP, Callable[[Any, Any], Any]] = "+=",
+        selector=lambda x: x,
+    ) -> T:
+        return actions.reduce(self, seed, op, selector)
 
-    def reduce(self, accumulator: Callable[[T, T], T], seed: T = undefined) -> Any:
-        from functools import reduce
-
-        if seed is undefined:
-            return reduce(accumulator, self)
-        else:
-            return reduce(accumulator, self, seed)
+    def concat(self, selector=lambda x: x, delimiter: str = "") -> str:
+        return actions.concat(self, selector, delimiter)
 
     def dispatch(
         self,
@@ -665,10 +685,10 @@ class PairQuery(Generic[K, V]):
         ...
 
     @overload
-    def one(self, selector: Callable[[Tuple[K, V]], R] = lambda x: x[0]) -> R:
+    def one(self, selector: Callable[[Tuple[K, V]], R] = lambda x: x[1]) -> R:
         ...
 
-    def one(self, selector: Callable[[Tuple[K, V]], R] = lambda x: x[0]) -> R:
+    def one(self, selector: Callable[[Tuple[K, V]], R] = lambda x: x[1]) -> R:
         it = piter(self)
         try:
             result = next(it)
@@ -688,10 +708,10 @@ class PairQuery(Generic[K, V]):
         ...
 
     @overload
-    def first(self, selector: Callable[[Tuple[K, V]], R] = lambda x: x[0]) -> R:
+    def first(self, selector: Callable[[Tuple[K, V]], R] = lambda x: x[1]) -> R:
         ...
 
-    def first(self, selector: Callable[[Tuple[K, V]], R] = lambda x: x[0]) -> Any:
+    def first(self, selector: Callable[[Tuple[K, V]], R] = lambda x: x[1]) -> Any:
         if isinstance(self, Sequence):
             try:
                 obj = self[0]
@@ -711,10 +731,10 @@ class PairQuery(Generic[K, V]):
         ...
 
     @overload
-    def last(self, selector: Callable[[Tuple[K, V]], R] = lambda x: x[0]) -> R:
+    def last(self, selector: Callable[[Tuple[K, V]], R] = lambda x: x[1]) -> R:
         ...
 
-    def last(self, selector: Callable[[Tuple[K, V]], R] = lambda x: x[0]) -> R:
+    def last(self, selector: Callable[[Tuple[K, V]], R] = lambda x: x[1]) -> R:
         undefined = object()
         last: R = undefined  # type: ignore
         for elm in piter(self):

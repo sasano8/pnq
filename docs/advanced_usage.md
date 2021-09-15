@@ -240,8 +240,7 @@ import asyncio
 import pnq
 import httpx
 
-SUCCESS = True
-ERROR = False
+
 
 params = pnq.query([
     {"url": "test_url_1"},
@@ -257,13 +256,13 @@ async def step_fetch(url):
 
 @step_fetch.group_by
 def step_finalize(res):
-    return ERROR if res.err else SUCCESS, res
+    return (not res.err, res)
 
 result = asyncio.run(step_finalize.lazy(dict))
-print(result[SUCCESS])
-print(result[ERROR])
-```
 
+print(result[True])
+print(result[False])
+```
 
 
 ## 性能評価

@@ -80,7 +80,7 @@ class Info:
     @property
     def selector(self):
         if len(self.typevars) == 2:
-            return f"lambda x: x[0] "
+            return f"lambda x: x[1] "
         else:
             return "lambda x: x"
 

@@ -42,6 +42,5 @@ exclude = '''
   | _build
   | buck-out
   | build
-  | pnq_template
 )/
 '''
