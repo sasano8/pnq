@@ -21,7 +21,7 @@ class MustError(PnqException):
 
 
 # KeyError IndexErrorを継承しても try: ... except KeyError としても補足できないっぽい
-class KeyNotFoundError(MustError):
+class NotFoundError(MustError, KeyError, IndexError):
     """
     クエリがキーに対応する要素を要求したが存在しない。
     IndexErrorとKeyErrorはKeyNotFoundErrorに置き換わります
@@ -29,7 +29,9 @@ class KeyNotFoundError(MustError):
     関連: `get` `must_get_many`
     """
 
-    pass
+    def __init__(self, key):
+        super().__init__(f"{key}")
+        self.key = key
 
 
 class NoElementError(MustError):

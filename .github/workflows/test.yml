@@ -67,7 +67,7 @@ jobs:
         run: poetry run pytest tests
 
       - name: Check code style with Black
-        run: poetry run black --check --diff . --exclude "pnq\/__template__\.py"
+        run: poetry run black --check --diff .
       # - name: Check code style with Prettier
       #   working-directory: ./ui
       #   run: npx prettier --check .

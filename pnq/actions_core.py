@@ -1,8 +1,15 @@
 from decimal import Decimal
 from decimal import InvalidOperation as DecimalInvalidOperation
-from typing import Any, Callable, Literal, Mapping, NoReturn, TypeVar, Union
+from typing import Any, Callable, Literal, Mapping, NoReturn, Sequence, TypeVar, Union
 
-from .exceptions import DuplicateElementError
+from pnq import actions
+
+from .exceptions import (
+    DuplicateElementError,
+    NoElementError,
+    NotFoundError,
+    NotOneElementError,
+)
 from .op import MAP_ASSIGN_OP, TH_ASSIGN_OP, TH_ROUND
 
 T = TypeVar("T")
@@ -46,13 +53,14 @@ def name_as(name):
 ###########################################
 @mark
 @name_as("iter")
-def __iter(self):
+def __iter(self, selector=None):
     """イテラブルまたはマッピングからイテレータを取得します。
     マッピングの場合は、キーバリューのタプルを返すイテレータを取得します。
 
     Args:
 
     * self: イテレータを取得するイテラブルまたはマッピング
+    * selector: 取得したイテレータから任意の要素を抽出する関数
 
     Returns: 取得したイテレータを内包するクエリ
 
@@ -62,16 +70,28 @@ def __iter(self):
     [1, 2]
     >>> pnq.iter([{"id": 1, "name": "bob"}]).to_list()
     [("id", 1), ("name", "bob")]
+    >>> pnq.iter([{"id": 1, "name": "bob"}], lambda x: x[1]).to_list()
+    [1, "bob"]
     ```
     """
+
     it = getattr(self, "__piter__", None)
     if it:
-        return iter(it())
+        it = it()
     else:
         if isinstance(self, Mapping):
-            return iter(self.items())
+            it = self.items()
         else:
-            return iter(self)
+            it = self
+
+    return __get_iterator(it, selector)
+
+
+def __get_iterator(iterator, selector):
+    if selector is None:
+        return iterator
+    else:
+        return map(selector, iterator)
 
 
 @mark
@@ -1090,7 +1110,7 @@ def order_by_shuffle(self):
 @mark
 @name_as("len")
 def __len(self):
-    """シーケンスの要素を返します。
+    """シーケンスの要素数を返します。
 
     Usage:
     ```
@@ -1098,6 +1118,9 @@ def __len(self):
     3
     ```
     """
+    if hasattr(self, "__len__"):
+        return len(self)
+
     it = __iter(self)
     for i in enumerate(it, 1):
         ...
@@ -1107,7 +1130,7 @@ def __len(self):
 
 @mark
 def exists(self):
-    """シーケンスに要素が存在する場合、Trueを返します。
+    """シーケンス内の要素の有無を確認します。
 
     Usage:
     ```
@@ -1129,6 +1152,8 @@ def exists(self):
 def __all(self, selector=lambda x: x):
     """シーケンスの全ての要素がTrueと判定できるか評価します。要素がない場合はTrueを返します。
 
+    * selector: 要素から検証する値を抽出する関数
+
     Usage:
     ```
     >>> pnq.query([]).all()
@@ -1143,13 +1168,15 @@ def __all(self, selector=lambda x: x):
     True
     ```
     """
-    return all(selector(x) for x in __iter(self))
+    return all(__iter(self, selector))
 
 
 @mark
 @name_as("any")
 def __any(self, selector=lambda x: x):
     """シーケンスのいずれかの要素がTrueと判定できるか評価します。要素がない場合はFalseを返します。
+
+    * selector: 要素から検証する値を抽出する関数
 
     Usage:
     ```
@@ -1163,13 +1190,17 @@ def __any(self, selector=lambda x: x):
     True
     ```
     """
-    return any((selector(x) for x in __iter(self)))
+    return any(__iter(self, selector))
 
 
 @mark
 def contains(self, value, selector=lambda x: x) -> bool:
     """既定の等値比較子を使用して、指定した要素がシーケンスに含まれているか評価します。
     辞書をソースとした場合は、キーバリューのタプルを比較します。
+
+
+    * value: 検索対象の値
+    * selector: 要素から検索する値を抽出する関数
 
     Usage:
     ```
@@ -1186,7 +1217,7 @@ def contains(self, value, selector=lambda x: x) -> bool:
     True
     ```
     """
-    for val in __iter(self):
+    for val in __iter(self, selector):
         if val == value:
             return True
 
@@ -1200,6 +1231,7 @@ def __min(self, selector=lambda x: x, default=NoReturn):
 
     Args:
 
+    * selector: 要素から計算する値を抽出する関数
     * default: 要素が存在しない場合に返す値
 
     Usage:
@@ -1213,9 +1245,9 @@ def __min(self, selector=lambda x: x, default=NoReturn):
     ```
     """
     if default is NoReturn:
-        return min(__iter(self), key=selector)
+        return min(__iter(self, selector))
     else:
-        return min(__iter(self), key=selector, default=default)
+        return min(__iter(self, selector), default=default)
 
 
 @mark
@@ -1225,6 +1257,7 @@ def __max(self, selector=lambda x: x, default=NoReturn):
 
     Args:
 
+    * selector: 要素から計算する値を抽出する関数
     * default: 要素が存在しない場合に返す値
 
     Usage:
@@ -1238,15 +1271,17 @@ def __max(self, selector=lambda x: x, default=NoReturn):
     ```
     """
     if default is NoReturn:
-        return max(__iter(self), key=selector)
+        return max(__iter(self, selector))
     else:
-        return max(__iter(self), key=selector, default=default)
+        return max(__iter(self, selector), default=default)
 
 
 @mark
 @name_as("sum")
 def __sum(self, selector=lambda x: x):
     """シーケンスの要素を合計します。
+
+    * selector: 要素から計算する値を抽出する関数
 
     Usage:
     ```
@@ -1256,7 +1291,7 @@ def __sum(self, selector=lambda x: x):
     3
     ```
     """
-    return sum(selector(x) for x in __iter(self))
+    return sum(__iter(self, selector))
 
 
 @mark
@@ -1267,7 +1302,7 @@ def average(
 
     Args:
 
-    * selector: 要素を受け取り、計算対象の値を返す関数
+    * selector: 要素から計算する値を抽出する関数
     * exp: 丸める小数点以下の桁数
     * round: 丸め方式
 
@@ -1282,12 +1317,13 @@ def average(
     # import statistics
     # return statistics.mean(pmap(self, selector))  # type: ignore
 
-    it = __iter(self)
     seed = Decimal("0")
     i = 0
     val = 0
+
+    it = __iter(self, selector)
     for i, val in enumerate(it, 1):
-        val = selector(val)
+        # val = selector(val)
         try:
             val = Decimal(str(val))  # type: ignore
         except DecimalInvalidOperation:
@@ -1319,8 +1355,9 @@ def reduce(
     Args:
 
     * seed: 合成対象とする初期値(左辺)
-    * op: 代入演算子
-    * selector: 要素を受け取り、合成する値を返す関数（右辺）
+    * op: 代入演算子または２項演算関数
+    * selector: 要素から結合する値を抽出する関数（右辺）
+
 
     Usage:
     ```
@@ -1332,6 +1369,8 @@ def reduce(
     {"a": 1, "b": 2}
     >>> pnq.query([1, 2, 3, 4, 5]).reduce(0, "+=", lambda x: x * 10)
     150
+    >>> pnq.query([1, 2, 3, 4, 5]).reduce(0, lambda l, r: l + r, lambda x: x * 10)
+    150
     ```
     """
     if callable(op):
@@ -1339,9 +1378,7 @@ def reduce(
     else:
         binary_op = MAP_ASSIGN_OP[op]
 
-    it = __iter(self)
-    for val in it:
-        val = selector(val)
+    for val in __iter(self, selector):
         seed = binary_op(seed, val)
 
     return seed
@@ -1353,6 +1390,7 @@ def concat(self, selector=lambda x: x, delimiter: str = ""):
 
     Args:
 
+    * selector: 要素から結合する値を抽出する関数
     * delimiter: 区切り文字
 
     Usage:
@@ -1369,7 +1407,7 @@ def concat(self, selector=lambda x: x, delimiter: str = ""):
     "a,b"
     ```
     """
-    return delimiter.join(str(x) for x in __iter(self))
+    return delimiter.join(str(x) for x in __iter(self, selector))
 
 
 ###########################################
@@ -1539,7 +1577,16 @@ def get(self, key, default=NoReturn):
     10
     ```
     """
-    pass
+    try:
+        return self[key]
+    except (IndexError, KeyError):
+        if isinstance(self, set) and key in self:
+            return key
+
+        if default is NoReturn:
+            raise NotFoundError(key)
+        else:
+            return default
 
 
 @mark
@@ -1547,6 +1594,9 @@ def one(self, default=NoReturn):
     """シーケンス内の要素が１つであることを検証し、その要素を返します。
     検証に失敗した場合は、例外が発生します。
     デフォルト値を設定した場合は、要素が存在しない場合にデフォルト値を返します。
+
+    `one`関数は、１つの要素であるか検証するために２つ目の要素を取り出そうとします。
+    ソースとなるイテラブルが値を消費する実装だと、２つの要素が失われる可能性があることに注意してください。
 
     Args:
 
@@ -1566,14 +1616,27 @@ def one(self, default=NoReturn):
     raise NotOneElementError("...")
     ```
     """
-    pass
+    it = __iter(self)
+    try:
+        result = next(it)
+    except StopIteration:
+        raise NoElementError()
+
+    try:
+        next(it)
+        raise NotOneElementError()
+    except StopIteration:
+        pass
+
+    return result
 
 
 @mark
 def first(self, default=NoReturn):
     """シーケンス内の最初の要素を返します。
     要素が存在しない場合は、例外が発生します。
-    デフォルト値を設定した場合は、要素が存在しない場合にデフォルト値を返します。
+
+    セットをソースとした場合、セットは順序を保持しないため、順序性は期待できません。
 
     Args:
 
@@ -1591,14 +1654,19 @@ def first(self, default=NoReturn):
     None
     ```
     """
-    pass
+    it = __iter(self)
+    try:
+        return next(it)
+    except StopIteration:
+        raise NoElementError()
 
 
 @mark
-def last(self, default=NoReturn):
+def last(self):
     """シーケンス内の最後の要素を返します。
     要素が存在しない場合は、例外が発生します。
-    デフォルト値を設定した場合は、要素が存在しない場合にデフォルト値を返します。
+
+    セットをソースとした場合、セットは順序を保持しないため、順序性は期待できません。
 
     Args:
 
@@ -1616,22 +1684,53 @@ def last(self, default=NoReturn):
     None
     ```
     """
-    pass
+    if isinstance(self, Sequence):
+        try:
+            return self[-1]
+        except IndexError:
+            raise NoElementError()
+
+    undefined = object()
+    last = undefined
+    for elm in __iter(self):
+        last = elm
+
+    if last is undefined:
+        raise NoElementError()
+    else:
+        return last
 
 
 @mark
-def one_or_default(self):
-    pass
+def get_or(self, key, default):
+    try:
+        return actions.get(self, key)
+    except NotFoundError:
+        return default
 
 
 @mark
-def first_or_default(self):
-    pass
+def one_or(self, default):
+    try:
+        return actions.one(self)
+    except NoElementError:
+        return default
 
 
 @mark
-def last_or_default(self):
-    pass
+def first_or(self, default):
+    try:
+        return actions.first(self)
+    except NoElementError:
+        return default
+
+
+@mark
+def last_or(self, default):
+    try:
+        return actions.last(self)
+    except NoElementError:
+        return default
 
 
 @mark
