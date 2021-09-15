@@ -1,8 +1,15 @@
 from decimal import Decimal
 from decimal import InvalidOperation as DecimalInvalidOperation
-from typing import Any, Callable, Literal, Mapping, NoReturn, TypeVar, Union
+from typing import Any, Callable, Literal, Mapping, NoReturn, Sequence, TypeVar, Union
 
-from .exceptions import DuplicateElementError
+from pnq import actions
+
+from .exceptions import (
+    DuplicateElementError,
+    NoElementError,
+    NotFoundError,
+    NotOneElementError,
+)
 from .op import MAP_ASSIGN_OP, TH_ASSIGN_OP, TH_ROUND
 
 T = TypeVar("T")
@@ -63,6 +70,8 @@ def __iter(self, selector=None):
     [1, 2]
     >>> pnq.iter([{"id": 1, "name": "bob"}]).to_list()
     [("id", 1), ("name", "bob")]
+    >>> pnq.iter([{"id": 1, "name": "bob"}], lambda x: x[1]).to_list()
+    [1, "bob"]
     ```
     """
 
@@ -1568,7 +1577,16 @@ def get(self, key, default=NoReturn):
     10
     ```
     """
-    pass
+    try:
+        return self[key]
+    except (IndexError, KeyError):
+        if isinstance(self, set) and key in self:
+            return key
+
+        if default is NoReturn:
+            raise NotFoundError(key)
+        else:
+            return default
 
 
 @mark
@@ -1576,6 +1594,9 @@ def one(self, default=NoReturn):
     """シーケンス内の要素が１つであることを検証し、その要素を返します。
     検証に失敗した場合は、例外が発生します。
     デフォルト値を設定した場合は、要素が存在しない場合にデフォルト値を返します。
+
+    `one`関数は、１つの要素であるか検証するために２つ目の要素を取り出そうとします。
+    ソースとなるイテラブルが値を消費する実装だと、２つの要素が失われる可能性があることに注意してください。
 
     Args:
 
@@ -1595,14 +1616,27 @@ def one(self, default=NoReturn):
     raise NotOneElementError("...")
     ```
     """
-    pass
+    it = __iter(self)
+    try:
+        result = next(it)
+    except StopIteration:
+        raise NoElementError()
+
+    try:
+        next(it)
+        raise NotOneElementError()
+    except StopIteration:
+        pass
+
+    return result
 
 
 @mark
 def first(self, default=NoReturn):
     """シーケンス内の最初の要素を返します。
     要素が存在しない場合は、例外が発生します。
-    デフォルト値を設定した場合は、要素が存在しない場合にデフォルト値を返します。
+
+    セットをソースとした場合、セットは順序を保持しないため、順序性は期待できません。
 
     Args:
 
@@ -1620,14 +1654,19 @@ def first(self, default=NoReturn):
     None
     ```
     """
-    pass
+    it = __iter(self)
+    try:
+        return next(it)
+    except StopIteration:
+        raise NoElementError()
 
 
 @mark
-def last(self, default=NoReturn):
+def last(self):
     """シーケンス内の最後の要素を返します。
     要素が存在しない場合は、例外が発生します。
-    デフォルト値を設定した場合は、要素が存在しない場合にデフォルト値を返します。
+
+    セットをソースとした場合、セットは順序を保持しないため、順序性は期待できません。
 
     Args:
 
@@ -1645,22 +1684,53 @@ def last(self, default=NoReturn):
     None
     ```
     """
-    pass
+    if isinstance(self, Sequence):
+        try:
+            return self[-1]
+        except IndexError:
+            raise NoElementError()
+
+    undefined = object()
+    last = undefined
+    for elm in __iter(self):
+        last = elm
+
+    if last is undefined:
+        raise NoElementError()
+    else:
+        return last
 
 
 @mark
-def one_or_default(self):
-    pass
+def get_or(self, key, default):
+    try:
+        return actions.get(self, key)
+    except NotFoundError:
+        return default
 
 
 @mark
-def first_or_default(self):
-    pass
+def one_or(self, default):
+    try:
+        return actions.one(self)
+    except NoElementError:
+        return default
 
 
 @mark
-def last_or_default(self):
-    pass
+def first_or(self, default):
+    try:
+        return actions.first(self)
+    except NoElementError:
+        return default
+
+
+@mark
+def last_or(self, default):
+    try:
+        return actions.last(self)
+    except NoElementError:
+        return default
 
 
 @mark

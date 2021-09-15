@@ -25,7 +25,7 @@ from . import actions
 from .core import LazyIterate as _LazyIterate
 from .core import LazyReference as _LazyReference
 from .core import piter, undefined
-from .exceptions import NoElementError, NotOneElementError
+from .exceptions import NoElementError, NotFoundError, NotOneElementError
 from .op import TH_ASSIGN_OP
 
 T = TypeVar("T")
@@ -149,84 +149,23 @@ class {{query.cls}}:
     def to_dict(self, duplicate: bool=...) -> {{query.to_dict}}:
         return DictEx(piter(self))
 
-    @overload
-    def one(self) -> {{query.row}}: ...
-    @overload
-    def one(self, selector: Callable[[{{query.row}}], R]={{query.selector}}) -> R: ...
-    def one(self, selector: Callable[[{{query.row}}], R]={{query.selector}}) -> R:
-        it = piter(self)
-        try:
-            result = next(it)
-        except StopIteration:
-            raise NoElementError()
+    def one(self) -> {{query.row}}:
+        return actions.one(self)
 
-        try:
-            next(it)
-            raise NotOneElementError()
-        except StopIteration:
-            pass
+    def one_or(self, default: R) -> Union[{{query.row}}, R]:
+        return actions.one_or(self, default)
 
-        return selector(result)
-    @overload
-    def first(self) -> {{query.row}}: ...
-    @overload
-    def first(self, selector: Callable[[{{query.row}}], R]={{query.selector}}) -> R: ...
-    def first(self, selector: Callable[[{{query.row}}], R]={{query.selector}}) -> Any:
-        if isinstance(self, Sequence):
-            try:
-                obj = self[0]
-            except IndexError:
-                raise NoElementError()
-        else:
-            try:
-                it = piter(self)
-                obj = next(it)
-            except StopIteration:
-                raise NoElementError()
+    def first(self) -> {{query.row}}:
+        return actions.first(self)
 
-        return selector(obj)
+    def first_or(self, default: R) -> Union[{{query.row}}, R]:
+        return actions.first_or(self, default)
 
-    @overload
-    def last(self) -> {{query.row}}: ...
-    @overload
-    def last(self, selector: Callable[[{{query.row}}], R]={{query.selector}}) -> R: ...
-    def last(self, selector: Callable[[{{query.row}}], R]={{query.selector}}) -> R:
-        undefined = object()
-        last: R = undefined  # type: ignore
-        for elm in piter(self):
-            last = elm  # type: ignore
+    def last(self) -> {{query.row}}:
+        return actions.last(self)
 
-        if last is undefined:
-            raise NoElementError()
-
-        return selector(last)  # type: ignore
-    @overload
-    def one_or_default(self) -> Union[{{query.row}}, None]: ...
-    @overload
-    def one_or_default(self, default: R) -> Union[{{query.row}}, R]: ...
-    def one_or_default(self, default=None) -> Any:
-        try:
-            return self.one()
-        except (NoElementError, NotOneElementError):
-            return default
-    @overload
-    def first_or_default(self) -> Union[{{query.row}}, None]: ...
-    @overload
-    def first_or_default(self, default: R) -> Union[{{query.row}}, R]: ...
-    def first_or_default(self, default=None) -> Any:
-        try:
-            return self.first()
-        except NoElementError:
-            return default
-    @overload
-    def last_or_default(self) -> Union[{{query.row}}, None]: ...
-    @overload
-    def last_or_default(self, default: R) -> Union[{{query.row}}, R]: ...
-    def last_or_default(self, default=None) -> Any:
-        try:
-            return self.last()
-        except NoElementError:
-            return default
+    def last_or(self, default: R) -> Union[{{query.row}}, R]:
+        return actions.last_or(self, default)
 
     @overload
     def cast(self, type: Type[Tuple[K2, V2]]) -> {{pair.name}}[K2, V2]:
@@ -556,27 +495,23 @@ class {{query.cls}}:
     def get_many(self, *keys: {{query.K}}) -> {{query.str}}:
         undefined = object()
         for id in keys:
-            obj = self.get(id, undefined)
+            obj = self.get_or(id, undefined)
             if not obj is undefined:
                 yield id, obj
-    @overload
-    def get(self, key: {{query.K}}) -> {{query.V}}: ...
-    @overload
-    def get(self, key: {{query.K}}, default: R=...) -> Union[{{query.V}}, R]: ...
-    def get(self, key: {{query.K}}, default: R=undefined) -> Any:
-        try:
-            return self[key]  # type: ignore
-        except (KeyError, IndexError):
-            if default is not undefined:
-                return default
-            else:
-                raise
 
-    def get_or_default(self, key,default=None):
-        return self.get(key, default)  # type: ignore
+    @overload
+    def get(self, key: {{query.K}}) -> {{query.V}}:
+        ...
 
-    def get_or_none(self, key):
-        return self.get(key, None)  # type: ignore
+    @overload
+    def get(self, key: {{query.K}}, default: R = NoReturn) -> Union[{{query.V}}, R]:
+        ...
+
+    def get(self, key: {{query.K}}, default=NoReturn) -> Any:
+        return actions.get(self, key, default)
+
+    def get_or(self, key: {{query.K}}, default: R) -> Union[{{query.V}}, R]:
+        return actions.get_or(self, key, default)
 
     def to_list(self) -> {{query.to_list}}:
         return ListEx(piter(self))
@@ -654,7 +589,7 @@ class SetEx(Instance, IndexQuery[T, T], Query[T], Set[T]):
         if key in self:
             return key
         else:
-            raise KeyError(key)
+            raise NotFoundError(key)
 
     @lazy_reference
     def reverse(self) -> "Query[T]":

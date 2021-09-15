@@ -25,8 +25,10 @@ from .actions_core import exists as exists
 from .actions_core import filter_in as filter_in
 from .actions_core import filter_type as filter_type
 from .actions_core import first as first
+from .actions_core import first_or as first_or
 from .actions_core import first_or_raise as first_or_raise
 from .actions_core import get as get
+from .actions_core import get_or as get_or
 from .actions_core import get_many as get_many
 from .actions_core import get_or_raise as get_or_raise
 from .actions_core import group_by as group_by
@@ -34,6 +36,7 @@ from .actions_core import group_join as group_join
 from .actions_core import infinite as infinite
 from .actions_core import join as join
 from .actions_core import last as last
+from .actions_core import last_or as last_or
 from .actions_core import last_or_raise as last_or_raise
 from .actions_core import lazy as lazy
 from .actions_core import map_flat as map_flat
@@ -43,6 +46,7 @@ from .actions_core import must_get_many as must_get_many
 from .actions_core import must_type as must_type
 from .actions_core import must_unique as must_unique
 from .actions_core import one as one
+from .actions_core import one_or as one_or
 from .actions_core import one_or_raise as one_or_raise
 from .actions_core import order_by as order_by
 from .actions_core import order_by_fields as order_by_fields

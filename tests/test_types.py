@@ -3,7 +3,7 @@ from typing import Iterable, Mapping, Tuple
 
 import pytest
 
-from pnq.exceptions import NoElementError, NotOneElementError
+from pnq.exceptions import NoElementError, NotFoundError, NotOneElementError
 from pnq.types import DictEx, IndexQuery, ListEx, PairQuery, Query, SetEx, query
 
 pnq = query
@@ -367,59 +367,55 @@ class TestAggregating:
         assert pnq(["a", "b", "c"]).map(lambda x: x).concat(delimiter=",") == "a,b,c"
 
     def test_selectors(self):
-        q = pnq([(0, 10)])
         no_accept = "unexpected keyword argument 'selector'"
-        with pytest.raises(TypeError, match=no_accept):
-            q.len(selector=lambda x: x)
 
-        with pytest.raises(TypeError, match=no_accept):
-            q.exists(selector=lambda x: x)
+        def test_selector_sub(q):
+            with pytest.raises(TypeError, match=no_accept):
+                q.len(selector=lambda x: x)
 
-        assert q.all(selector=lambda x: x[0]) == False
-        assert q.all(selector=lambda x: x[1])
+            with pytest.raises(TypeError, match=no_accept):
+                q.exists(selector=lambda x: x)
 
-        assert q.any(selector=lambda x: x[0]) == False
-        assert q.any(selector=lambda x: x[1])
+            assert q.all(selector=lambda x: x[0]) == False
+            assert q.all(selector=lambda x: x[1])
 
-        assert q.contains(10, selector=lambda x: x[0]) == False
-        assert q.contains(10, selector=lambda x: x[1])
+            assert q.any(selector=lambda x: x[0]) == False
+            assert q.any(selector=lambda x: x[1])
 
-        assert q.min(selector=lambda x: x[0]) == 0
-        assert q.min(selector=lambda x: x[1]) == 10
+            assert q.contains(10, selector=lambda x: x[0]) == False
+            assert q.contains(10, selector=lambda x: x[1])
 
-        assert q.max(selector=lambda x: x[0]) == 0
-        assert q.max(selector=lambda x: x[1]) == 10
+            assert q.min(selector=lambda x: x[0]) == 0
+            assert q.min(selector=lambda x: x[1]) == 10
 
-        assert q.sum(selector=lambda x: x[0]) == 0
-        assert q.sum(selector=lambda x: x[1]) == 10
+            assert q.max(selector=lambda x: x[0]) == 0
+            assert q.max(selector=lambda x: x[1]) == 10
 
-        assert q.average(selector=lambda x: x[0]) == 0
-        assert q.average(selector=lambda x: x[1]) == 10
+            assert q.sum(selector=lambda x: x[0]) == 0
+            assert q.sum(selector=lambda x: x[1]) == 10
 
-        assert q.reduce(0, "+=", selector=lambda x: x[0]) == 0
-        assert q.reduce(0, "+=", selector=lambda x: x[1]) == 10
+            assert q.average(selector=lambda x: x[0]) == 0
+            assert q.average(selector=lambda x: x[1]) == 10
 
-        assert q.concat(selector=lambda x: x[0]) == "0"
-        assert q.concat(selector=lambda x: x[1]) == "10"
+            assert q.reduce(0, "+=", selector=lambda x: x[0]) == 0
+            assert q.reduce(0, "+=", selector=lambda x: x[1]) == 10
+
+            assert q.concat(selector=lambda x: x[0]) == "0"
+            assert q.concat(selector=lambda x: x[1]) == "10"
+
+        test_selector_sub(pnq([(0, 10)]))
+        test_selector_sub(pnq([(0, 10)]).map(lambda x: x))
 
 
 class TestGetting:
-    def test_get(self):
-        pass
-
-    def test_one(self):
-        pass
-
-    def test_first(self):
-        pass
-
-    def test_last(self):
-        pass
-
-
-class TestGetter:
     def test_no_elements(self):
         q = pnq([])
+
+        with pytest.raises(TypeError, match="missing 1 required positional argument"):
+            q.get()
+
+        with pytest.raises(NotFoundError):
+            q.get(1)
 
         with pytest.raises(NoElementError):
             q.first()
@@ -430,41 +426,71 @@ class TestGetter:
         with pytest.raises(NoElementError):
             q.last()
 
-        assert q.first_or_default() is None
-        assert q.one_or_default() is None
-        assert q.last_or_default() is None
-        assert q.first_or_default(1) == 1
-        assert q.one_or_default(2) == 2
-        assert q.last_or_default(3) == 3
+        assert q.get(1, None) is None
+        assert q.get_or(1, None) is None
+        assert q.first_or(None) is None
+        assert q.one_or(None) is None
+        assert q.last_or(None) is None
+        assert q.get(0, 1) == 1
+        assert q.get_or(0, 1) == 1
+        assert q.first_or(2) == 2
+        assert q.one_or(3) == 3
 
     def test_one_elements(self):
         q = pnq([5])
 
+        with pytest.raises(TypeError, match="missing 1 required positional argument"):
+            q.get()
+
+        assert q.get(0) == 5
         assert q.first() == 5
         assert q.one() == 5
         assert q.last() == 5
 
-        assert q.first_or_default() == 5
-        assert q.one_or_default() == 5
-        assert q.last_or_default() == 5
-        assert q.first_or_default(1) == 5
-        assert q.one_or_default(2) == 5
-        assert q.last_or_default(3) == 5
+        assert q.get(0, None) == 5
+        assert q.get_or(0, None) == 5
+        assert q.first_or(None) == 5
+        assert q.one_or(None) == 5
+        assert q.last_or(None) == 5
+
+        assert q.get(0, 1) == 5
+        assert q.get_or(0, 1) == 5
+        assert q.first_or(2) == 5
+        assert q.one_or(3) == 5
+        assert q.last_or(4) == 5
 
     def test_two_elements(self):
         q = pnq([-10, 10])
 
+        assert q.get(0) == -10
+        assert q.get(1) == 10
         assert q.first() == -10
         with pytest.raises(NotOneElementError):
             q.one()
         assert q.last() == 10
 
-        assert q.first_or_default() == -10
-        assert q.one_or_default() is None
-        assert q.last_or_default() == 10
-        assert q.first_or_default(1) == -10
-        assert q.one_or_default(2) == 2
-        assert q.last_or_default(3) == 10
+        assert q.get(0, None) == -10
+        assert q.get_or(0, None) == -10
+        assert q.get(1, None) == 10
+        assert q.get_or(1, None) == 10
+        assert q.first_or(None) == -10
+
+        with pytest.raises(NotOneElementError):
+            q.one_or(None)
+
+        assert q.last_or(None) == 10
+
+        assert q.get(0, 1) == -10
+        assert q.get_or(0, 1) == -10
+        assert q.get(1, 2) == 10
+        assert q.get_or(1, 2) == 10
+        assert q.first_or(3) == -10
+        assert q.first_or(3) == -10
+
+        with pytest.raises(NotOneElementError):
+            q.one_or(4)
+
+        assert q.last_or(5) == 10
 
 
 class TestSlicer:
@@ -706,12 +732,15 @@ class TestDict:
         db = self.db()
         assert db[1] == "a"
         assert db.get(1) == "a"
-        assert db.get_or_default(1, 10) == "a"
-        assert db.get_or_none(1) == "a"
+        assert db.get(1, 0) == "a"
+        assert db.get_or(1, 10) == "a"
+        assert db.get_or(1, None) == "a"
         with pytest.raises(KeyError):
             assert db.get(-1)
-        assert db.get_or_default(-1, 10) == 10
-        assert db.get_or_none(-1) == None
+        assert db.get(-1, None) is None
+        assert db.get(-1, 10) == 10
+        assert db.get_or(-1, 10) == 10
+        assert db.get_or(-1, None) == None
 
     def test_get_many(self):
         db = self.db()

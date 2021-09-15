@@ -25,7 +25,7 @@ from . import actions
 from .core import LazyIterate as _LazyIterate
 from .core import LazyReference as _LazyReference
 from .core import piter, undefined
-from .exceptions import NoElementError, NotOneElementError
+from .exceptions import NoElementError, NotFoundError, NotOneElementError
 from .op import TH_ASSIGN_OP
 
 T = TypeVar("T")
@@ -178,112 +178,23 @@ class Query(Generic[T]):
     def to_dict(self, duplicate: bool = ...) -> DictEx[Any, Any]:
         return DictEx(piter(self))
 
-    @overload
     def one(self) -> T:
-        ...
+        return actions.one(self)
 
-    @overload
-    def one(self, selector: Callable[[T], R] = lambda x: x) -> R:
-        ...
+    def one_or(self, default: R) -> Union[T, R]:
+        return actions.one_or(self, default)
 
-    def one(self, selector: Callable[[T], R] = lambda x: x) -> R:
-        it = piter(self)
-        try:
-            result = next(it)
-        except StopIteration:
-            raise NoElementError()
-
-        try:
-            next(it)
-            raise NotOneElementError()
-        except StopIteration:
-            pass
-
-        return selector(result)
-
-    @overload
     def first(self) -> T:
-        ...
+        return actions.first(self)
 
-    @overload
-    def first(self, selector: Callable[[T], R] = lambda x: x) -> R:
-        ...
+    def first_or(self, default: R) -> Union[T, R]:
+        return actions.first_or(self, default)
 
-    def first(self, selector: Callable[[T], R] = lambda x: x) -> Any:
-        if isinstance(self, Sequence):
-            try:
-                obj = self[0]
-            except IndexError:
-                raise NoElementError()
-        else:
-            try:
-                it = piter(self)
-                obj = next(it)
-            except StopIteration:
-                raise NoElementError()
-
-        return selector(obj)
-
-    @overload
     def last(self) -> T:
-        ...
+        return actions.last(self)
 
-    @overload
-    def last(self, selector: Callable[[T], R] = lambda x: x) -> R:
-        ...
-
-    def last(self, selector: Callable[[T], R] = lambda x: x) -> R:
-        undefined = object()
-        last: R = undefined  # type: ignore
-        for elm in piter(self):
-            last = elm  # type: ignore
-
-        if last is undefined:
-            raise NoElementError()
-
-        return selector(last)  # type: ignore
-
-    @overload
-    def one_or_default(self) -> Union[T, None]:
-        ...
-
-    @overload
-    def one_or_default(self, default: R) -> Union[T, R]:
-        ...
-
-    def one_or_default(self, default=None) -> Any:
-        try:
-            return self.one()
-        except (NoElementError, NotOneElementError):
-            return default
-
-    @overload
-    def first_or_default(self) -> Union[T, None]:
-        ...
-
-    @overload
-    def first_or_default(self, default: R) -> Union[T, R]:
-        ...
-
-    def first_or_default(self, default=None) -> Any:
-        try:
-            return self.first()
-        except NoElementError:
-            return default
-
-    @overload
-    def last_or_default(self) -> Union[T, None]:
-        ...
-
-    @overload
-    def last_or_default(self, default: R) -> Union[T, R]:
-        ...
-
-    def last_or_default(self, default=None) -> Any:
-        try:
-            return self.last()
-        except NoElementError:
-            return default
+    def last_or(self, default: R) -> Union[T, R]:
+        return actions.last_or(self, default)
 
     @overload
     def cast(self, type: Type[Tuple[K2, V2]]) -> PairQuery[K2, V2]:
@@ -680,112 +591,23 @@ class PairQuery(Generic[K, V]):
     def to_dict(self, duplicate: bool = ...) -> DictEx[K, V]:
         return DictEx(piter(self))
 
-    @overload
     def one(self) -> Tuple[K, V]:
-        ...
+        return actions.one(self)
 
-    @overload
-    def one(self, selector: Callable[[Tuple[K, V]], R] = lambda x: x[1]) -> R:
-        ...
+    def one_or(self, default: R) -> Union[Tuple[K, V], R]:
+        return actions.one_or(self, default)
 
-    def one(self, selector: Callable[[Tuple[K, V]], R] = lambda x: x[1]) -> R:
-        it = piter(self)
-        try:
-            result = next(it)
-        except StopIteration:
-            raise NoElementError()
-
-        try:
-            next(it)
-            raise NotOneElementError()
-        except StopIteration:
-            pass
-
-        return selector(result)
-
-    @overload
     def first(self) -> Tuple[K, V]:
-        ...
+        return actions.first(self)
 
-    @overload
-    def first(self, selector: Callable[[Tuple[K, V]], R] = lambda x: x[1]) -> R:
-        ...
+    def first_or(self, default: R) -> Union[Tuple[K, V], R]:
+        return actions.first_or(self, default)
 
-    def first(self, selector: Callable[[Tuple[K, V]], R] = lambda x: x[1]) -> Any:
-        if isinstance(self, Sequence):
-            try:
-                obj = self[0]
-            except IndexError:
-                raise NoElementError()
-        else:
-            try:
-                it = piter(self)
-                obj = next(it)
-            except StopIteration:
-                raise NoElementError()
-
-        return selector(obj)
-
-    @overload
     def last(self) -> Tuple[K, V]:
-        ...
+        return actions.last(self)
 
-    @overload
-    def last(self, selector: Callable[[Tuple[K, V]], R] = lambda x: x[1]) -> R:
-        ...
-
-    def last(self, selector: Callable[[Tuple[K, V]], R] = lambda x: x[1]) -> R:
-        undefined = object()
-        last: R = undefined  # type: ignore
-        for elm in piter(self):
-            last = elm  # type: ignore
-
-        if last is undefined:
-            raise NoElementError()
-
-        return selector(last)  # type: ignore
-
-    @overload
-    def one_or_default(self) -> Union[Tuple[K, V], None]:
-        ...
-
-    @overload
-    def one_or_default(self, default: R) -> Union[Tuple[K, V], R]:
-        ...
-
-    def one_or_default(self, default=None) -> Any:
-        try:
-            return self.one()
-        except (NoElementError, NotOneElementError):
-            return default
-
-    @overload
-    def first_or_default(self) -> Union[Tuple[K, V], None]:
-        ...
-
-    @overload
-    def first_or_default(self, default: R) -> Union[Tuple[K, V], R]:
-        ...
-
-    def first_or_default(self, default=None) -> Any:
-        try:
-            return self.first()
-        except NoElementError:
-            return default
-
-    @overload
-    def last_or_default(self) -> Union[Tuple[K, V], None]:
-        ...
-
-    @overload
-    def last_or_default(self, default: R) -> Union[Tuple[K, V], R]:
-        ...
-
-    def last_or_default(self, default=None) -> Any:
-        try:
-            return self.last()
-        except NoElementError:
-            return default
+    def last_or(self, default: R) -> Union[Tuple[K, V], R]:
+        return actions.last_or(self, default)
 
     @overload
     def cast(self, type: Type[Tuple[K2, V2]]) -> PairQuery[K2, V2]:
@@ -1106,7 +928,7 @@ class IndexQuery(Generic[K, V]):
     def get_many(self, *keys: K) -> IndexQuery[K, V]:
         undefined = object()
         for id in keys:
-            obj = self.get(id, undefined)
+            obj = self.get_or(id, undefined)
             if not obj is undefined:
                 yield id, obj
 
@@ -1115,23 +937,14 @@ class IndexQuery(Generic[K, V]):
         ...
 
     @overload
-    def get(self, key: K, default: R = ...) -> Union[V, R]:
+    def get(self, key: K, default: R = NoReturn) -> Union[V, R]:
         ...
 
-    def get(self, key: K, default: R = undefined) -> Any:
-        try:
-            return self[key]  # type: ignore
-        except (KeyError, IndexError):
-            if default is not undefined:
-                return default
-            else:
-                raise
+    def get(self, key: K, default=NoReturn) -> Any:
+        return actions.get(self, key, default)
 
-    def get_or_default(self, key, default=None):
-        return self.get(key, default)  # type: ignore
-
-    def get_or_none(self, key):
-        return self.get(key, None)  # type: ignore
+    def get_or(self, key: K, default: R) -> Union[V, R]:
+        return actions.get_or(self, key, default)
 
     def to_list(self) -> ListEx[Tuple[K, V]]:
         return ListEx(piter(self))
@@ -1206,7 +1019,7 @@ class SetEx(Instance, IndexQuery[T, T], Query[T], Set[T]):
         if key in self:
             return key
         else:
-            raise KeyError(key)
+            raise NotFoundError(key)
 
     @lazy_reference
     def reverse(self) -> "Query[T]":
