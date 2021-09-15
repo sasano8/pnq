@@ -736,8 +736,7 @@
 <span class="kn">import</span> <span class="nn">pnq</span>
 <span class="kn">import</span> <span class="nn">httpx</span>
 
-<span class="n">SUCCESS</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="n">ERROR</span> <span class="o">=</span> <span class="kc">False</span>
+
 
 <span class="n">params</span> <span class="o">=</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span>
     <span class="p">{</span><span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;test_url_1&quot;</span><span class="p">},</span>
@@ -753,11 +752,12 @@
 
 <span class="nd">@step_fetch</span><span class="o">.</span><span class="n">group_by</span>
 <span class="k">def</span> <span class="nf">step_finalize</span><span class="p">(</span><span class="n">res</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">ERROR</span> <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">err</span> <span class="k">else</span> <span class="n">SUCCESS</span><span class="p">,</span> <span class="n">res</span>
+    <span class="k">return</span> <span class="p">(</span><span class="ow">not</span> <span class="n">res</span><span class="o">.</span><span class="n">err</span><span class="p">,</span> <span class="n">res</span><span class="p">)</span>
 
 <span class="n">result</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">step_finalize</span><span class="o">.</span><span class="n">lazy</span><span class="p">(</span><span class="nb">dict</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="n">SUCCESS</span><span class="p">])</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="n">ERROR</span><span class="p">])</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="kc">True</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="kc">False</span><span class="p">])</span>
 </code></pre></div>
 <h2 id="_11">性能評価</h2>
 <h3 id="pnq">pnqのイテレーション性能</h3>

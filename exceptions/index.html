@@ -374,27 +374,27 @@
                 
                 <h2 id="exception-classes">Exception classes</h2>
 <div class="autodoc">
-<div class="autodoc-signature"><em>class </em><code>pnq.exceptions.<strong>PnqException</strong></code><span class="autodoc-punctuation">(</span><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-signature"><em>class </em><code>pnq.exceptions.<strong>PnqException</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">msg=''</em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>Pnqに関連する全ての例外の基底クラス</p></div>
 </div>
 <div class="autodoc">
-<div class="autodoc-signature"><em>class </em><code>pnq.exceptions.<strong>KeyNotFoundError</strong></code><span class="autodoc-punctuation">(</span><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-signature"><em>class </em><code>pnq.exceptions.<strong>KeyNotFoundError</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">msg=''</em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>クエリがキーに対応する要素を要求したが存在しない。
 IndexErrorとKeyErrorはKeyNotFoundErrorに置き換わります</p>
 <p>関連: <code>get</code> <code>must_get_many</code></p></div>
 </div>
 <div class="autodoc">
-<div class="autodoc-signature"><em>class </em><code>pnq.exceptions.<strong>NoElementError</strong></code><span class="autodoc-punctuation">(</span><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-signature"><em>class </em><code>pnq.exceptions.<strong>NoElementError</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">msg=''</em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>クエリが何らかの要素を要求したが要素が存在しない</p>
 <p>関連: <code>one</code> <code>first</code> <code>last</code></p></div>
 </div>
 <div class="autodoc">
-<div class="autodoc-signature"><em>class </em><code>pnq.exceptions.<strong>NotOneElementError</strong></code><span class="autodoc-punctuation">(</span><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-signature"><em>class </em><code>pnq.exceptions.<strong>NotOneElementError</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">msg=''</em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>クエリが要素がひとつであることを要求したが複数の要素が存在した</p>
 <p>関連: <code>one</code></p></div>
 </div>
 <div class="autodoc">
-<div class="autodoc-signature"><em>class </em><code>pnq.exceptions.<strong>DuplicateElementError</strong></code><span class="autodoc-punctuation">(</span><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-signature"><em>class </em><code>pnq.exceptions.<strong>DuplicateElementError</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">msg=''</em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>クエリが要素が重複していないことを要求したが重複を検知した</p>
 <p>関連: <code>must_unique</code></p></div>
 </div>
