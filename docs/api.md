@@ -50,7 +50,7 @@
 ::: pnq.actions.select_as_tuple
     :docstring:
 
-::: pnq.actions.select_item
+<!-- ::: pnq.actions.select_item
     :docstring:
 
 ::: pnq.actions.select_attr
@@ -60,7 +60,7 @@
     :docstring:
 
 ::: pnq.actions.select_attrs
-    :docstring:
+    :docstring: -->
 
 ::: pnq.actions.cast
     :docstring:
@@ -219,14 +219,14 @@
 ::: pnq.actions.last
     :docstring:
 
-::: pnq.actions.one_or_default
+<!-- ::: pnq.actions.one_or_default
     :docstring:
 
 ::: pnq.actions.first_or_default
     :docstring:
 
 ::: pnq.actions.last_or_default
-    :docstring:
+    :docstring: -->
 
 ::: pnq.actions.get_or_raise
     :docstring:

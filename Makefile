@@ -3,7 +3,7 @@ all: format test
 format: format-black format-isort
 
 format-black:
-	@echo [black] && poetry run black .
+	@echo [black] && poetry run black . --exclude "pnq\/__template__\.py"
 
 format-isort:
 	@echo [isort] && poetry run isort --profile black --filter-files .
@@ -29,5 +29,5 @@ doc-serve: doc-build
 
 
 generate:
-	@poetry run python3 pnq_template/generate.py -i pnq_template/template.py -o pnq/types.py
+	@poetry run python3 pnq_template/generate.py -i pnq/__template__.py -o pnq/types.py
 	@make format
