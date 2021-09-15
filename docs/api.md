@@ -219,14 +219,17 @@
 ::: pnq.actions.last
     :docstring:
 
-<!-- ::: pnq.actions.one_or_default
+::: pnq.actions.get_or
     :docstring:
 
-::: pnq.actions.first_or_default
+::: pnq.actions.one_or
     :docstring:
 
-::: pnq.actions.last_or_default
-    :docstring: -->
+::: pnq.actions.first_or
+    :docstring:
+
+::: pnq.actions.last_or
+    :docstring:
 
 ::: pnq.actions.get_or_raise
     :docstring:

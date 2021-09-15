@@ -4,7 +4,7 @@
 ::: pnq.exceptions.PnqException
     :docstring:
 
-::: pnq.exceptions.KeyNotFoundError
+::: pnq.exceptions.NotFoundError
     :docstring:
 
 ::: pnq.exceptions.NoElementError
