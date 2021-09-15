@@ -366,6 +366,42 @@ class TestAggregating:
         assert pnq(["a", "b", "c"]).concat(delimiter=",") == "a,b,c"
         assert pnq(["a", "b", "c"]).map(lambda x: x).concat(delimiter=",") == "a,b,c"
 
+    def test_selectors(self):
+        q = pnq([(0, 10)])
+        no_accept = "unexpected keyword argument 'selector'"
+        with pytest.raises(TypeError, match=no_accept):
+            q.len(selector=lambda x: x)
+
+        with pytest.raises(TypeError, match=no_accept):
+            q.exists(selector=lambda x: x)
+
+        assert q.all(selector=lambda x: x[0]) == False
+        assert q.all(selector=lambda x: x[1])
+
+        assert q.any(selector=lambda x: x[0]) == False
+        assert q.any(selector=lambda x: x[1])
+
+        assert q.contains(10, selector=lambda x: x[0]) == False
+        assert q.contains(10, selector=lambda x: x[1])
+
+        assert q.min(selector=lambda x: x[0]) == 0
+        assert q.min(selector=lambda x: x[1]) == 10
+
+        assert q.max(selector=lambda x: x[0]) == 0
+        assert q.max(selector=lambda x: x[1]) == 10
+
+        assert q.sum(selector=lambda x: x[0]) == 0
+        assert q.sum(selector=lambda x: x[1]) == 10
+
+        assert q.average(selector=lambda x: x[0]) == 0
+        assert q.average(selector=lambda x: x[1]) == 10
+
+        assert q.reduce(0, "+=", selector=lambda x: x[0]) == 0
+        assert q.reduce(0, "+=", selector=lambda x: x[1]) == 10
+
+        assert q.concat(selector=lambda x: x[0]) == "0"
+        assert q.concat(selector=lambda x: x[1]) == "10"
+
 
 class TestGetting:
     def test_get(self):

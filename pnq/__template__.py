@@ -105,8 +105,8 @@ class {{query.cls}}:
     def any(self, selector: Callable[[{{query.row}}], Any]=lambda x: x) -> bool:
         return actions.any(self, selector)
 
-    def contains(self, *values, selector: Callable[[{{query.row}}], Any]=lambda x: x) -> bool:
-        return actions.contains(self, *values, selector)
+    def contains(self, value, selector: Callable[[{{query.row}}], Any]=lambda x: x) -> bool:
+        return actions.contains(self, value, selector)
 
     @overload
     def min(self, *, default=NoReturn) -> Union[{{query.value}}, NoReturn]: ...
@@ -671,7 +671,12 @@ def query(source: Iterable[T]) -> ListEx[T]:
     ...
 
 
-def query(source: T) -> T:
+@overload
+def query(source) -> "Query[Any]":
+    ...
+
+
+def query(source):
     if hasattr(source, "__piter__"):
         return source
     elif isinstance(source, dict):

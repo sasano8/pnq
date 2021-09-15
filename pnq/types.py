@@ -109,8 +109,8 @@ class Query(Generic[T]):
     def any(self, selector: Callable[[T], Any] = lambda x: x) -> bool:
         return actions.any(self, selector)
 
-    def contains(self, *values, selector: Callable[[T], Any] = lambda x: x) -> bool:
-        return actions.contains(self, *values, selector)
+    def contains(self, value, selector: Callable[[T], Any] = lambda x: x) -> bool:
+        return actions.contains(self, value, selector)
 
     @overload
     def min(self, *, default=NoReturn) -> Union[T, NoReturn]:
@@ -599,9 +599,9 @@ class PairQuery(Generic[K, V]):
         return actions.any(self, selector)
 
     def contains(
-        self, *values, selector: Callable[[Tuple[K, V]], Any] = lambda x: x
+        self, value, selector: Callable[[Tuple[K, V]], Any] = lambda x: x
     ) -> bool:
-        return actions.contains(self, *values, selector)
+        return actions.contains(self, value, selector)
 
     @overload
     def min(self, *, default=NoReturn) -> Union[V, NoReturn]:
@@ -1223,7 +1223,12 @@ def query(source: Iterable[T]) -> ListEx[T]:
     ...
 
 
-def query(source: T) -> T:
+@overload
+def query(source) -> "Query[Any]":
+    ...
+
+
+def query(source):
     if hasattr(source, "__piter__"):
         return source
     elif isinstance(source, dict):
