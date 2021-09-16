@@ -440,13 +440,13 @@ def unpack_kw(self, selector):
 def select(self, field, *fields, attr: bool = False):
     """シーケンスの各要素からアイテムを選択し新しいフォームに射影します。
     複数のアイテムを選択した場合は、タプルとして射影します。
-    `select_item`の別名です。
 
     Args:
 
     * self: 変換対象のシーケンス
     * field: 各要素から選択するアイテム
-    * fields: 各要素から選択するアイテム
+    * fields: 各要素から選択する追加のアイテム
+    * attr: 要素の属性から取得する場合はTrue
 
     Returns: 選択したアイテムまたは複数のアイテム（タプル）を返すクエリ
 
@@ -456,7 +456,32 @@ def select(self, field, *fields, attr: bool = False):
     [1]
     >>> pnq.query([{"id": 1, "name": "a"}]).select("id", "name").to(list)
     [(1, "a")]
-    >>> id, name = pnq.query([{"id": 1, "name": "a"}]).select("id", "name")
+    >>> pnq.query([str]).select("__name__", attr=True).to(list)
+    ["str"]
+    ```
+    """
+    pass
+
+
+@mark
+def select_as_tuple(self, *fields, attr: bool = False):
+    """シーケンスの各要素からアイテムまたは属性を選択し辞書として新しいフォームに射影します。
+    selectと異なり選択した値が１つでも必ずタプルを返します。
+
+    Args:
+
+    * self: 変換対象のシーケンス
+    * fields: 選択するアイテムまたは属性
+    * attr: 属性から取得する場合はTrueとする
+
+    Returns: 選択したアイテムを含む辞書を返すクエリ
+
+    Usage:
+    ```
+    >>> pnq.query([(1, 2)]).select_as_tuple(0).to(list)
+    [(1,)]
+    >>> pnq.query([str]).select_as_tuple("__name__", attr=True).to(list)
+    [("str",)]
     ```
     """
     pass
@@ -478,15 +503,10 @@ def select_as_dict(self, *fields, attr: bool = False):
     ```
     >>> pnq.query([(1, 2)]).select_as_dict(0).to(list)
     [{0: 1}]
-    >>> pnq.query([{"id": 1, "name": "a", "age": 20}]).select_as_dict("id", "name").to(list)
-    [{"id": 1, "name": "a"}]
+    >>> pnq.query([str]).select_as_dict("__name__", attr=True).to(list)
+    [{"__name__": "str"}]
     ```
     """
-    pass
-
-
-@mark
-def select_as_tuple(self, *fields, attr: bool = False):
     pass
 
 

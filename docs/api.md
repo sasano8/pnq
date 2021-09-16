@@ -71,9 +71,6 @@
 ::: pnq.actions.join
     :docstring:
 
-::: pnq.actions.concat
-    :docstring:
-
 ::: pnq.actions.request
     :docstring:
 
