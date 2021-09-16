@@ -655,21 +655,17 @@ def pivot_stack(self):
 
 
 @mark
-def request(self, func, unpack: bool = True, retry: int = None):
-    """シーケンスから流れてくる値を関数に送出するように要求します。
+def request(self, func, retry: int = None):
+    """シーケンスから流れてくる値を同期関数に送出するように要求します。
     例外はキャッチされ、実行結果を返すイテレータを生成します。
-    関数呼び出し時に要素がtupleまたはdictの場合、要素はデフォルトでアンパックされます。
-    関数に非同期関数も渡すことができます。
-
-    クエリの非同期実行についてを参照ください。
+    関数呼び出し時にキーワードアンパックするため、要素は辞書である必要があります。
 
     Args:
 
     * self: フィルタ対象のシーケンス
     * func: 値の送出先の関数
-    * unpack_kw: 値をアンパックする
 
-    Returns: 実行結果を含むタプル
+    Returns: 実行結果
 
     Usage:
     ```
@@ -679,13 +675,11 @@ def request(self, func, unpack: bool = True, retry: int = None):
     >>>   else:
     >>>     raise ValueError(val)
     >>>
-    >>> for elm, err, result, *_ in pnq.query([{"id": 1, "val": True}, {"id": 1, "val": False}]).request(do_something):
-    >>>   if not err:
-    >>>     print(elm, err, result)
-    True, None, 1
+    >>> for res in pnq.query([{"id": 1, "val": True}, {"id": 2, "val": False}]).request(do_something):
+    >>>   if not res.err:
+    >>>     print(res.to_dict())
     >>>   else:
-    >>>     print(elm, err, result)
-    False, ValueError("False"), None
+    >>>     print(res.result)
     ```
     """
     from .requests import Response, StopWatch
@@ -710,9 +704,33 @@ def request(self, func, unpack: bool = True, retry: int = None):
         yield res
 
 
-async def request_async(
-    self, func, unpack: bool = True, timeout: float = None, retry: int = None
-):
+async def request_async(self, func, timeout: float = None, retry: int = None):
+    """シーケンスから流れてくる値を非同期関数に送出するように要求します。
+    例外はキャッチされ、実行結果を返すイテレータを生成します。
+    関数呼び出し時にキーワードアンパックするため、要素は辞書である必要があります。
+
+    Args:
+
+    * self: フィルタ対象のシーケンス
+    * func: 値の送出先の関数
+
+    Returns: 実行結果
+
+    Usage:
+    ```
+    >>> def do_something(id, val):
+    >>>   if val:
+    >>>     return 1
+    >>>   else:
+    >>>     raise ValueError(val)
+    >>>
+    >>> for res in pnq.query([{"id": 1, "val": True}, {"id": 2, "val": False}]).request(do_something):
+    >>>   if not res.err:
+    >>>     print(res.to_dict())
+    >>>   else:
+    >>>     print(res.result)
+    ```
+    """
     from .requests import Response, StopWatch
 
     if retry:
