@@ -1,3 +1,4 @@
+from collections import defaultdict
 from decimal import Decimal
 from decimal import InvalidOperation as DecimalInvalidOperation
 from typing import (
@@ -493,84 +494,6 @@ def select_as_tuple(self, *fields, attr: bool = False):
     pass
 
 
-# @mark
-# def select_item(self, item, *items):
-#     """`select`を参照ください。"""
-#     pass
-
-
-# @mark
-# def select_attr(self, attr, *attrs):
-#     """シーケンスの各要素から属性を選択し新しいフォームに射影します。
-#     複数の属性を選択した場合は、タプルとして射影します。
-
-#     Args:
-
-#     * self: 変換対象のシーケンス
-#     * attr: 各要素から選択する属性
-#     * attrs: 各要素から選択する属性
-
-#     Returns: 選択した属性または複数の属性（タプル）を返すクエリ
-
-#     Usage:
-#     ```
-#     >>> obj = Person(id=1, name="bob")
-#     >>> pnq.query([obj]).select_attr("name").to(list)
-#     ["bob"]
-#     >>> pnq.query([obj]).select_attr("id", "name").to(list)
-#     [(1, "bob")]
-#     ```
-#     """
-#     pass
-
-
-# @mark
-# def select_items(self, *items):
-#     """シーケンスの各要素から複数のアイテムを選択し新しいフォームに射影します。
-#     `select_item`と異なり、常にタプルを返します。
-
-#     Args:
-
-#     * self: 変換対象のシーケンス
-#     * items: 各要素から選択するアイテム
-
-#     Returns: 複数のアイテム（タプル）を返すクエリ
-
-#     Usage:
-#     ```
-#     >>> pnq.query([(1, 2)]).select_items(0).to(list)
-#     [(1,)]
-#     >>> pnq.query([{"id": 1, "name": "a"}]).select_items("id", "name").to(list)
-#     [(1, "a")]
-#     ```
-#     """
-#     pass
-
-
-# @mark
-# def select_attrs(self, *attrs):
-#     """シーケンスの各要素から複数の属性を選択し新しいフォームに射影します。
-#     `select_attr`と異なり、常にタプルを返します。
-
-#     Args:
-
-#     * self: 変換対象のシーケンス
-#     * attrs: 各要素から選択する属性
-
-#     Returns: 複数の属性（タプル）を返すクエリ
-
-#     Usage:
-#     ```
-#     >>> obj = Person(id=1, name="bob")
-#     >>> pnq.query([obj]).select_attrs("name").to(list)
-#     [("bob",)]
-#     >>> pnq.query([obj]).select_attrs("id", "name").to(list)
-#     [(1, "bob")]
-#     ```
-#     """
-#     pass
-
-
 @mark
 def cast(self, type):
     """シーケンスの型注釈を変更します。この関数はエディタの型解釈を助けるためだけに存在し、何も処理を行いません。
@@ -619,7 +542,7 @@ def __enumerate(self, start: int = 0, step: int = 1):
 
 
 @mark
-def group_by(self, selector):
+def group_by(self, selector=lambda x: x):
     """シーケンスの各要素からセレクタ関数でキーとバリューを取得し、キーでグループ化されたシーケンスを生成します。
     セレクタ関数を指定しない場合、各要素がすでにキーバリューのタプルであることを期待し、キーでグループ化します。
 
@@ -638,11 +561,18 @@ def group_by(self, selector):
     >>>   {"name": "strawberry", "color": "red", "count": 5},
     >>> ]
     >>> pnq.query(data).group_by(lambda x: x["color"], x["name"]).to(list)
-    [("yellow": ["banana"]), ("red": ["apple", "strawberry"])]
+    [("yellow", ["banana"]), ("red", ["apple", "strawberry"])]
     >>> pnq.query(data).select("color", "count").group_by().to_dict()
     {"yellow": [3], "red": [2, 5]}
     ```
     """
+    results = defaultdict(list)
+    for elm in self:
+        k, v = selector(elm)
+        results[k].append(v)
+
+    for k, v in results.items():
+        yield k, v
 
 
 @mark

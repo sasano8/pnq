@@ -304,17 +304,18 @@ class Query(Generic[T]):
         for elm in self:
             yield selector(**elm)  # type: ignore
 
-    @lazy_iterate
+    # @lazy_iterate
     def group_by(
-        self, selector: Callable[[T], Tuple[K2, V2]]
+        self, selector: Callable[[T], Tuple[K2, V2]] = lambda x: x
     ) -> PairQuery[K2, List[V2]]:
-        results: Dict[K, List[V]] = defaultdict(list)
-        for elm in self:
-            k, v = selector(elm)
-            results[k].append(v)
+        return LazyIterate(actions.group_by, self, selector)
+        # results: Dict[K, List[V]] = defaultdict(list)
+        # for elm in self:
+        #     k, v = selector(elm)
+        #     results[k].append(v)
 
-        for k, v in results.items():  # type: ignore
-            yield k, v
+        # for k, v in results.items():  # type: ignore
+        #     yield k, v
 
     def join(self, right, on: Callable[[Tuple[list, list]], Callable], select):
         [].join(
@@ -749,17 +750,18 @@ class PairQuery(Generic[K, V]):
         for elm in self:
             yield selector(**elm)  # type: ignore
 
-    @lazy_iterate
+    # @lazy_iterate
     def group_by(
-        self, selector: Callable[[Tuple[K, V]], Tuple[K2, V2]]
+        self, selector: Callable[[Tuple[K, V]], Tuple[K2, V2]] = lambda x: x
     ) -> PairQuery[K2, List[V2]]:
-        results: Dict[K, List[V]] = defaultdict(list)
-        for elm in self:
-            k, v = selector(elm)
-            results[k].append(v)
+        return LazyIterate(actions.group_by, self, selector)
+        # results: Dict[K, List[V]] = defaultdict(list)
+        # for elm in self:
+        #     k, v = selector(elm)
+        #     results[k].append(v)
 
-        for k, v in results.items():  # type: ignore
-            yield k, v
+        # for k, v in results.items():  # type: ignore
+        #     yield k, v
 
     def join(self, right, on: Callable[[Tuple[list, list]], Callable], select):
         [].join(

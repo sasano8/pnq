@@ -753,7 +753,22 @@ class Test020_Transform:
         assert pnq([1]).enumerate().to(list) == [(0, 1)]
 
     def test_group_by(self):
-        pass
+        data = [
+            {"name": "banana", "color": "yellow", "count": 3},
+            {"name": "apple", "color": "red", "count": 2},
+            {"name": "strawberry", "color": "red", "count": 5},
+        ]
+
+        # カラー別
+        pnq(data).group_by(lambda x: (x["color"], x["name"])).to(list) == [
+            ("yellow", ["banana"]),
+            ("red", ["apple", "strawberry"]),
+        ]
+
+        pnq(data).select("color", "name").group_by().to(list) == [
+            ("yellow", ["banana"]),
+            ("red", ["apple", "strawberry"]),
+        ]
 
     def test_join(self):
         pass

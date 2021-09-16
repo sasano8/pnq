@@ -304,15 +304,16 @@ class {{query.cls}}:
         for elm in self:
             yield selector(**elm)  # type: ignore
 
-    @lazy_iterate
-    def group_by(self, selector: Callable[[{{query.row}}], Tuple[K2, V2]]) -> {{pair.name}}[K2, List[V2]]:
-        results: Dict[K, List[V]] = defaultdict(list)
-        for elm in self:
-            k, v = selector(elm)
-            results[k].append(v)
+    # @lazy_iterate
+    def group_by(self, selector: Callable[[{{query.row}}], Tuple[K2, V2]] = lambda x: x) -> {{pair.name}}[K2, List[V2]]:
+        return LazyIterate(actions.group_by, self, selector)
+        # results: Dict[K, List[V]] = defaultdict(list)
+        # for elm in self:
+        #     k, v = selector(elm)
+        #     results[k].append(v)
 
-        for k, v in results.items():  # type: ignore
-            yield k, v
+        # for k, v in results.items():  # type: ignore
+        #     yield k, v
 
     def join(self, right, on: Callable[[Tuple[list, list]], Callable], select):
         [].join(
