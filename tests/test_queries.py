@@ -3,9 +3,14 @@ from typing import Iterable, Mapping, Tuple
 
 import pytest
 
+import pnq as pq
 from pnq.exceptions import NoElementError, NotFoundError, NotOneElementError
-from pnq.types import DictEx, IndexQuery, ListEx, PairQuery, Query, SetEx, query
+from pnq.queries import DictEx, IndexQuery, ListEx, PairQuery, Query, SetEx, query
 
+obj = pq.dict({1: "aa"})
+aaa = obj.to(dict)
+bbb = obj.to(list)
+ccc = list(obj)
 pnq = query
 
 
@@ -32,22 +37,22 @@ class TestInit:
         assert isinstance(pnq({}), Mapping)
 
     def test_init(self):
-        assert pnq([]).to_list() == []
-        assert pnq([]).to_dict() == {}
-        assert pnq({}).to_list() == []
-        assert pnq({}).to_dict() == {}
+        assert pnq([]).to(list) == []
+        assert pnq([]).to(dict) == {}
+        assert pnq({}).to(list) == []
+        assert pnq({}).to(dict) == {}
 
-        assert pnq([1]).to_list() == [1]
+        assert pnq([1]).to(list) == [1]
         with pytest.raises(TypeError):
-            assert pnq([1]).to_dict() == {}
-        assert pnq({1: "a"}).to_list() == [(1, "a")]
-        assert pnq({1: "a"}).to_dict() == {1: "a"}
-        assert pnq([(1, 2)]).to_list() == [(1, 2)]
-        assert pnq([(1, 2)]).to_dict() == {1: 2}
+            assert pnq([1]).to(dict) == {}
+        assert pnq({1: "a"}).to(list) == [(1, "a")]
+        assert pnq({1: "a"}).to(dict) == {1: "a"}
+        assert pnq([(1, 2)]).to(list) == [(1, 2)]
+        assert pnq([(1, 2)]).to(dict) == {1: 2}
 
         query = filter(lambda x: x == 1, [1, 2])
-        assert pnq(query).to_list() == [1]
-        assert pnq(query).to_list() == []
+        assert pnq(query).to(list) == [1]
+        assert pnq(query).to(list) == []
 
     def test_behavior(self):
         # クエリメソッドで実行する際は、キーバリューを返すように標準化しているが、
@@ -59,51 +64,51 @@ class TestInit:
 
 def test_easy():
 
-    # assert pnq([{"key": 3, "name": "test"}]).lookup(lambda x: x["key"]).to_list() == [
+    # assert pnq([{"key": 3, "name": "test"}]).lookup(lambda x: x["key"]).to(list) == [
     #     (3, {"key": 3, "name": "test"})
     # ]
-    # obj = pnq([{"key": 3, "name": "test"}]).lookup(lambda x: x["key"]).to_dict()
+    # obj = pnq([{"key": 3, "name": "test"}]).lookup(lambda x: x["key"]).to(dict)
     # assert obj[3] == {"key": 3, "name": "test"}
     pass
 
 
 class TestFilter:
     def test_filter(self):
-        assert pnq([1]).filter(lambda x: x == 1).to_list() == [1]
-        assert pnq([1]).filter(lambda x: x == 0).to_list() == []
-        assert pnq([1]).filter(lambda x: x == 0).to_list() == []
+        assert pnq([1]).filter(lambda x: x == 1).to(list) == [1]
+        assert pnq([1]).filter(lambda x: x == 0).to(list) == []
+        assert pnq([1]).filter(lambda x: x == 0).to(list) == []
 
     def test_filter_type(self):
-        assert pnq([1]).filter_type(int).to_list() == [1]
-        assert pnq([1]).filter_type(str).to_list() == []
-        assert pnq([1]).filter_type(bool).to_list() == []
-        assert pnq([True]).filter_type(bool).to_list() == [True]
+        assert pnq([1]).filter_type(int).to(list) == [1]
+        assert pnq([1]).filter_type(str).to(list) == []
+        assert pnq([1]).filter_type(bool).to(list) == []
+        assert pnq([True]).filter_type(bool).to(list) == [True]
 
         # pythonの仕様でboolはintを継承しているのでヒットしてしまう
-        assert pnq([True]).filter_type(int).to_list() == [True]
+        assert pnq([True]).filter_type(int).to(list) == [True]
 
 
 class TestMap:
     def test_map(self):
-        assert pnq([1]).map(lambda x: x * 2).to_list() == [2]
-        assert pnq([None]).map(str).to_list() == [""]
+        assert pnq([1]).map(lambda x: x * 2).to(list) == [2]
+        assert pnq([None]).map(str).to(list) == [""]
         assert str(None) == "None"
 
     def test_select(self):
-        assert pnq([{"name": "a"}]).select("name").to_list() == ["a"]
-        assert pnq([{"name": "a"}]).select_item("name").to_list() == ["a"]
-        assert pnq([str]).select_attr("__name__").to_list() == ["str"]
-        assert pnq([dict(id=1)]).select_items().to_list() == [tuple()]
-        assert pnq([dict(id=1)]).select_items("id").to_list() == [(1,)]
-        assert pnq([dict(id=1, name="a")]).select_items("id", "name").to_list() == [
+        assert pnq([{"name": "a"}]).select("name").to(list) == ["a"]
+        assert pnq([{"name": "a"}]).select_item("name").to(list) == ["a"]
+        assert pnq([str]).select_attr("__name__").to(list) == ["str"]
+        assert pnq([dict(id=1)]).select_items().to(list) == [tuple()]
+        assert pnq([dict(id=1)]).select_items("id").to(list) == [(1,)]
+        assert pnq([dict(id=1, name="a")]).select_items("id", "name").to(list) == [
             (1, "a")
         ]
-        assert pnq([dict(id=1, name="a", age=5)]).select_items(
-            "id", "name"
-        ).to_list() == [(1, "a")]
-        assert pnq([str]).select_attrs().to_list() == [tuple()]
-        assert pnq([str]).select_attrs("__name__").to_list() == [("str",)]
-        assert pnq([str]).select_attrs("__name__", "__class__").to_list() == [
+        assert pnq([dict(id=1, name="a", age=5)]).select_items("id", "name").to(
+            list
+        ) == [(1, "a")]
+        assert pnq([str]).select_attrs().to(list) == [tuple()]
+        assert pnq([str]).select_attrs("__name__").to(list) == [("str",)]
+        assert pnq([str]).select_attrs("__name__", "__class__").to(list) == [
             ("str", type)
         ]
 
@@ -111,14 +116,14 @@ class TestMap:
         with pytest.raises(
             TypeError, match="missing 1 required positional argument: 'v'"
         ):
-            pnq([(1, 2)]).map(lambda k, v: k).to_list()
-        assert pnq([(1, 2)]).unpack(lambda k, v: k).to_list() == [1]
-        assert pnq([{"name": "test", "age": 20}]).unpack_kw(
-            lambda name, age: name
-        ).to_list() == ["test"]
+            pnq([(1, 2)]).map(lambda k, v: k).to(list)
+        assert pnq([(1, 2)]).unpack(lambda k, v: k).to(list) == [1]
+        assert pnq([{"name": "test", "age": 20}]).unpack_kw(lambda name, age: name).to(
+            list
+        ) == ["test"]
 
     def test_enumrate(self):
-        assert pnq([1]).enumerate().to_list() == [(0, 1)]
+        assert pnq([1]).enumerate().to(list) == [(0, 1)]
 
     def test_cast(self):
         # castは型注釈を誤魔化す
@@ -495,47 +500,47 @@ class TestGetting:
 
 class TestSlicer:
     def test_skip(self):
-        assert pnq([]).skip(0).to_list() == []
-        assert pnq([]).skip(1).to_list() == []
-        assert pnq([1]).skip(0).to_list() == [1]
-        assert pnq([1]).skip(1).to_list() == []
-        assert pnq([1, 2]).skip(0).to_list() == [1, 2]
-        assert pnq([1, 2]).skip(1).to_list() == [2]
-        assert pnq([1, 2]).skip(2).to_list() == []
-        assert pnq([1, 2]).skip(3).to_list() == []
+        assert pnq([]).skip(0).to(list) == []
+        assert pnq([]).skip(1).to(list) == []
+        assert pnq([1]).skip(0).to(list) == [1]
+        assert pnq([1]).skip(1).to(list) == []
+        assert pnq([1, 2]).skip(0).to(list) == [1, 2]
+        assert pnq([1, 2]).skip(1).to(list) == [2]
+        assert pnq([1, 2]).skip(2).to(list) == []
+        assert pnq([1, 2]).skip(3).to(list) == []
 
     def test_take(self):
-        assert pnq([]).take(0).to_list() == []
-        assert pnq([]).take(1).to_list() == []
-        assert pnq([1]).take(0).to_list() == []
-        assert pnq([1]).take(1).to_list() == [1]
-        assert pnq([1, 2]).take(0).to_list() == []
-        assert pnq([1, 2]).take(1).to_list() == [1]
-        assert pnq([1, 2]).take(2).to_list() == [1, 2]
-        assert pnq([1, 2]).take(3).to_list() == [1, 2]
+        assert pnq([]).take(0).to(list) == []
+        assert pnq([]).take(1).to(list) == []
+        assert pnq([1]).take(0).to(list) == []
+        assert pnq([1]).take(1).to(list) == [1]
+        assert pnq([1, 2]).take(0).to(list) == []
+        assert pnq([1, 2]).take(1).to(list) == [1]
+        assert pnq([1, 2]).take(2).to(list) == [1, 2]
+        assert pnq([1, 2]).take(3).to(list) == [1, 2]
 
     def test_range(self):
         q = pnq([1, 2, 3, 4, 5, 6])
 
-        assert q.range(0, -1).to_list() == []
-        assert q.range(0, 0).to_list() == []
+        assert q.range(0, -1).to(list) == []
+        assert q.range(0, 0).to(list) == []
 
-        assert q.range(-1, 0).to_list() == []
-        assert q.range(0, 1).to_list() == [1]
-        assert q.range(1, 2).to_list() == [2]
-        assert q.range(2, 3).to_list() == [3]
+        assert q.range(-1, 0).to(list) == []
+        assert q.range(0, 1).to(list) == [1]
+        assert q.range(1, 2).to(list) == [2]
+        assert q.range(2, 3).to(list) == [3]
 
-        assert q.range(-2, 0).to_list() == []
-        assert q.range(0, 2).to_list() == [1, 2]
-        assert q.range(2, 4).to_list() == [3, 4]
-        assert q.range(4, 6).to_list() == [5, 6]
+        assert q.range(-2, 0).to(list) == []
+        assert q.range(0, 2).to(list) == [1, 2]
+        assert q.range(2, 4).to(list) == [3, 4]
+        assert q.range(4, 6).to(list) == [5, 6]
 
-        assert q.range(5, 6).to_list() == [6]
-        assert q.range(5, 7).to_list() == [6]
-        assert q.range(6, 7).to_list() == []
+        assert q.range(5, 6).to(list) == [6]
+        assert q.range(5, 7).to(list) == [6]
+        assert q.range(6, 7).to(list) == []
 
     def test_page(self):
-        from pnq.types import page_calc
+        from pnq.queries import page_calc
 
         with pytest.raises(ValueError):
             page_calc(0, -1)
@@ -576,20 +581,20 @@ class TestSlicer:
 
         q = pnq(arr)
 
-        assert q.page(0, 0).to_list() == []
-        assert q.page(1, 0).to_list() == []
-        assert q.page(2, 0).to_list() == []
-        assert q.page(3, 0).to_list() == []
+        assert q.page(0, 0).to(list) == []
+        assert q.page(1, 0).to(list) == []
+        assert q.page(2, 0).to(list) == []
+        assert q.page(3, 0).to(list) == []
 
-        assert q.page(0, 1).to_list() == []
-        assert q.page(1, 1).to_list() == [1]
-        assert q.page(2, 1).to_list() == [2]
-        assert q.page(3, 1).to_list() == [3]
+        assert q.page(0, 1).to(list) == []
+        assert q.page(1, 1).to(list) == [1]
+        assert q.page(2, 1).to(list) == [2]
+        assert q.page(3, 1).to(list) == [3]
 
-        assert q.page(0, 2).to_list() == []
-        assert q.page(1, 2).to_list() == [1, 2]
-        assert q.page(2, 2).to_list() == [3, 4]
-        assert q.page(3, 2).to_list() == [5, 6]
+        assert q.page(0, 2).to(list) == []
+        assert q.page(1, 2).to(list) == [1, 2]
+        assert q.page(2, 2).to(list) == [3, 4]
+        assert q.page(3, 2).to(list) == [5, 6]
 
 
 class Hoge:
@@ -613,67 +618,67 @@ class TestSort:
         pnq([]).order_by_items("id", "name")
 
     def test_no_elements(self):
-        assert pnq([]).reverse().to_list() == []
+        assert pnq([]).reverse().to(list) == []
         assert list(reversed(pnq([]))) == []
-        assert pnq({}).reverse().to_list() == []
+        assert pnq({}).reverse().to(list) == []
         assert list(reversed(pnq({}))) == []
-        assert pnq([]).order_by_attrs("id").to_list() == []
-        assert pnq([]).order_by_items("id").to_list() == []
-        assert pnq([]).order(lambda x: x).to_list() == []
+        assert pnq([]).order_by_attrs("id").to(list) == []
+        assert pnq([]).order_by_items("id").to(list) == []
+        assert pnq([]).order(lambda x: x).to(list) == []
 
     def test_one_elements(self):
         obj = Hoge(id=10)
 
-        assert pnq([1]).reverse().to_list() == [1]
+        assert pnq([1]).reverse().to(list) == [1]
         assert list(reversed(pnq([1]))) == [1]
-        assert pnq({1: "a"}).reverse().to_list() == [(1, "a")]
+        assert pnq({1: "a"}).reverse().to(list) == [(1, "a")]
         # pythonの標準動作はreversedはキーのみを返す
         assert list(reversed(pnq({1: "a"}))) == [1]
-        assert pnq([obj]).order_by_attrs("id").to_list() == [obj]
-        assert pnq([tuple([10])]).order_by_items(0).to_list() == [(10,)]
-        assert pnq({1: "a"}).order_by_items(1).to_list() == [(1, "a")]
-        assert pnq([obj]).order(lambda x: x.id).to_list() == [obj]
+        assert pnq([obj]).order_by_attrs("id").to(list) == [obj]
+        assert pnq([tuple([10])]).order_by_items(0).to(list) == [(10,)]
+        assert pnq({1: "a"}).order_by_items(1).to(list) == [(1, "a")]
+        assert pnq([obj]).order(lambda x: x.id).to(list) == [obj]
 
     def test_two_elements(self):
         obj1 = Hoge(id=10, name="b")
         obj2 = Hoge(id=20, name="a")
 
-        assert pnq([2, 1]).reverse().to_list() == [1, 2]
+        assert pnq([2, 1]).reverse().to(list) == [1, 2]
         assert list(reversed(pnq([2, 1]))) == [1, 2]
-        assert pnq({2: "a", 1: "a"}).reverse().to_list() == [(1, "a"), (2, "a")]
+        assert pnq({2: "a", 1: "a"}).reverse().to(list) == [(1, "a"), (2, "a")]
         # pythonの標準動作はreversedはキーのみを返す
         assert list(reversed(pnq({2: "a", 1: "a"}))) == [1, 2]
-        assert pnq([obj2, obj1]).order_by_attrs("id").to_list() == [obj1, obj2]
-        assert pnq([obj1, obj2]).order_by_attrs("id").to_list() == [obj1, obj2]
-        assert pnq([(2, 0), (1, 100)]).order_by_items(0).to_list() == [(1, 100), (2, 0)]
-        assert pnq([(2, 0), (1, 100)]).order_by_items(1).to_list() == [(2, 0), (1, 100)]
-        assert pnq({2: "a", 1: "b"}).order_by_items(0).to_list() == [(1, "b"), (2, "a")]
-        assert pnq({2: "a", 1: "b"}).order_by_items(1).to_list() == [(2, "a"), (1, "b")]
-        assert pnq([obj2, obj1]).order(lambda x: x.id).to_list() == [obj1, obj2]
-        assert pnq([obj2, obj1]).order(lambda x: x.name).to_list() == [obj2, obj1]
+        assert pnq([obj2, obj1]).order_by_attrs("id").to(list) == [obj1, obj2]
+        assert pnq([obj1, obj2]).order_by_attrs("id").to(list) == [obj1, obj2]
+        assert pnq([(2, 0), (1, 100)]).order_by_items(0).to(list) == [(1, 100), (2, 0)]
+        assert pnq([(2, 0), (1, 100)]).order_by_items(1).to(list) == [(2, 0), (1, 100)]
+        assert pnq({2: "a", 1: "b"}).order_by_items(0).to(list) == [(1, "b"), (2, "a")]
+        assert pnq({2: "a", 1: "b"}).order_by_items(1).to(list) == [(2, "a"), (1, "b")]
+        assert pnq([obj2, obj1]).order(lambda x: x.id).to(list) == [obj1, obj2]
+        assert pnq([obj2, obj1]).order(lambda x: x.name).to(list) == [obj2, obj1]
 
     def test_multi_value(self):
         obj1 = Hoge(id=10, name="b")
         obj2 = Hoge(id=20, name="a")
         obj3 = Hoge(id=30, name="a")
 
-        assert pnq([obj3, obj2, obj1]).order(lambda x: (x.id, x.name)).to_list() == [
+        assert pnq([obj3, obj2, obj1]).order(lambda x: (x.id, x.name)).to(list) == [
             obj1,
             obj2,
             obj3,
         ]
-        assert pnq([obj3, obj2, obj1]).order(lambda x: (x.name, x.id)).to_list() == [
+        assert pnq([obj3, obj2, obj1]).order(lambda x: (x.name, x.id)).to(list) == [
             obj2,
             obj3,
             obj1,
         ]
 
-        assert pnq([obj3, obj2, obj1]).order_by_attrs("id", "name").to_list() == [
+        assert pnq([obj3, obj2, obj1]).order_by_attrs("id", "name").to(list) == [
             obj1,
             obj2,
             obj3,
         ]
-        assert pnq([obj3, obj2, obj1]).order_by_attrs("name", "id").to_list() == [
+        assert pnq([obj3, obj2, obj1]).order_by_attrs("name", "id").to(list) == [
             obj2,
             obj3,
             obj1,
@@ -683,12 +688,12 @@ class TestSort:
         dic2 = dict(id=20, name="a")
         dic3 = dict(id=30, name="a")
 
-        assert pnq([dic3, dic2, dic1]).order_by_items("id", "name").to_list() == [
+        assert pnq([dic3, dic2, dic1]).order_by_items("id", "name").to(list) == [
             dic1,
             dic2,
             dic3,
         ]
-        assert pnq([dic3, dic2, dic1]).order_by_items("name", "id").to_list() == [
+        assert pnq([dic3, dic2, dic1]).order_by_items("name", "id").to(list) == [
             dic2,
             dic3,
             dic1,
@@ -697,7 +702,7 @@ class TestSort:
 
 class TestSleep:
     def test_sync(self):
-        pnq([1, 2, 3]).sleep(0).to_list() == [1, 2, 3]
+        pnq([1, 2, 3]).sleep(0).to(list) == [1, 2, 3]
 
     def test_async(self):
         import asyncio
@@ -719,14 +724,14 @@ class TestDict:
 
     def test_init(self):
         obj1 = pnq({1: "a", 2: "b", 3: "c"})
-        obj2 = pnq([(1, "a"), (2, "b"), (3, "c")]).to_dict()
-        obj3 = pnq([(1, "a"), (2, "b"), (3, "c")])
+        obj2 = pnq([(1, "a"), (2, "b"), (3, "c")]).to(dict)
+        obj3 = pnq([(1, "a"), (2, "b"), (3, "c")]).to(DictEx)
 
         cls = obj1.__class__
 
         assert isinstance(obj1, cls)
-        assert isinstance(obj2, cls)
-        assert not isinstance(obj3, cls)
+        assert isinstance(obj2, dict)
+        assert isinstance(obj3, cls)
 
     def test_get(self):
         db = self.db()
@@ -744,13 +749,13 @@ class TestDict:
 
     def test_get_many(self):
         db = self.db()
-        assert db.get_many(1, 2).to_list() == [(1, "a"), (2, "b")]
-        assert db.get_many(4).to_list() == []
+        assert db.get_many(1, 2).to(list) == [(1, "a"), (2, "b")]
+        assert db.get_many(4).to(list) == []
 
     def test_other(self):
         db = self.db()
-        assert db.keys().to_list() == [1, 2, 3]
-        assert db.values().to_list() == ["a", "b", "c"]
-        assert db.items().to_list() == [(1, "a"), (2, "b"), (3, "c")]
+        assert db.keys().to(list) == [1, 2, 3]
+        assert db.values().to(list) == ["a", "b", "c"]
+        assert db.items().to(list) == [(1, "a"), (2, "b"), (3, "c")]
 
-        assert isinstance(db.to_dict(), DictEx)
+        assert isinstance(db.to(dict), dict)

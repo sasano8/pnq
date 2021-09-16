@@ -8,6 +8,7 @@ from typing import (
     Dict,
     Generic,
     Iterable,
+    Iterator,
     List,
     Literal,
     Mapping,
@@ -56,6 +57,9 @@ def lazy_reference(func):
 
 
 class Query(Generic[T], Iterable[T]):
+    def to(self, func: Callable[[Iterable[T]], R]) -> R:
+        return actions.to(self, func)
+
     def to_list(self) -> "ListEx[T]":
         pass
 
@@ -64,6 +68,9 @@ class Query(Generic[T], Iterable[T]):
 
 
 class PairQuery(Generic[K, V], Iterable[Tuple[K, V]]):
+    def to(self, func: Callable[[Iterable[Tuple[K, V]]], R]) -> R:
+        return actions.to(self, func)
+
     def to_list(self) -> "ListEx[Tuple[K, V]]":
         pass
 
@@ -144,10 +151,26 @@ class {{query.cls}}:
         return actions.concat(self, selector, delimiter)
 
     def dispatch(self, func: Callable, selector: Callable[[{{query.row}}], Any], on_error: Callable=...) -> Tuple[int, int]: ...
-    def to_list(self) -> {{query.to_list}}:
-        return ListEx(piter(self))
-    def to_dict(self, duplicate: bool=...) -> {{query.to_dict}}:
-        return DictEx(piter(self))
+
+    # @overload
+    # def to(self, func: Literal[list]) -> {{query.to_list}}:
+    #     return actions.to(self, func)
+
+    # @overload
+    # def to(self, func: Literal[dict]) -> {{query.to_dict}}:
+    #     return actions.to(self, func)
+
+    # @overload
+    # def to(self, func: Callable[[Iterable[T]], R]) -> R:
+    #     return actions.to(self, func)
+
+    def to(self, func: Callable[[Iterable[T]], R]) -> R:
+        return actions.to(self, func)
+
+    # def to_list(self) -> {{query.to_list}}:
+    #     return ListEx(piter(self))
+    # def to_dict(self, duplicate: bool=...) -> {{query.to_dict}}:
+    #     return DictEx(piter(self))
 
     def one(self) -> {{query.row}}:
         return actions.one(self)
@@ -488,6 +511,7 @@ class {{query.cls}}:
 
         return sleep_sync, sleep_async, seconds
 
+    # if index query
     {% else %}
 class {{query.cls}}:
 
@@ -513,11 +537,11 @@ class {{query.cls}}:
     def get_or(self, key: {{query.K}}, default: R) -> Union[{{query.V}}, R]:
         return actions.get_or(self, key, default)
 
-    def to_list(self) -> {{query.to_list}}:
-        return ListEx(piter(self))
+    # def to_list(self) -> {{query.to_list}}:
+    #     return ListEx(piter(self))
 
-    def to_dict(self) -> {{query.to_dict}}:
-        return DictEx(piter(self))
+    # def to_dict(self) -> {{query.to_dict}}:
+    #     return DictEx(piter(self))
 
     {% endif %}
 {% endfor %}
@@ -648,3 +672,5 @@ def page_calc(page: int, size: int):
     start = (page - 1) * size
     stop = start + size
     return start, stop
+
+

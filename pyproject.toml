@@ -33,6 +33,6 @@ build-backend = "poetry.masonry.api"
 
  [tool.black]
 extend-exclude = '''
-^/pnq/__template__.py|
+^/pnq/__queries__.py|
 ^/pnq/actions.py
 '''

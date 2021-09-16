@@ -8,6 +8,7 @@ from typing import (
     Dict,
     Generic,
     Iterable,
+    Iterator,
     List,
     Literal,
     Mapping,
@@ -65,6 +66,9 @@ def lazy_reference(func):
 
 
 class Query(Generic[T], Iterable[T]):
+    def to(self, func: Callable[[Iterable[T]], R]) -> R:
+        return actions.to(self, func)
+
     def to_list(self) -> "ListEx[T]":
         pass
 
@@ -73,6 +77,9 @@ class Query(Generic[T], Iterable[T]):
 
 
 class PairQuery(Generic[K, V], Iterable[Tuple[K, V]]):
+    def to(self, func: Callable[[Iterable[Tuple[K, V]]], R]) -> R:
+        return actions.to(self, func)
+
     def to_list(self) -> "ListEx[Tuple[K, V]]":
         pass
 
@@ -172,11 +179,25 @@ class Query(Generic[T]):
     ) -> Tuple[int, int]:
         ...
 
-    def to_list(self) -> ListEx[T]:
-        return ListEx(piter(self))
+    # @overload
+    # def to(self, func: Literal[list]) -> ListEx[T]:
+    #     return actions.to(self, func)
 
-    def to_dict(self, duplicate: bool = ...) -> DictEx[Any, Any]:
-        return DictEx(piter(self))
+    # @overload
+    # def to(self, func: Literal[dict]) -> DictEx[Any,Any]:
+    #     return actions.to(self, func)
+
+    # @overload
+    # def to(self, func: Callable[[Iterable[T]], R]) -> R:
+    #     return actions.to(self, func)
+
+    def to(self, func: Callable[[Iterable[T]], R]) -> R:
+        return actions.to(self, func)
+
+    # def to_list(self) -> ListEx[T]:
+    #     return ListEx(piter(self))
+    # def to_dict(self, duplicate: bool=...) -> DictEx[Any,Any]:
+    #     return DictEx(piter(self))
 
     def one(self) -> T:
         return actions.one(self)
@@ -495,6 +516,8 @@ class Query(Generic[T]):
 
         return sleep_sync, sleep_async, seconds
 
+    # if index query
+
 
 class PairQuery(Generic[K, V]):
     def len(self) -> int:
@@ -585,11 +608,25 @@ class PairQuery(Generic[K, V]):
     ) -> Tuple[int, int]:
         ...
 
-    def to_list(self) -> ListEx[Tuple[K, V]]:
-        return ListEx(piter(self))
+    # @overload
+    # def to(self, func: Literal[list]) -> ListEx[Tuple[K,V]]:
+    #     return actions.to(self, func)
 
-    def to_dict(self, duplicate: bool = ...) -> DictEx[K, V]:
-        return DictEx(piter(self))
+    # @overload
+    # def to(self, func: Literal[dict]) -> DictEx[K,V]:
+    #     return actions.to(self, func)
+
+    # @overload
+    # def to(self, func: Callable[[Iterable[T]], R]) -> R:
+    #     return actions.to(self, func)
+
+    def to(self, func: Callable[[Iterable[T]], R]) -> R:
+        return actions.to(self, func)
+
+    # def to_list(self) -> ListEx[Tuple[K,V]]:
+    #     return ListEx(piter(self))
+    # def to_dict(self, duplicate: bool=...) -> DictEx[K,V]:
+    #     return DictEx(piter(self))
 
     def one(self) -> Tuple[K, V]:
         return actions.one(self)
@@ -922,6 +959,8 @@ class PairQuery(Generic[K, V]):
 
         return sleep_sync, sleep_async, seconds
 
+    # if index query
+
 
 class IndexQuery(Generic[K, V]):
     @lazy_reference
@@ -946,11 +985,11 @@ class IndexQuery(Generic[K, V]):
     def get_or(self, key: K, default: R) -> Union[V, R]:
         return actions.get_or(self, key, default)
 
-    def to_list(self) -> ListEx[Tuple[K, V]]:
-        return ListEx(piter(self))
+    # def to_list(self) -> ListEx[Tuple[K,V]]:
+    #     return ListEx(piter(self))
 
-    def to_dict(self) -> DictEx[K, V]:
-        return DictEx(piter(self))
+    # def to_dict(self) -> DictEx[K,V]:
+    #     return DictEx(piter(self))
 
 
 # 継承時は右側に基底クラスを指定し、左へ上書きしていくイメージ

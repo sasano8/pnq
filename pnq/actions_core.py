@@ -1,6 +1,24 @@
 from decimal import Decimal
 from decimal import InvalidOperation as DecimalInvalidOperation
-from typing import Any, Callable, Literal, Mapping, NoReturn, Sequence, TypeVar, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    List,
+    Literal,
+    Mapping,
+    NoReturn,
+    Sequence,
+    Tuple,
+    TypeVar,
+    Union,
+    overload,
+)
+
+if TYPE_CHECKING:
+    from _typeshed import SupportsKeysAndGetItem
 
 from pnq import actions
 
@@ -13,6 +31,8 @@ from .exceptions import (
 from .op import MAP_ASSIGN_OP, TH_ASSIGN_OP, TH_ROUND
 
 T = TypeVar("T")
+K = TypeVar("K")
+V = TypeVar("V")
 
 
 # TODO: 組み込みの名前を返るのは頭が混乱するのでやめるべき
@@ -48,6 +68,26 @@ def name_as(name):
     return wrapper
 
 
+@name_as("list")
+def __list(iterable: Iterable[T]) -> List[T]:
+    return list(iterable)
+
+
+@overload
+def __dict(mapping: "SupportsKeysAndGetItem[K, V]") -> Dict[K, V]:
+    return Dict[K, V](mapping)
+
+
+@overload
+def __dict(iterable: Iterable[Tuple[K, V]]) -> Dict[K, V]:
+    return Dict[K, V](iterable)
+
+
+@name_as("dict")
+def __dict(iterable):
+    return Dict[K, V](iterable)
+
+
 ###########################################
 # generator
 ###########################################
@@ -66,11 +106,11 @@ def __iter(self, selector=None):
 
     Usage:
     ```
-    >>> pnq.iter([1, 2]).to_list()
+    >>> pnq.iter([1, 2]).to(list)
     [1, 2]
-    >>> pnq.iter([{"id": 1, "name": "bob"}]).to_list()
+    >>> pnq.iter([{"id": 1, "name": "bob"}]).to(list)
     [("id", 1), ("name", "bob")]
-    >>> pnq.iter([{"id": 1, "name": "bob"}], lambda x: x[1]).to_list()
+    >>> pnq.iter([{"id": 1, "name": "bob"}], lambda x: x[1]).to(list)
     [1, "bob"]
     ```
     """
@@ -111,9 +151,9 @@ def value(*args, **kwargs):
 
     Usage:
     ```
-    >>> pnq.value(1).to_list()
+    >>> pnq.value(1).to(list)
     [1]
-    >>> pnq.value(name="test").to_list()
+    >>> pnq.value(name="test").to(list)
     [{"naem": "test"}]
     ```
     """
@@ -153,9 +193,9 @@ def infinite(func, *args, **kwargs):
 
     Usage:
     ```
-    >>> pnq.infinite(datetime.now).take(1).to_list()
+    >>> pnq.infinite(datetime.now).take(1).to(list)
     [datetime.datetime(2021, 9, 10, 3, 57, 54, 402467)]
-    >>> pnq.infinite(datetime, 2020, 1, day=2).take(1).to_list()
+    >>> pnq.infinite(datetime, 2020, 1, day=2).take(1).to(list)
     [datetime.datetime(2010, 1, 2, 0, 0)]
     ```
     """
@@ -175,7 +215,7 @@ def repeat(value):
 
     Usage:
     ```
-    >>> pnq.repeat(5).take(3).to_list()
+    >>> pnq.repeat(5).take(3).to(list)
     [5, 5, 5]
     ```
     """
@@ -198,9 +238,9 @@ def count(start=0, step=1):
 
     Usage:
     ```
-    >>> pnq.count().take(3).to_list()
+    >>> pnq.count().take(3).to(list)
     [0, 1, 2]
-    >>> pnq.count(1, 2).take(3).to_list()
+    >>> pnq.count(1, 2).take(3).to(list)
     [1, 3, 5]
     ```
     """
@@ -222,9 +262,9 @@ def cycle(iterable, repeat=None):
 
     Usage:
     ```
-    >>> pnq.cycle([1,2,3]).take(4).to_list()
+    >>> pnq.cycle([1,2,3]).take(4).to(list)
     [1, 2, 3, 1]
-    >>> pnq.cycle([1,2,3], repeat=2).to_list()
+    >>> pnq.cycle([1,2,3], repeat=2).to(list)
     [1, 2, 3, 1, 2, 3]
     ```
     """
@@ -279,9 +319,9 @@ def __map(self, selector):
 
     Usage:
     ```
-    >>> pnq.query([1]).map(lambda x: x * 2).to_list()
+    >>> pnq.query([1]).map(lambda x: x * 2).to(list)
     [2]
-    >>> pnq.query([None]).map(str).to_list()
+    >>> pnq.query([None]).map(str).to(list)
     [""]
     ```
     """
@@ -369,9 +409,9 @@ def unpack_pos(self, selector):
 
     Usage:
     ```
-    >>> pnq.query([(1, 2)]).unpack_pos(lambda arg1, arg2: arg1)).to_list()
+    >>> pnq.query([(1, 2)]).unpack_pos(lambda arg1, arg2: arg1)).to(list)
     [1]
-    >>> pnq.query([(1, 2, 3, 4, 5)]).unpack_pos(lambda arg1, arg2, *args: args).to_list()
+    >>> pnq.query([(1, 2, 3, 4, 5)]).unpack_pos(lambda arg1, arg2, *args: args).to(list)
     [(3, 4, 5)]
     ```
     """
@@ -391,9 +431,9 @@ def unpack_kw(self, selector):
 
     Usage:
     ```
-    >>> pnq.query([{"id": 1, "name": "bob"}]).unpack_kw(lambda id, name: name)).to_list()
+    >>> pnq.query([{"id": 1, "name": "bob"}]).unpack_kw(lambda id, name: name)).to(list)
     ["bob"]
-    >>> pnq.query([{"id": 1, "name": "bob", "age": 20}]).unpack_kw(lambda id, name, **kwargs: kwargs)).to_list()
+    >>> pnq.query([{"id": 1, "name": "bob", "age": 20}]).unpack_kw(lambda id, name, **kwargs: kwargs)).to(list)
     [{"age": 20}]
     ```
     """
@@ -416,9 +456,9 @@ def select(self, item, *items):
 
     Usage:
     ```
-    >>> pnq.query([(1, 2)]).select(0).to_list()
+    >>> pnq.query([(1, 2)]).select(0).to(list)
     [1]
-    >>> pnq.query([{"id": 1, "name": "a"}]).select("id", "name").to_list()
+    >>> pnq.query([{"id": 1, "name": "a"}]).select("id", "name").to(list)
     [(1, "a")]
     >>> id, name = pnq.query([{"id": 1, "name": "a"}]).select("id", "name")
     ```
@@ -440,9 +480,9 @@ def select_as_dict(self, *fields, attr: bool = False):
 
     Usage:
     ```
-    >>> pnq.query([(1, 2)]).select_as_dict(0).to_list()
+    >>> pnq.query([(1, 2)]).select_as_dict(0).to(list)
     [{0: 1}]
-    >>> pnq.query([{"id": 1, "name": "a", "age": 20}]).select_as_dict("id", "name").to_list()
+    >>> pnq.query([{"id": 1, "name": "a", "age": 20}]).select_as_dict("id", "name").to(list)
     [{"id": 1, "name": "a"}]
     ```
     """
@@ -476,9 +516,9 @@ def select_attr(self, attr, *attrs):
     Usage:
     ```
     >>> obj = Person(id=1, name="bob")
-    >>> pnq.query([obj]).select_attr("name").to_list()
+    >>> pnq.query([obj]).select_attr("name").to(list)
     ["bob"]
-    >>> pnq.query([obj]).select_attr("id", "name").to_list()
+    >>> pnq.query([obj]).select_attr("id", "name").to(list)
     [(1, "bob")]
     ```
     """
@@ -499,9 +539,9 @@ def select_items(self, *items):
 
     Usage:
     ```
-    >>> pnq.query([(1, 2)]).select_items(0).to_list()
+    >>> pnq.query([(1, 2)]).select_items(0).to(list)
     [(1,)]
-    >>> pnq.query([{"id": 1, "name": "a"}]).select_items("id", "name").to_list()
+    >>> pnq.query([{"id": 1, "name": "a"}]).select_items("id", "name").to(list)
     [(1, "a")]
     ```
     """
@@ -523,9 +563,9 @@ def select_attrs(self, *attrs):
     Usage:
     ```
     >>> obj = Person(id=1, name="bob")
-    >>> pnq.query([obj]).select_attrs("name").to_list()
+    >>> pnq.query([obj]).select_attrs("name").to(list)
     [("bob",)]
-    >>> pnq.query([obj]).select_attrs("id", "name").to_list()
+    >>> pnq.query([obj]).select_attrs("id", "name").to(list)
     [(1, "bob")]
     ```
     """
@@ -568,11 +608,11 @@ def __enumerate(self, start: int = 0, step: int = 1):
 
     Usage:
     ```
-    >>> pnq.query([1, 2]).enumerate().to_list()
+    >>> pnq.query([1, 2]).enumerate().to(list)
     [(0, 1), (1, 2)]
-    >>> pnq.query([1, 2]).enumerate(5).to_list()
+    >>> pnq.query([1, 2]).enumerate(5).to(list)
     [(5, 1), (6, 2)]
-    >>> pnq.query([1, 2]).enumerate(0, 10)).to_list()
+    >>> pnq.query([1, 2]).enumerate(0, 10)).to(list)
     [(0, 1), (10, 2)]
     ```
     """
@@ -598,7 +638,7 @@ def group_by(self, selector):
     >>>   {"name": "apple", "color": "red", "count": 2},
     >>>   {"name": "strawberry", "color": "red", "count": 5},
     >>> ]
-    >>> pnq.query(data).group_by(lambda x: x["color"], x["name"]).to_list()
+    >>> pnq.query(data).group_by(lambda x: x["color"], x["name"]).to(list)
     [("yellow": ["banana"]), ("red": ["apple", "strawberry"])]
     >>> pnq.query(data).select("color", "count").group_by().to_dict()
     {"yellow": [3], "red": [2, 5]}
@@ -655,6 +695,20 @@ def request(self, func, unpack: bool = True, timeout: float = None, retry: int =
         result = None
         try:
             result = func(elm)
+        except Exception as err:  # noqa
+            pass
+
+        yield elm, err, result
+
+
+async def request_async(
+    self, func, unpack: bool = True, timeout: float = None, retry: int = None
+):
+    for elm in self:
+        err = None
+        result = None
+        try:
+            result = await func(elm)
         except Exception as err:  # noqa
             pass
 
@@ -736,9 +790,9 @@ def __filter(self, predicate):
 
     Usage:
     ```
-    >>> pnq.query([1, 2]).filter(lambda x: x == 1).to_list()
+    >>> pnq.query([1, 2]).filter(lambda x: x == 1).to(list)
     [1]
-    >>> pnq.query({1: True, 2: False, 3: True}).filter(lambda x: x[1] == True).to_list()
+    >>> pnq.query({1: True, 2: False, 3: True}).filter(lambda x: x[1] == True).to(list)
     [(1, True), (3, True)]
     ```
     """
@@ -765,9 +819,9 @@ def must(self, predicate):
 
     Usage:
     ```
-    >>> pnq.query([1, 2]).must(lambda x: x == 1).to_list()
+    >>> pnq.query([1, 2]).must(lambda x: x == 1).to(list)
     raise ValueError("2")
-    >>> pnq.query({1: True, 2: False, 3: True}).must(lambda x: x[1] == True).to_list()
+    >>> pnq.query({1: True, 2: False, 3: True}).must(lambda x: x[1] == True).to(list)
     raise ValueError("(2, False)")
     ```
     """
@@ -791,9 +845,9 @@ def filter_type(self, *types):
 
     Usage:
     ```
-    >>> pnq.query([1, False, "a"]).filter_type(int).to_list()
+    >>> pnq.query([1, False, "a"]).filter_type(int).to(list)
     [1, False]
-    >>> pnq.query([1, False, "a"]).filter_type(str, bool).to_list()
+    >>> pnq.query([1, False, "a"]).filter_type(str, bool).to(list)
     [False, "a"]
     ```
     """
@@ -817,7 +871,7 @@ def must_type(self, *types):
 
     Usage:
     ```
-    >>> pnq.query([1, 2]).must_type(str, int).to_list()
+    >>> pnq.query([1, 2]).must_type(str, int).to(list)
     raise ValueError("1 is not str")
     ```
     """
@@ -841,9 +895,9 @@ def unique(self, selector):
 
     Usage:
     ```
-    >>> pnq.query([1, 2, 1]).filter_unique().to_list()
+    >>> pnq.query([1, 2, 1]).filter_unique().to(list)
     [1, 2]
-    >>> pnq.query([(0 , 0 , 0), (0 , 1 , 1), (0 , 0 , 2)]).unique(lambda x: (x[0], x[1])).to_list()
+    >>> pnq.query([(0 , 0 , 0), (0 , 1 , 1), (0 , 0 , 2)]).unique(lambda x: (x[0], x[1])).to(list)
     [(0, 0), (0, 1)]
     ```
     """
@@ -874,7 +928,7 @@ def must_unique(self, selector=lambda x: x, immediate: bool = True):
 
     Usage:
     ```
-    >>> pnq.query([1, 2, 1]).must_unique().to_list()
+    >>> pnq.query([1, 2, 1]).must_unique().to(list)
     raise DuplicateError("1")
     ```
 
@@ -919,7 +973,7 @@ def take(self, count: int):
 
     Usage:
     ```
-    >>> pnq.query([1, 2, 3]).take(2).to_list()
+    >>> pnq.query([1, 2, 3]).take(2).to(list)
     [1, 2]
     ```
     """
@@ -939,7 +993,7 @@ def take_while(self, predicate):
 
     Usage:
     ```
-    >>> pnq.query([1, 2, 3]).enumerate().take_while(lambda v: v[0] < 2).select(1).to_list()
+    >>> pnq.query([1, 2, 3]).enumerate().take_while(lambda v: v[0] < 2).select(1).to(list)
     [1, 2]
     ```
     """
@@ -959,7 +1013,7 @@ def skip(self, count: int):
 
     Usage:
     ```
-    >>> pnq.query([1, 2, 3]).skip(1).to_list()
+    >>> pnq.query([1, 2, 3]).skip(1).to(list)
     [2, 3]
     ```
     """
@@ -979,7 +1033,7 @@ def skip_while(self, predicate):
 
     Usage:
     ```
-    >>> pnq.query([1, 2, 3]).enumerate().skip_while(lambda v: v[0] < 1).select(1).to_list()
+    >>> pnq.query([1, 2, 3]).enumerate().skip_while(lambda v: v[0] < 1).select(1).to(list)
     [2, 3]
     ```
     """
@@ -1000,9 +1054,9 @@ def take_range(self, start: int = 0, stop: int = ...):
 
     Usage:
     ```
-    >>> pnq.query([0, 1, 2, 3, 4, 5]).take_range(0, 3).to_list()
+    >>> pnq.query([0, 1, 2, 3, 4, 5]).take_range(0, 3).to(list)
     [0, 1, 2]
-    >>> pnq.query([0, 1, 2, 3, 4, 5]).take_range(3).to_list()
+    >>> pnq.query([0, 1, 2, 3, 4, 5]).take_range(3).to(list)
     [3, 4, 5]
     ```
     """
@@ -1023,9 +1077,9 @@ def take_page(self, page: int, size: int):
 
     Usage:
     ```
-    >>> pnq.query([0, 1, 2, 3, 4, 5]).take_page(page=1, size=2).to_list()
+    >>> pnq.query([0, 1, 2, 3, 4, 5]).take_page(page=1, size=2).to(list)
     [0, 1]
-    >>> pnq.query([0, 1, 2, 3, 4, 5]).take_page(page=2, size=3).to_list()
+    >>> pnq.query([0, 1, 2, 3, 4, 5]).take_page(page=2, size=3).to(list)
     [3, 4, 5]
     ```
     """
@@ -1048,13 +1102,13 @@ def order_by(self, selector, desc: bool = False):
 
     Usage:
     ```
-    >>> pnq.query([1, 2, 3]).order_by().to_list()
+    >>> pnq.query([1, 2, 3]).order_by().to(list)
     [1, 2, 3]
-    >>> pnq.query([1, 2, 3]).order_by(lambda x: -x).to_list()
+    >>> pnq.query([1, 2, 3]).order_by(lambda x: -x).to(list)
     [3, 2, 1]
-    >>> pnq.query([1, 2, 3]).order_by(desc=True).to_list()
+    >>> pnq.query([1, 2, 3]).order_by(desc=True).to(list)
     [3, 2, 1]
-    >>> pnq.query([(1, 2)), (2, 2), (2, 1)]).order_by(lambda x: (x[0], x[1])).to_list()
+    >>> pnq.query([(1, 2)), (2, 2), (2, 1)]).order_by(lambda x: (x[0], x[1])).to(list)
     [(1, 2)), (2, 1), (2, 2)]
     ```
     """
@@ -1078,7 +1132,7 @@ def order_by_reverse(self):
 
     Usage:
     ```
-    >>> pnq.query([1, 2, 3]).order_by_reverse().to_list()
+    >>> pnq.query([1, 2, 3]).order_by_reverse().to(list)
     [3, 2, 1]
     ```
     """
@@ -1095,9 +1149,9 @@ def order_by_shuffle(self):
 
     Usage:
     ```
-    >>> pnq.query([1, 2, 3]).order_by_shuffle().to_list()
+    >>> pnq.query([1, 2, 3]).order_by_shuffle().to(list)
     [1, 3, 2]
-    >>> pnq.query([1, 2, 3]).order_by_shuffle().to_list()
+    >>> pnq.query([1, 2, 3]).order_by_shuffle().to(list)
     [3, 1, 2]
     ```
     """
@@ -1415,14 +1469,6 @@ def concat(self, selector=lambda x: x, delimiter: str = ""):
 ###########################################
 
 
-def to_list(self):
-    return to(self, list)
-
-
-def to_dict(self):
-    return to(self, dict)
-
-
 @mark
 def to(self, finalizer):
     """クエリを即時評価し、評価結果をファイナライザによって処理します。
@@ -1496,7 +1542,7 @@ async def to_async(self, cls):
 
 
 @mark
-def dispatch(self, func=lambda x: None, unpack: bool = True):
+def dispatch(self, func, unpack: bool = True):
     """シーケンスから流れてくる値を関数に送出します。
     デフォルトで、要素から流れてくる値をアンパックして関数に送出します。
     例外はコントロールされません。
@@ -1528,9 +1574,8 @@ def dispatch(self, func=lambda x: None, unpack: bool = True):
 
 
 @mark
-async def dispatch_async(self, func=lambda x: None, unpack: bool = True):
+async def dispatch_async(self, func, unpack: bool = True):
     """シーケンスから流れてくる値を非同期関数に送出します。
-    内部イテレータは全て非同期の文脈で実行されます。
     デフォルトで、要素から流れてくる値をアンパックして関数に送出します。
     例外はコントロールされません。
 
@@ -1550,7 +1595,7 @@ async def dispatch_async(self, func=lambda x: None, unpack: bool = True):
     [1, 2]
     ```
     """
-    async for elm in self:
+    for elm in self:
         yield await func(elm)
 
 

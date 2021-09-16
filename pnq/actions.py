@@ -18,6 +18,8 @@ from .actions_core import contains as contains
 from .actions_core import count as count
 from .actions_core import cycle as cycle
 
+from .actions_core import __list as list
+from .actions_core import __dict as dict
 
 from .actions_core import dispatch as dispatch
 from .actions_core import distinct as distinct
@@ -67,8 +69,6 @@ from .actions_core import take_page as take_page
 from .actions_core import take_range as take_range
 from .actions_core import take_while as take_while
 from .actions_core import to as to
-from .actions_core import to_dict as to_dict
-from .actions_core import to_list as to_list
 from .actions_core import union as union
 from .actions_core import union_all as union_all
 from .actions_core import union_intersect as union_intersect

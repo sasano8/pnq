@@ -30,5 +30,5 @@ doc-serve: doc-build
 
 
 generate:
-	@poetry run python3 pnq_template/generate.py -i pnq/__template__.py -o pnq/types.py
+	@poetry run python3 pnq_template/generate.py -i pnq/__queries__.py -o pnq/queries.py
 	@make format
