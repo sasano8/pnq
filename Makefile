@@ -12,11 +12,6 @@ format-isort:
 test: generate
 	@echo [pytest] && poetry run pytest .
 
-# documentation:
-# 	@rm -rf ./docs/auto
-# 	@poetry run sphinx-apidoc --module-first -f -o ./docs/auto ./openapi_client_generator
-# 	@poetry run sphinx-build -b singlehtml ./docs ./docs/_build
-
 doc-build:
 	@poetry run mkdocs build
 	@cat docs/index.md > README.md
@@ -28,6 +23,9 @@ doc-serve: doc-build
 	# @poetry run mkdocs build
 	@poetry run mkdocs serve -a localhost:8001
 
+
+gen: generate
+	@poetry run pytest . -x # １つエラーが発生したら中断する
 
 generate:
 	@poetry run python3 pnq_template/generate.py -i pnq/__queries__.py -o pnq/queries.py

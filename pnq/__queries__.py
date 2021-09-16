@@ -57,18 +57,19 @@ def lazy_reference(func):
     return wrapper
 
 
-class Query(Generic[T], Iterable[T]):
-    def to(self, func: Callable[[Iterable[T]], R]) -> R:
-        return actions.to(self, func)
-
-
-
-class PairQuery(Generic[K, V], Iterable[Tuple[K, V]]):
-    def to(self, func: Callable[[Iterable[Tuple[K, V]]], R]) -> R:
-        return actions.to(self, func)
-
 
 if not TYPE_CHECKING:
+    # TODO: type hintを文字で囲むのが面倒なため仮定義 文字化して除去する
+    class Query(Generic[T], Iterable[T]):
+        # def to(self, func: Callable[[Iterable[T]], R]) -> R:
+        #     return actions.to(self, func)
+        ...
+
+    class PairQuery(Generic[K, V], Iterable[Tuple[K, V]]):
+        # def to(self, func: Callable[[Iterable[Tuple[K, V]]], R]) -> R:
+        #     return actions.to(self, func)
+        ...
+
     class IndexQuery(Generic[K, V]):
         pass
 
