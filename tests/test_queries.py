@@ -667,21 +667,20 @@ class Test020_Transform:
     def test_map_recursive(self):
         pass
 
-    def test_unpack(self):
-        with pytest.raises(
-            TypeError, match="missing 1 required positional argument: 'v'"
-        ):
-            pnq([(1, 2)]).map(lambda k, v: k).to(list)
-        assert pnq([(1, 2)]).unpack(lambda k, v: k).to(list) == [1]
+    def test_unpack_pos(self):
+        assert pnq([(1, 2)]).unpack_pos(lambda k, v: k).to(list) == [1]
+
+    def test_unpack_kw(self):
         assert pnq([{"name": "test", "age": 20}]).unpack_kw(lambda name, age: name).to(
             list
         ) == ["test"]
 
-    def test_unpack_pos(self):
-        pass
-
-    def test_unpack_kw(self):
-        pass
+    def test_unpack(self):
+        # mapはアンパックできないこと
+        with pytest.raises(
+            TypeError, match="missing 1 required positional argument: 'v'"
+        ):
+            pnq([(1, 2)]).map(lambda k, v: k).to(list)
 
     def test_select(self):
         assert pnq([{"name": "a"}]).select("name").to(list) == ["a"]

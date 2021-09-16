@@ -391,12 +391,6 @@ def map_recursive(self, selector):
 
 
 @mark
-def unpack(self, selector):
-    """unpack_posかunpack_kwの別名にする予定です。"""
-    pass
-
-
-@mark
 def unpack_pos(self, selector):
     """シーケンスの各要素をアンパックし、新しいフォームに射影します。
 
@@ -415,7 +409,8 @@ def unpack_pos(self, selector):
     [(3, 4, 5)]
     ```
     """
-    pass
+    for elm in self:
+        yield selector(*elm)  # type: ignore
 
 
 @mark
@@ -437,7 +432,8 @@ def unpack_kw(self, selector):
     [{"age": 20}]
     ```
     """
-    pass
+    for elm in self:
+        yield selector(**elm)  # type: ignore
 
 
 @mark

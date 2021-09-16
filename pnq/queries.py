@@ -294,15 +294,18 @@ class Query(Generic[T]):
                 selector = lambda x: {k: get(x, k) for k in fields}  # noqa
         return LazyIterate(actions.map, self, selector)
 
+    # @lazy_iterate
+    # def unpack(self, selector: Callable[..., R]) -> Query[R]:
+    #     for elm in self:
+    #         yield selector(*elm)  # type: ignore
+
     @lazy_iterate
-    def unpack(self, selector: Callable[..., R]) -> Query[R]:
-        for elm in self:
-            yield selector(*elm)  # type: ignore
+    def unpack_pos(self, selector: Callable[..., R]) -> Query[R]:
+        return LazyIterate(actions.unpack_pos, self, selector)
 
     @lazy_iterate
     def unpack_kw(self, selector: Callable[..., R]) -> Query[R]:
-        for elm in self:
-            yield selector(**elm)  # type: ignore
+        return LazyIterate(actions.unpack_kw, self, selector)
 
     def group_by(
         self, selector: Callable[[T], Tuple[K2, V2]] = lambda x: x
@@ -738,15 +741,18 @@ class PairQuery(Generic[K, V]):
                 selector = lambda x: {k: get(x, k) for k in fields}  # noqa
         return LazyIterate(actions.map, self, selector)
 
+    # @lazy_iterate
+    # def unpack(self, selector: Callable[..., R]) -> Query[R]:
+    #     for elm in self:
+    #         yield selector(*elm)  # type: ignore
+
     @lazy_iterate
-    def unpack(self, selector: Callable[..., R]) -> Query[R]:
-        for elm in self:
-            yield selector(*elm)  # type: ignore
+    def unpack_pos(self, selector: Callable[..., R]) -> Query[R]:
+        return LazyIterate(actions.unpack_pos, self, selector)
 
     @lazy_iterate
     def unpack_kw(self, selector: Callable[..., R]) -> Query[R]:
-        for elm in self:
-            yield selector(**elm)  # type: ignore
+        return LazyIterate(actions.unpack_kw, self, selector)
 
     def group_by(
         self, selector: Callable[[Tuple[K, V]], Tuple[K2, V2]] = lambda x: x

@@ -32,9 +32,6 @@
 ::: pnq.actions.map_recursive
     :docstring:
 
-::: pnq.actions.unpack
-    :docstring:
-
 ::: pnq.actions.unpack_pos
     :docstring:
 
