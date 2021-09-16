@@ -29,6 +29,7 @@ from .core import LazyReference as _LazyReference
 from .core import piter, undefined
 from .exceptions import NoElementError, NotFoundError, NotOneElementError
 from .op import TH_ASSIGN_OP
+from .requests import Response
 
 T = TypeVar("T")
 K = TypeVar("K")
@@ -294,28 +295,29 @@ class Query(Generic[T]):
                 selector = lambda x: {k: get(x, k) for k in fields}  # noqa
         return LazyIterate(actions.map, self, selector)
 
+    # @lazy_iterate
+    # def unpack(self, selector: Callable[..., R]) -> Query[R]:
+    #     for elm in self:
+    #         yield selector(*elm)  # type: ignore
+
     @lazy_iterate
-    def unpack(self, selector: Callable[..., R]) -> Query[R]:
-        for elm in self:
-            yield selector(*elm)  # type: ignore
+    def unpack_pos(self, selector: Callable[..., R]) -> Query[R]:
+        return LazyIterate(actions.unpack_pos, self, selector)
 
     @lazy_iterate
     def unpack_kw(self, selector: Callable[..., R]) -> Query[R]:
-        for elm in self:
-            yield selector(**elm)  # type: ignore
+        return LazyIterate(actions.unpack_kw, self, selector)
 
-    # @lazy_iterate
     def group_by(
         self, selector: Callable[[T], Tuple[K2, V2]] = lambda x: x
     ) -> PairQuery[K2, List[V2]]:
         return LazyIterate(actions.group_by, self, selector)
-        # results: Dict[K, List[V]] = defaultdict(list)
-        # for elm in self:
-        #     k, v = selector(elm)
-        #     results[k].append(v)
 
-        # for k, v in results.items():  # type: ignore
-        #     yield k, v
+    def pivot_unstack(self, default=None) -> "PairQuery[Any, List]":
+        return LazyIterate(actions.pivot_unstack, self, default)
+
+    def pivot_stack(self) -> "Query[Dict]":
+        return LazyIterate(actions.pivot_stack, self)
 
     def join(self, right, on: Callable[[Tuple[list, list]], Callable], select):
         [].join(
@@ -327,6 +329,12 @@ class Query(Generic[T]):
         table(User).join(Item, on=User.id == Item.id).select(User.id, Item.id)
 
         pass
+
+    def request(self, func, retry: int = None) -> "Query[Response]":
+        return LazyIterate(actions.request, self, func, retry)
+
+    def request_async(self, func, retry: int = None) -> "Query[Response]":
+        return LazyIterate(actions.request_async, self, func, retry)
 
     @lazy_iterate
     def distinct(self, selector: Callable[[T], Any], msg: str = ...) -> Query[T]:
@@ -499,7 +507,7 @@ class Query(Generic[T]):
 
         return sleep_sync, sleep_async, seconds
 
-    def debug(self, breakpoint=lambda x: x, printer=print):
+    def debug(self, breakpoint=lambda x: x, printer=print) -> "Query[T]":
         return LazyIterate(actions.debug, self, breakpoint=breakpoint, printer=printer)
 
     # if index query
@@ -740,28 +748,29 @@ class PairQuery(Generic[K, V]):
                 selector = lambda x: {k: get(x, k) for k in fields}  # noqa
         return LazyIterate(actions.map, self, selector)
 
+    # @lazy_iterate
+    # def unpack(self, selector: Callable[..., R]) -> Query[R]:
+    #     for elm in self:
+    #         yield selector(*elm)  # type: ignore
+
     @lazy_iterate
-    def unpack(self, selector: Callable[..., R]) -> Query[R]:
-        for elm in self:
-            yield selector(*elm)  # type: ignore
+    def unpack_pos(self, selector: Callable[..., R]) -> Query[R]:
+        return LazyIterate(actions.unpack_pos, self, selector)
 
     @lazy_iterate
     def unpack_kw(self, selector: Callable[..., R]) -> Query[R]:
-        for elm in self:
-            yield selector(**elm)  # type: ignore
+        return LazyIterate(actions.unpack_kw, self, selector)
 
-    # @lazy_iterate
     def group_by(
         self, selector: Callable[[Tuple[K, V]], Tuple[K2, V2]] = lambda x: x
     ) -> PairQuery[K2, List[V2]]:
         return LazyIterate(actions.group_by, self, selector)
-        # results: Dict[K, List[V]] = defaultdict(list)
-        # for elm in self:
-        #     k, v = selector(elm)
-        #     results[k].append(v)
 
-        # for k, v in results.items():  # type: ignore
-        #     yield k, v
+    def pivot_unstack(self, default=None) -> "PairQuery[Any, List]":
+        return LazyIterate(actions.pivot_unstack, self, default)
+
+    def pivot_stack(self) -> "Query[Dict]":
+        return LazyIterate(actions.pivot_stack, self)
 
     def join(self, right, on: Callable[[Tuple[list, list]], Callable], select):
         [].join(
@@ -773,6 +782,12 @@ class PairQuery(Generic[K, V]):
         table(User).join(Item, on=User.id == Item.id).select(User.id, Item.id)
 
         pass
+
+    def request(self, func, retry: int = None) -> "Query[Response]":
+        return LazyIterate(actions.request, self, func, retry)
+
+    def request_async(self, func, retry: int = None) -> "Query[Response]":
+        return LazyIterate(actions.request_async, self, func, retry)
 
     @lazy_iterate
     def distinct(
@@ -951,7 +966,7 @@ class PairQuery(Generic[K, V]):
 
         return sleep_sync, sleep_async, seconds
 
-    def debug(self, breakpoint=lambda x: x, printer=print):
+    def debug(self, breakpoint=lambda x: x, printer=print) -> "PairQuery[K,V]":
         return LazyIterate(actions.debug, self, breakpoint=breakpoint, printer=printer)
 
     # if index query

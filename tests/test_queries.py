@@ -1,5 +1,5 @@
 from functools import wraps
-from typing import Iterable, Mapping, Tuple
+from typing import Iterable, List, Mapping, Tuple
 
 import pytest
 
@@ -667,21 +667,20 @@ class Test020_Transform:
     def test_map_recursive(self):
         pass
 
-    def test_unpack(self):
-        with pytest.raises(
-            TypeError, match="missing 1 required positional argument: 'v'"
-        ):
-            pnq([(1, 2)]).map(lambda k, v: k).to(list)
-        assert pnq([(1, 2)]).unpack(lambda k, v: k).to(list) == [1]
+    def test_unpack_pos(self):
+        assert pnq([(1, 2)]).unpack_pos(lambda k, v: k).to(list) == [1]
+
+    def test_unpack_kw(self):
         assert pnq([{"name": "test", "age": 20}]).unpack_kw(lambda name, age: name).to(
             list
         ) == ["test"]
 
-    def test_unpack_pos(self):
-        pass
-
-    def test_unpack_kw(self):
-        pass
+    def test_unpack(self):
+        # mapはアンパックできないこと
+        with pytest.raises(
+            TypeError, match="missing 1 required positional argument: 'v'"
+        ):
+            pnq([(1, 2)]).map(lambda k, v: k).to(list)
 
     def test_select(self):
         assert pnq([{"name": "a"}]).select("name").to(list) == ["a"]
@@ -759,15 +758,16 @@ class Test020_Transform:
             {"name": "strawberry", "color": "red", "count": 5},
         ]
 
-        # カラー別
+        # カラー別名前
         pnq(data).group_by(lambda x: (x["color"], x["name"])).to(list) == [
             ("yellow", ["banana"]),
             ("red", ["apple", "strawberry"]),
         ]
 
-        pnq(data).select("color", "name").group_by().to(list) == [
-            ("yellow", ["banana"]),
-            ("red", ["apple", "strawberry"]),
+        # カラー別個数
+        pnq(data).select("color", "count").group_by().to(list) == [
+            ("yellow", [3]),
+            ("red", [2, 5]),
         ]
 
     def test_join(self):
@@ -777,19 +777,155 @@ class Test020_Transform:
         pass
 
     def test_pivot_unstack(self):
-        pass
+        data = [
+            {"name": "test1", "age": 20},
+            {"name": "test2", "age": 25},
+            {"name": "test3", "age": 30, "sex": "male"},
+        ]
+        result1 = pnq(data).pivot_unstack().to(dict)
+
+        assert result1 == {
+            "name": ["test1", "test2", "test3"],
+            "age": [20, 25, 30],
+            "sex": [None, None, "male"],
+        }
+
+        result2 = pnq(data).pivot_unstack(default="").to(dict)
+
+        assert result2 == {
+            "name": ["test1", "test2", "test3"],
+            "age": [20, 25, 30],
+            "sex": ["", "", "male"],
+        }
 
     def test_pivot_stack(self):
-        pass
+        data = {
+            "name": ["test1", "test2", "test3"],
+            "age": [20, 25, 30],
+            "sex": [None, None, "male"],
+        }
 
-    def test_request(self):
-        pass
+        result = pnq(data).pivot_stack().to(list)
+        assert result == [
+            {"name": "test1", "age": 20, "sex": None},
+            {"name": "test2", "age": 25, "sex": None},
+            {"name": "test3", "age": 30, "sex": "male"},
+        ]
 
-    def test_request_async(self):
-        pass
+    def test_pivot_stack_unstack(self):
+        data = [
+            {"name": "test1", "age": 20, "sex": ""},
+            {"name": "test2", "age": 25, "sex": ""},
+            {"name": "test3", "age": 30, "sex": "male"},
+        ]
+        result = pnq(data).pivot_unstack().pivot_stack().to(list)
+        assert result == data
+
+        data = {
+            "name": ["test1", "test2", "test3"],
+            "age": [20, 25, 30],
+            "sex": [None, None, "male"],
+        }
+        result = pnq(data).pivot_stack().pivot_unstack().to(dict)
+        assert result == data
 
     def test_debug(self):
-        pass
+        result = []
+
+        assert pnq([1]).debug(lambda x: x).to(list) == [1]
+        assert pnq([1]).debug(result.append).to(list) == [1]
+        assert result == [1]
+
+        assert pnq([2]).debug(lambda x: x, printer=result.append).to(list) == [2]
+        assert result == [1, 2]
+
+        q = pnq([3])
+
+        @q.debug
+        def break_point(x):
+            result.append(x)
+
+        assert break_point.to(list) == [3]
+        assert result == [1, 2, 3]
+
+    def test_request(self):
+        from datetime import datetime
+
+        from pnq.requests import Response
+
+        result = []
+
+        def ok(value):
+            result.append(value)
+            return "ok"
+
+        def err(value1, value2):
+            raise Exception("error")
+
+        response: List[Response] = pnq([{"value": 1}]).request(ok).to(list)
+        assert result == [1]
+        res = response[0]
+        assert res.func == ok
+        assert res.kwargs == {"value": 1}
+        assert res.err is None
+        assert res.result == "ok"
+        assert isinstance(res.start, datetime)
+        assert isinstance(res.end, datetime)
+
+        response: List[Response] = (
+            pnq([{"value1": 1, "value2": 2}]).request(err).to(list)
+        )
+        assert result == [1]
+        res = response[0]
+        assert res.func == err
+        assert res.kwargs == {"value1": 1, "value2": 2}
+        assert str(res.err) == "error"
+        assert res.result is None
+        assert isinstance(res.start, datetime)
+        assert isinstance(res.end, datetime)
+
+    def test_request_async(self):
+        import asyncio
+
+        async def main():
+            from datetime import datetime
+
+            from pnq.requests import Response
+
+            result = []
+
+            async def ok(value):
+                result.append(value)
+                return "ok"
+
+            async def err(value1, value2):
+                raise Exception("error")
+
+            q = pnq([{"value": 1}]).request_async(ok)
+            response: List[Response] = [x async for x in q]
+
+            assert result == [1]
+            res = response[0]
+            assert res.func == ok
+            assert res.kwargs == {"value": 1}
+            assert res.err is None
+            assert res.result == "ok"
+            assert isinstance(res.start, datetime)
+            assert isinstance(res.end, datetime)
+
+            q = pnq([{"value1": 1, "value2": 2}]).request_async(err)
+            response: List[Response] = [x async for x in q]
+
+            assert result == [1]
+            res = response[0]
+            assert res.func == err
+            assert res.kwargs == {"value1": 1, "value2": 2}
+            assert str(res.err) == "error"
+            assert res.result is None
+            assert isinstance(res.start, datetime)
+            assert isinstance(res.end, datetime)
+
+        asyncio.run(main())
 
 
 class Hoge:

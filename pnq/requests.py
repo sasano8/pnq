@@ -1,5 +1,4 @@
 import traceback
-from contextlib import contextmanager
 from datetime import datetime, timezone
 from typing import Any, Dict, NamedTuple, Tuple, Union
 
@@ -11,7 +10,6 @@ class Request:
 
 class Response(NamedTuple):
     func: Any
-    args: Tuple
     kwargs: Dict
     err: Union[Exception, None]
     result: Any
@@ -31,15 +29,29 @@ class Response(NamedTuple):
             traceback.format_exception(etype=type(err), value=err, tb=err.__traceback__)
         )
 
-    def to_dict(self):
+    def __getitem__(self, key):
+        return self.to_dict()[key]
+
+    def __str__(self):
+        return str(self.to_dict())
+
+    def to_dict(self, stack_trace: bool = True):
+        """jsonに近いように辞書化します。kwargsとresultは解析されません。"""
+        st = None
+        err = None
+        if self.err:
+            err = str(self.err)
+            if stack_trace:
+                st = self.stack_trace
+
         return {
-            "func": self.func,
-            "args": self.args,
+            "func": self.func.__name__,
             "kwargs": self.kwargs,
-            "err": self.err,
+            "err": err,
             "result": self.result,
-            "start": self.start,
-            "end": self.end,
+            "start": self.start.isoformat(),
+            "end": self.end.isoformat(),
+            "stack_trace": st,
         }
 
 

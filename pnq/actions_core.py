@@ -391,12 +391,6 @@ def map_recursive(self, selector):
 
 
 @mark
-def unpack(self, selector):
-    """unpack_posかunpack_kwの別名にする予定です。"""
-    pass
-
-
-@mark
 def unpack_pos(self, selector):
     """シーケンスの各要素をアンパックし、新しいフォームに射影します。
 
@@ -415,7 +409,8 @@ def unpack_pos(self, selector):
     [(3, 4, 5)]
     ```
     """
-    pass
+    for elm in self:
+        yield selector(*elm)  # type: ignore
 
 
 @mark
@@ -437,20 +432,21 @@ def unpack_kw(self, selector):
     [{"age": 20}]
     ```
     """
-    pass
+    for elm in self:
+        yield selector(**elm)  # type: ignore
 
 
 @mark
 def select(self, field, *fields, attr: bool = False):
     """シーケンスの各要素からアイテムを選択し新しいフォームに射影します。
     複数のアイテムを選択した場合は、タプルとして射影します。
-    `select_item`の別名です。
 
     Args:
 
     * self: 変換対象のシーケンス
     * field: 各要素から選択するアイテム
-    * fields: 各要素から選択するアイテム
+    * fields: 各要素から選択する追加のアイテム
+    * attr: 要素の属性から取得する場合はTrue
 
     Returns: 選択したアイテムまたは複数のアイテム（タプル）を返すクエリ
 
@@ -460,7 +456,32 @@ def select(self, field, *fields, attr: bool = False):
     [1]
     >>> pnq.query([{"id": 1, "name": "a"}]).select("id", "name").to(list)
     [(1, "a")]
-    >>> id, name = pnq.query([{"id": 1, "name": "a"}]).select("id", "name")
+    >>> pnq.query([str]).select("__name__", attr=True).to(list)
+    ["str"]
+    ```
+    """
+    pass
+
+
+@mark
+def select_as_tuple(self, *fields, attr: bool = False):
+    """シーケンスの各要素からアイテムまたは属性を選択し辞書として新しいフォームに射影します。
+    selectと異なり選択した値が１つでも必ずタプルを返します。
+
+    Args:
+
+    * self: 変換対象のシーケンス
+    * fields: 選択するアイテムまたは属性
+    * attr: 属性から取得する場合はTrueとする
+
+    Returns: 選択したアイテムを含む辞書を返すクエリ
+
+    Usage:
+    ```
+    >>> pnq.query([(1, 2)]).select_as_tuple(0).to(list)
+    [(1,)]
+    >>> pnq.query([str]).select_as_tuple("__name__", attr=True).to(list)
+    [("str",)]
     ```
     """
     pass
@@ -482,15 +503,10 @@ def select_as_dict(self, *fields, attr: bool = False):
     ```
     >>> pnq.query([(1, 2)]).select_as_dict(0).to(list)
     [{0: 1}]
-    >>> pnq.query([{"id": 1, "name": "a", "age": 20}]).select_as_dict("id", "name").to(list)
-    [{"id": 1, "name": "a"}]
+    >>> pnq.query([str]).select_as_dict("__name__", attr=True).to(list)
+    [{"__name__": "str"}]
     ```
     """
-    pass
-
-
-@mark
-def select_as_tuple(self, *fields, attr: bool = False):
     pass
 
 
@@ -602,7 +618,7 @@ def pivot_unstack(self, default=None):
     # 全てのカラムを取得
     for i, dic in enumerate(self):
         data.append(dic)
-        for k, v in dic.keys():
+        for k in dic.keys():
             dataframe[k] = None
 
     # カラム分の領域を初期化
@@ -627,19 +643,19 @@ def pivot_stack(self):
         {"name": "test3", "age": 30, "sex": "male"},
     ]
     """
-
-    columns = list(self.keys())
+    data = dict(self)
+    columns = list(data.keys())
 
     for i in range(len(columns)):
         row = {}
         for c in columns:
-            row[c] = self[c][i]
+            row[c] = data[c][i]
 
         yield row
 
 
 @mark
-def request(self, func, unpack: bool = True, timeout: float = None, retry: int = None):
+def request(self, func, unpack: bool = True, retry: int = None):
     """シーケンスから流れてくる値を関数に送出するように要求します。
     例外はキャッチされ、実行結果を返すイテレータを生成します。
     関数呼び出し時に要素がtupleまたはdictの場合、要素はデフォルトでアンパックされます。
@@ -672,41 +688,54 @@ def request(self, func, unpack: bool = True, timeout: float = None, retry: int =
     False, ValueError("False"), None
     ```
     """
-    for elm in self:
-        err = None
-        result = None
-        try:
-            result = func(elm)
-        except Exception as err:  # noqa
-            pass
+    from .requests import Response, StopWatch
 
-        yield elm, err, result
+    if retry:
+        raise NotImplementedError("retry not implemented")
+
+    for v in self:
+
+        with StopWatch() as sw:
+            err = None
+            result = None
+            try:
+                result = func(**v)
+            except Exception as e:
+                err = e
+
+        res = Response(
+            func, kwargs=v, err=err, result=result, start=sw.start, end=sw.end
+        )
+
+        yield res
 
 
 async def request_async(
     self, func, unpack: bool = True, timeout: float = None, retry: int = None
 ):
-    for elm in self:
-        err = None
-        result = None
-        try:
-            result = await func(elm)
-        except Exception as err:  # noqa
-            pass
+    from .requests import Response, StopWatch
 
-        yield elm, err, result
+    if retry:
+        raise NotImplementedError("retry not implemented")
 
+    if timeout:
+        raise NotImplementedError("timeout not implemented")
 
-@mark
-async def request_gather(
-    self,
-    func,
-    unpack: bool = True,
-    timeout: float = None,
-    retry: int = None,
-    pool: int = 3,
-):
-    pass
+    for v in self:
+
+        with StopWatch() as sw:
+            err = None
+            result = None
+            try:
+                result = await func(**v)
+            except Exception as e:
+                err = e
+
+        res = Response(
+            func, kwargs=v, err=err, result=result, start=sw.start, end=sw.end
+        )
+
+        yield res
 
 
 def debug(self, breakpoint=lambda x: x, printer=print):
