@@ -1572,8 +1572,8 @@ async def to_async(self, cls):
 
 
 @mark
-def each(self, func=lambda x: x, unpack: bool = False):
-    """イテレーションを実行し、ら流れてくる要素を関数に送出します。
+def each(self, func=lambda x: x):
+    """イテレーションを実行し、流れてくる要素を関数に送出します。
     例外はコントロールされません。
     関数を指定しない場合、単にイテレーションを実行します。
 
@@ -1581,7 +1581,6 @@ def each(self, func=lambda x: x, unpack: bool = False):
 
     * self: フィルタ対象のシーケンス
     * func: 値の送出先の関数
-    * unpack_kw: 値をキーワードアンパックする
 
     Returns: `None`
 
@@ -1620,7 +1619,7 @@ async def async_dummy(*args, **kwargs):
 
 
 @mark
-async def each_async(self, func=async_dummy, unpack: bool = False):
+async def each_async(self, func=async_dummy):
     """シーケンスから流れてくる値を非同期関数に送出します。
     例外はコントロールされません。
 
@@ -1647,6 +1646,19 @@ async def each_async(self, func=async_dummy, unpack: bool = False):
 
 @mark
 async def each_async_unpack(self, func=async_dummy):
+    """`each_async`実行時にキーワードアンパックしながら要素を送出します。
+    基本的な動作は`each_async`を参照ください。
+
+    Usage:
+    ```
+    >>> results = []
+    >>> async def append(arg1, arg2):
+    >>>    results.append((id, name))
+    >>> await pnq.query([{"arg1": 1, "arg2": 2}]).each_async_unpack(append)
+    >>> print(results)
+    [(1, 2)]
+    ```
+    """
     for elm in __iter(self):
         await func(**elm)
 
