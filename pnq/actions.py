@@ -4,6 +4,9 @@
 # transforming
 from .actions_core import debug as debug
 
+from .actions_core import pivot_unstack as pivot_unstack
+from .actions_core import pivot_stack as pivot_stack
+
 # filtering
 # validating
 # sorting

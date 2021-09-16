@@ -759,15 +759,16 @@ class Test020_Transform:
             {"name": "strawberry", "color": "red", "count": 5},
         ]
 
-        # カラー別
+        # カラー別名前
         pnq(data).group_by(lambda x: (x["color"], x["name"])).to(list) == [
             ("yellow", ["banana"]),
             ("red", ["apple", "strawberry"]),
         ]
 
-        pnq(data).select("color", "name").group_by().to(list) == [
-            ("yellow", ["banana"]),
-            ("red", ["apple", "strawberry"]),
+        # カラー別個数
+        pnq(data).select("color", "count").group_by().to(list) == [
+            ("yellow", [3]),
+            ("red", [2, 5]),
         ]
 
     def test_join(self):
@@ -777,10 +778,57 @@ class Test020_Transform:
         pass
 
     def test_pivot_unstack(self):
-        pass
+        data = [
+            {"name": "test1", "age": 20},
+            {"name": "test2", "age": 25},
+            {"name": "test3", "age": 30, "sex": "male"},
+        ]
+        result1 = pnq(data).pivot_unstack().to(dict)
+
+        assert result1 == {
+            "name": ["test1", "test2", "test3"],
+            "age": [20, 25, 30],
+            "sex": [None, None, "male"],
+        }
+
+        result2 = pnq(data).pivot_unstack(default="").to(dict)
+
+        assert result2 == {
+            "name": ["test1", "test2", "test3"],
+            "age": [20, 25, 30],
+            "sex": ["", "", "male"],
+        }
 
     def test_pivot_stack(self):
-        pass
+        data = {
+            "name": ["test1", "test2", "test3"],
+            "age": [20, 25, 30],
+            "sex": [None, None, "male"],
+        }
+
+        result = pnq(data).pivot_stack().to(list)
+        assert result == [
+            {"name": "test1", "age": 20, "sex": None},
+            {"name": "test2", "age": 25, "sex": None},
+            {"name": "test3", "age": 30, "sex": "male"},
+        ]
+
+    def test_pivot_stack_unstack(self):
+        data = [
+            {"name": "test1", "age": 20, "sex": ""},
+            {"name": "test2", "age": 25, "sex": ""},
+            {"name": "test3", "age": 30, "sex": "male"},
+        ]
+        result = pnq(data).pivot_unstack().pivot_stack().to(list)
+        assert result == data
+
+        data = {
+            "name": ["test1", "test2", "test3"],
+            "age": [20, 25, 30],
+            "sex": [None, None, "male"],
+        }
+        result = pnq(data).pivot_stack().pivot_unstack().to(dict)
+        assert result == data
 
     def test_request(self):
         pass

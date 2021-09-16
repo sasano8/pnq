@@ -602,7 +602,7 @@ def pivot_unstack(self, default=None):
     # 全てのカラムを取得
     for i, dic in enumerate(self):
         data.append(dic)
-        for k, v in dic.keys():
+        for k in dic.keys():
             dataframe[k] = None
 
     # カラム分の領域を初期化
@@ -627,13 +627,13 @@ def pivot_stack(self):
         {"name": "test3", "age": 30, "sex": "male"},
     ]
     """
-
-    columns = list(self.keys())
+    data = dict(self)
+    columns = list(data.keys())
 
     for i in range(len(columns)):
         row = {}
         for c in columns:
-            row[c] = self[c][i]
+            row[c] = data[c][i]
 
         yield row
 
