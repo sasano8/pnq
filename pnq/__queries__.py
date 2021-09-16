@@ -505,7 +505,7 @@ class {{query.cls}}:
 
         return sleep_sync, sleep_async, seconds
 
-    def debug(self, breakpoint=lambda x: x, printer=print):
+    def debug(self, breakpoint=lambda x: x, printer=print) -> "{{query.str}}":
         return LazyIterate(actions.debug, self, breakpoint=breakpoint, printer=printer)
 
     # if index query

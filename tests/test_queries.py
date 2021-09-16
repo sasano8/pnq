@@ -837,7 +837,23 @@ class Test020_Transform:
         pass
 
     def test_debug(self):
-        pass
+        result = []
+
+        assert pnq([1]).debug(lambda x: x).to(list) == [1]
+        assert pnq([1]).debug(result.append).to(list) == [1]
+        assert result == [1]
+
+        assert pnq([2]).debug(lambda x: x, printer=result.append).to(list) == [2]
+        assert result == [1, 2]
+
+        q = pnq([3])
+
+        @q.debug
+        def break_point(x):
+            result.append(x)
+
+        assert break_point.to(list) == [3]
+        assert result == [1, 2, 3]
 
 
 class Hoge:

@@ -497,7 +497,7 @@ class Query(Generic[T]):
 
         return sleep_sync, sleep_async, seconds
 
-    def debug(self, breakpoint=lambda x: x, printer=print):
+    def debug(self, breakpoint=lambda x: x, printer=print) -> "Query[T]":
         return LazyIterate(actions.debug, self, breakpoint=breakpoint, printer=printer)
 
     # if index query
@@ -947,7 +947,7 @@ class PairQuery(Generic[K, V]):
 
         return sleep_sync, sleep_async, seconds
 
-    def debug(self, breakpoint=lambda x: x, printer=print):
+    def debug(self, breakpoint=lambda x: x, printer=print) -> "PairQuery[K,V]":
         return LazyIterate(actions.debug, self, breakpoint=breakpoint, printer=printer)
 
     # if index query
