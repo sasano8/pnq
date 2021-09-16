@@ -523,6 +523,13 @@ class TestGetting:
         with pytest.raises(NotFoundError, match="err"):
             q.last_or_raise(NotFoundError("err")) == 10
 
+        q = pnq([10, 20])
+        assert q.get_or_raise(1, "err") == 20
+        with pytest.raises(NotOneElementError):
+            q.one_or_raise("err")
+        assert q.first_or_raise("err") == 10
+        assert q.last_or_raise("err") == 20
+
 
 class TestSlicer:
     def test_skip(self):
