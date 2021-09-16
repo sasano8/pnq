@@ -80,7 +80,7 @@ from .actions_core import order_by_shuffle as order_by_shuffle
 from .actions_core import reduce as reduce
 from .actions_core import repeat as repeat
 from .actions_core import request as request
-from .actions_core import request_gather as request_gather
+from .actions_core import request_async as request_async
 from .actions_core import select as select
 from .actions_core import select_as_dict as select_as_dict
 from .actions_core import select_as_tuple as select_as_tuple

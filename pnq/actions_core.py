@@ -635,7 +635,7 @@ def pivot_stack(self):
 
 
 @mark
-def request(self, func, unpack: bool = True, timeout: float = None, retry: int = None):
+def request(self, func, unpack: bool = True, retry: int = None):
     """シーケンスから流れてくる値を関数に送出するように要求します。
     例外はキャッチされ、実行結果を返すイテレータを生成します。
     関数呼び出し時に要素がtupleまたはdictの場合、要素はデフォルトでアンパックされます。
@@ -668,41 +668,54 @@ def request(self, func, unpack: bool = True, timeout: float = None, retry: int =
     False, ValueError("False"), None
     ```
     """
-    for elm in self:
-        err = None
-        result = None
-        try:
-            result = func(elm)
-        except Exception as err:  # noqa
-            pass
+    from .requests import Response, StopWatch
 
-        yield elm, err, result
+    if retry:
+        raise NotImplementedError("retry not implemented")
+
+    for v in self:
+
+        with StopWatch() as sw:
+            err = None
+            result = None
+            try:
+                result = func(**v)
+            except Exception as e:
+                err = e
+
+        res = Response(
+            func, kwargs=v, err=err, result=result, start=sw.start, end=sw.end
+        )
+
+        yield res
 
 
 async def request_async(
     self, func, unpack: bool = True, timeout: float = None, retry: int = None
 ):
-    for elm in self:
-        err = None
-        result = None
-        try:
-            result = await func(elm)
-        except Exception as err:  # noqa
-            pass
+    from .requests import Response, StopWatch
 
-        yield elm, err, result
+    if retry:
+        raise NotImplementedError("retry not implemented")
 
+    if timeout:
+        raise NotImplementedError("timeout not implemented")
 
-@mark
-async def request_gather(
-    self,
-    func,
-    unpack: bool = True,
-    timeout: float = None,
-    retry: int = None,
-    pool: int = 3,
-):
-    pass
+    for v in self:
+
+        with StopWatch() as sw:
+            err = None
+            result = None
+            try:
+                result = await func(**v)
+            except Exception as e:
+                err = e
+
+        res = Response(
+            func, kwargs=v, err=err, result=result, start=sw.start, end=sw.end
+        )
+
+        yield res
 
 
 def debug(self, breakpoint=lambda x: x, printer=print):

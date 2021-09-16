@@ -29,6 +29,7 @@ from .core import LazyReference as _LazyReference
 from .core import piter, undefined
 from .exceptions import NoElementError, NotFoundError, NotOneElementError
 from .op import TH_ASSIGN_OP
+from .requests import Response
 
 T = TypeVar("T")
 K = TypeVar("K")
@@ -329,6 +330,12 @@ class {{query.cls}}:
         ).select(User.id, Item.id)
 
         pass
+
+    def request(self, func, retry: int = None) -> "Query[Response]":
+        return LazyIterate(actions.request, self, func, retry)
+
+    def request_async(self, func, retry: int = None) -> "Query[Response]":
+        return LazyIterate(actions.request_async, self, func, retry)
 
     @lazy_iterate
     def distinct(self, selector: Callable[[{{query.row}}], Any], msg: str=...) -> {{query.str}}:

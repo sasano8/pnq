@@ -1,5 +1,5 @@
 from functools import wraps
-from typing import Iterable, Mapping, Tuple
+from typing import Iterable, List, Mapping, Tuple
 
 import pytest
 
@@ -829,12 +829,6 @@ class Test020_Transform:
         result = pnq(data).pivot_stack().pivot_unstack().to(dict)
         assert result == data
 
-    def test_request(self):
-        pass
-
-    def test_request_async(self):
-        pass
-
     def test_debug(self):
         result = []
 
@@ -853,6 +847,85 @@ class Test020_Transform:
 
         assert break_point.to(list) == [3]
         assert result == [1, 2, 3]
+
+    def test_request(self):
+        from datetime import datetime
+
+        from pnq.requests import Response
+
+        result = []
+
+        def ok(value):
+            result.append(value)
+            return "ok"
+
+        def err(value1, value2):
+            raise Exception("error")
+
+        response: List[Response] = pnq([{"value": 1}]).request(ok).to(list)
+        assert result == [1]
+        res = response[0]
+        assert res.func == ok
+        assert res.kwargs == {"value": 1}
+        assert res.err is None
+        assert res.result == "ok"
+        assert isinstance(res.start, datetime)
+        assert isinstance(res.end, datetime)
+
+        response: List[Response] = (
+            pnq([{"value1": 1, "value2": 2}]).request(err).to(list)
+        )
+        assert result == [1]
+        res = response[0]
+        assert res.func == err
+        assert res.kwargs == {"value1": 1, "value2": 2}
+        assert str(res.err) == "error"
+        assert res.result is None
+        assert isinstance(res.start, datetime)
+        assert isinstance(res.end, datetime)
+
+    def test_request_async(self):
+        import asyncio
+
+        async def main():
+            from datetime import datetime
+
+            from pnq.requests import Response
+
+            result = []
+
+            async def ok(value):
+                result.append(value)
+                return "ok"
+
+            async def err(value1, value2):
+                raise Exception("error")
+
+            q = pnq([{"value": 1}]).request_async(ok)
+            response: List[Response] = [x async for x in q]
+
+            assert result == [1]
+            res = response[0]
+            assert res.func == ok
+            assert res.kwargs == {"value": 1}
+            assert res.err is None
+            assert res.result == "ok"
+            assert isinstance(res.start, datetime)
+            assert isinstance(res.end, datetime)
+
+            q = pnq([{"value1": 1, "value2": 2}]).request_async(err)
+            response: List[Response] = [x async for x in q]
+
+            assert result == [1]
+            res = response[0]
+            assert res.func == err
+            assert res.kwargs == {"value1": 1, "value2": 2}
+            assert str(res.err) == "error"
+            assert res.result is None
+            assert isinstance(res.start, datetime)
+            assert isinstance(res.end, datetime)
+
+        asyncio.run(main())
 
 
 class Hoge:
