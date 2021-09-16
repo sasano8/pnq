@@ -1617,7 +1617,7 @@ def each(self, func=lambda x: x):
 @mark
 def each_unpack(self, func=lambda x: x):
     """`each`実行時にキーワードアンパックしながら要素を送出します。
-    要素は辞書互換のオブジェクトを渡す必要があります。
+    与える要素は辞書である必要があります。
     基本的な動作は`each`を参照ください。
 
     Usage:
@@ -1665,6 +1665,7 @@ async def each_async(self, func=async_dummy):
 @mark
 async def each_async_unpack(self, func=async_dummy):
     """`each_async`実行時にキーワードアンパックしながら要素を送出します。
+    与える要素は辞書である必要があります。
     基本的な動作は`each_async`を参照ください。
 
     Usage:
