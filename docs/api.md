@@ -47,18 +47,6 @@
 ::: pnq.actions.select_as_tuple
     :docstring:
 
-<!-- ::: pnq.actions.select_item
-    :docstring:
-
-::: pnq.actions.select_attr
-    :docstring:
-
-::: pnq.actions.select_items
-    :docstring:
-
-::: pnq.actions.select_attrs
-    :docstring: -->
-
 ::: pnq.actions.cast
     :docstring:
 
@@ -72,6 +60,9 @@
     :docstring:
 
 ::: pnq.actions.request
+    :docstring:
+
+::: pnq.actions.request_async
     :docstring:
 
 ## Filtering
@@ -173,8 +164,6 @@
 ::: pnq.actions.lazy
     :docstring:
 
-<!-- ::: pnq.actions.dispatch
-    :docstring: -->
 
 ## Finalizing - Aggregating
 
