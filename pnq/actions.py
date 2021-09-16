@@ -1,4 +1,24 @@
 # isort: off
+
+# generating
+# transforming
+from .actions_core import debug as debug
+
+# filtering
+# validating
+# sorting
+# partitioning
+# expanding
+# executing
+from .actions_core import each as each
+from .actions_core import each_unpack as each_unpack
+from .actions_core import each_async as each_async
+from .actions_core import each_async_unpack as each_async_unpack
+
+# aggregating
+# getting
+
+
 from .actions_core import __all as all
 from .actions_core import __any as any
 from .actions_core import __enumerate as enumerate
@@ -21,7 +41,6 @@ from .actions_core import cycle as cycle
 from .actions_core import __list as list
 from .actions_core import __dict as dict
 
-from .actions_core import dispatch as dispatch
 from .actions_core import distinct as distinct
 from .actions_core import exists as exists
 from .actions_core import filter_in as filter_in

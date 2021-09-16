@@ -17,11 +17,6 @@ from typing import (
     overload,
 )
 
-if TYPE_CHECKING:
-    from _typeshed import SupportsKeysAndGetItem
-
-from pnq import actions
-
 from .exceptions import (
     DuplicateElementError,
     NoElementError,
@@ -30,13 +25,13 @@ from .exceptions import (
 )
 from .op import MAP_ASSIGN_OP, TH_ASSIGN_OP, TH_ROUND
 
+if TYPE_CHECKING:
+    from _typeshed import SupportsKeysAndGetItem
+
+
 T = TypeVar("T")
 K = TypeVar("K")
 V = TypeVar("V")
-
-
-# TODO: 組み込みの名前を返るのは頭が混乱するのでやめるべき
-# TODO: やるなら一度別名で定義して、別モジュールに別名でインポートするべき
 
 
 class EmptyLambda:
@@ -725,6 +720,75 @@ async def request_gather(
     pool: int = 3,
 ):
     pass
+
+
+def to_dataframe():
+    """"""
+    [{"name": "test1", "age": 20}, {"name": "test2", "age": 22}]
+    {
+        "name": ["test1", "test2"],
+        "age": [20, 22],
+    }
+
+
+def pivot_unstack(self, default=None):
+    """行方向に並んでいるデータを列方向に入れ替える
+    data = [
+        {"name": "test1", "age": 20},
+        {"name": "test2", "age": 25},
+        {"name": "test3", "age": 30, "sex": "male"},
+    ]
+    {'name': ['test1', 'test2', 'test3'], 'age': [20, 25, 30], 'sex': [None, None, 'male']}
+    """
+    from collections import defaultdict
+
+    dataframe = {}
+    data = []
+
+    # 全てのカラムを取得
+    for i, dic in enumerate(self):
+        data.append(dic)
+        for k, v in dic.keys():
+            dataframe[k] = None
+
+    # カラム分の領域を初期化
+    for k in dataframe:
+        dataframe[k] = []
+
+    # データをデータフレームに収める
+    for dic in data:
+        for k in dataframe.keys():
+            v = dic.get(k, default)
+            dataframe[k].append(v)
+
+    yield from dataframe.items()
+
+
+def pivot_stack(self):
+    """列方向に並んでいるデータを行方向に入れ替える
+    {'name': ['test1', 'test2', 'test3'], 'age': [20, 25, 30], 'sex': [None, None, 'male']}
+    data = [
+        {"name": "test1", "age": 20, "sex": None},
+        {"name": "test2", "age": 25, "sex": None},
+        {"name": "test3", "age": 30, "sex": "male"},
+    ]
+    """
+
+    columns = list(self.keys())
+
+    for i in range(len(columns)):
+        row = {}
+        for c in columns:
+            row[c] = self[c][i]
+
+        yield row
+
+
+def debug(self, breakpoint=lambda x: x, printer=print):
+    for v in self:
+        printer(v)
+        breakpoint(v)
+        yield v
 
 
 ###########################################
@@ -1554,9 +1618,8 @@ async def to_async(self, cls):
 
 
 @mark
-def dispatch(self, func, unpack: bool = True):
+def each(self, func=lambda x: x, unpack: bool = False):
     """シーケンスから流れてくる値を関数に送出します。
-    デフォルトで、要素から流れてくる値をアンパックして関数に送出します。
     例外はコントロールされません。
     関数を指定しない場合、単にイテレーションを実行します。
 
@@ -1570,25 +1633,33 @@ def dispatch(self, func, unpack: bool = True):
 
     Usage:
     ```
-    >>> pnq.query([1,2]).dispatch()
-    >>> pnq.query([1,2]).dispatch(print)
+    >>> pnq.query([1,2]).each()
+    >>> pnq.query([1,2]).each(print)
     1
     2
     >>> @pnq.query([{"v1": 1, "v2": 2}]).dispatch
     >>> def print_values(v1, v2):
     >>>   print(v1, v2)
     >>> 1, 2
-    >>> await pnq.query([1,2]).dispatch
     ```
     """
-    for elm in self:
-        yield func(elm)
+    for elm in __iter(self):
+        func(elm)
 
 
 @mark
-async def dispatch_async(self, func, unpack: bool = True):
+def each_unpack(self, func=lambda x: x):
+    for elm in __iter(self):
+        func(**elm)
+
+
+async def async_dummy(*args, **kwargs):
+    ...
+
+
+@mark
+async def each_async(self, func=async_dummy, unpack: bool = False):
     """シーケンスから流れてくる値を非同期関数に送出します。
-    デフォルトで、要素から流れてくる値をアンパックして関数に送出します。
     例外はコントロールされません。
 
     Args:
@@ -1607,8 +1678,14 @@ async def dispatch_async(self, func, unpack: bool = True):
     [1, 2]
     ```
     """
-    for elm in self:
-        yield await func(elm)
+    for elm in __iter(self):
+        await func(elm)
+
+
+@mark
+async def each_async_unpack(self, func=async_dummy):
+    for elm in __iter(self):
+        await func(**elm)
 
 
 @mark
@@ -1636,14 +1713,17 @@ def get(self, key, default=NoReturn):
     """
     try:
         return self[key]
-    except (IndexError, KeyError):
+    except (IndexError, KeyError, NotFoundError):
+        pass
+
+    except Exception:
         if isinstance(self, set) and key in self:
             return key
 
-        if default is NoReturn:
-            raise NotFoundError(key)
-        else:
-            return default
+    if default is NoReturn:
+        raise NotFoundError(key)
+    else:
+        return default
 
 
 @mark
@@ -1761,7 +1841,7 @@ def last(self):
 @mark
 def get_or(self, key, default):
     try:
-        return actions.get(self, key)
+        return get(self, key)
     except NotFoundError:
         return default
 
@@ -1769,7 +1849,7 @@ def get_or(self, key, default):
 @mark
 def one_or(self, default):
     try:
-        return actions.one(self)
+        return one(self)
     except NoElementError:
         return default
 
@@ -1777,7 +1857,7 @@ def one_or(self, default):
 @mark
 def first_or(self, default):
     try:
-        return actions.first(self)
+        return first(self)
     except NoElementError:
         return default
 
@@ -1785,7 +1865,7 @@ def first_or(self, default):
 @mark
 def last_or(self, default):
     try:
-        return actions.last(self)
+        return last(self)
     except NoElementError:
         return default
 
@@ -1806,7 +1886,7 @@ def get_or_raise(self, key, exc: Union[str, Exception]):
     ```
     """
     undefined = object()
-    result = actions.get_or(self, key, undefined)
+    result = get_or(self, key, undefined)
     if result is undefined:
         if isinstance(exc, str):
             raise Exception(exc)
@@ -1833,7 +1913,7 @@ def one_or_raise(self, exc: Union[str, Exception]):
     ```
     """
     undefined = object()
-    result = actions.one_or(self, undefined)
+    result = one_or(self, undefined)
     if result is undefined:
         if isinstance(exc, str):
             raise Exception(exc)
@@ -1859,7 +1939,7 @@ def first_or_raise(self, exc: Union[str, Exception]):
     ```
     """
     undefined = object()
-    result = actions.first_or(self, undefined)
+    result = first_or(self, undefined)
     if result is undefined:
         if isinstance(exc, str):
             raise Exception(exc)
@@ -1885,7 +1965,7 @@ def last_or_raise(self, exc: Union[str, Exception]):
     ```
     """
     undefined = object()
-    result = actions.last_or(self, undefined)
+    result = last_or(self, undefined)
     if result is undefined:
         if isinstance(exc, str):
             raise Exception(exc)

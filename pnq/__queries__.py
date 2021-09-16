@@ -3,6 +3,7 @@
 from functools import wraps
 from operator import attrgetter, itemgetter
 from typing import (
+    TYPE_CHECKING,
     Any,
     Callable,
     Dict,
@@ -67,20 +68,21 @@ class PairQuery(Generic[K, V], Iterable[Tuple[K, V]]):
         return actions.to(self, func)
 
 
-class IndexQuery(Generic[K, V]):
-    pass
+if not TYPE_CHECKING:
+    class IndexQuery(Generic[K, V]):
+        pass
 
 
-class ListEx(Generic[T], Sequence[T]):
-    pass
+    class ListEx(Generic[T], Sequence[T]):
+        pass
 
 
-class DictEx(Generic[K, V], Mapping[K, V]):
-    pass
+    class DictEx(Generic[K, V], Mapping[K, V]):
+        pass
 
 
-class SetEx(Generic[T], Iterable[T]):
-    pass
+    class SetEx(Generic[T], Iterable[T]):
+        pass
 
 {% for query in queries %}
 
@@ -139,10 +141,20 @@ class {{query.cls}}:
     def concat(self, selector=lambda x: x, delimiter: str = "") -> str:
         return actions.concat(self, selector, delimiter)
 
-    def dispatch(self, func: Callable, selector: Callable[[{{query.row}}], Any], on_error: Callable=...) -> Tuple[int, int]: ...
-
     def to(self, func: Callable[[Iterable[T]], R]) -> R:
         return actions.to(self, func)
+
+    def each(self, func: Callable = lambda x: x):
+        return actions.each(self, func)
+
+    def each_unpack(self, func: Callable = lambda x: x):
+        return actions.each_unpack(self, func)
+
+    async def each_async(self, func: Callable = lambda x: x):
+        return await actions.each_async(self, func)
+
+    async def each_async_unpack(self, func: Callable = lambda x: x):
+        return await actions.each_async_unpack(self, func)
 
     def one(self) -> {{query.row}}:
         return actions.one(self)
@@ -492,6 +504,9 @@ class {{query.cls}}:
 
         return sleep_sync, sleep_async, seconds
 
+    def debug(self, breakpoint=lambda x: x, printer=print):
+        return LazyIterate(actions.debug, self, breakpoint=breakpoint, printer=printer)
+
     # if index query
     {% else %}
 class {{query.cls}}:
@@ -624,24 +639,6 @@ def query(source):
         return LazyIterate(iter, source)
     else:
         raise Exception()
-
-
-def repeat(func, *args, **kwargs):
-    def iterate():
-        while True:
-            yield func(*args, **kwargs)
-
-    return LazyIterate(iterate())
-
-
-def count(start=0, step=1):
-    from itertools import count
-    return LazyIterate(count(start, step))
-
-
-def cycle(iterable, repeat=None):
-    from itertools import cycle
-    return LazyIterate(cycle(iterable))
 
 
 def page_calc(page: int, size: int):

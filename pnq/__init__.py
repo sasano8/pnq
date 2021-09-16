@@ -1,10 +1,5 @@
-from . import exceptions, getter
-from .actions import dict, list
-
-# from .main import Pnq, QuerableDict, Query, undefined
-# from .reflectors import as_dict
-from .queries import DictEx as dict
-from .queries import ListEx as list
-from .queries import query
-from .queries import query as pnq
-from .queries import undefined
+from . import actions, exceptions, getter
+from .generators import __dict as dict
+from .generators import __list as list
+from .generators import query as query
+from .queries import query, undefined

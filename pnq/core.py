@@ -88,6 +88,20 @@ class QueryBase:
         async for elm in piter(self):
             yield elm
 
+    def is_generator(self):
+        return True if self.source is None else False
+
+
+class LazyGenerator(QueryBase):
+    def __init__(self, func, *args, **kwargs):
+        self.func = func
+        self.source = None
+        self.args = args
+        self.kwargs = kwargs
+
+        def __piter__(self):
+            return self.func(*self.args, **self.kwargs)
+
 
 class LazyIterate(QueryBase):
     def __piter__(self):

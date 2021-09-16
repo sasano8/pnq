@@ -21,7 +21,7 @@
 ::: pnq.actions.range
     :docstring:
 
-## Mapping
+## Transforming
 
 ::: pnq.actions.map
     :docstring:
@@ -116,7 +116,7 @@
 ::: pnq.actions.order_by_shuffle
     :docstring:
 
-## Partitoning
+## Partitioning
 
 ::: pnq.actions.take
     :docstring:
