@@ -69,22 +69,10 @@ class Query(Generic[T], Iterable[T]):
     def to(self, func: Callable[[Iterable[T]], R]) -> R:
         return actions.to(self, func)
 
-    def to_list(self) -> "ListEx[T]":
-        pass
-
-    def to_dict(self) -> "DictEx[Any, Any]":
-        pass
-
 
 class PairQuery(Generic[K, V], Iterable[Tuple[K, V]]):
     def to(self, func: Callable[[Iterable[Tuple[K, V]]], R]) -> R:
         return actions.to(self, func)
-
-    def to_list(self) -> "ListEx[Tuple[K, V]]":
-        pass
-
-    def to_dict(self) -> "DictEx[K, V]":
-        pass
 
 
 class IndexQuery(Generic[K, V]):
@@ -179,25 +167,8 @@ class Query(Generic[T]):
     ) -> Tuple[int, int]:
         ...
 
-    # @overload
-    # def to(self, func: Literal[list]) -> ListEx[T]:
-    #     return actions.to(self, func)
-
-    # @overload
-    # def to(self, func: Literal[dict]) -> DictEx[Any,Any]:
-    #     return actions.to(self, func)
-
-    # @overload
-    # def to(self, func: Callable[[Iterable[T]], R]) -> R:
-    #     return actions.to(self, func)
-
     def to(self, func: Callable[[Iterable[T]], R]) -> R:
         return actions.to(self, func)
-
-    # def to_list(self) -> ListEx[T]:
-    #     return ListEx(piter(self))
-    # def to_dict(self, duplicate: bool=...) -> DictEx[Any,Any]:
-    #     return DictEx(piter(self))
 
     def one(self) -> T:
         return actions.one(self)
@@ -205,17 +176,26 @@ class Query(Generic[T]):
     def one_or(self, default: R) -> Union[T, R]:
         return actions.one_or(self, default)
 
+    def one_or_raise(self, exc: Union[str, Exception]) -> T:
+        return actions.one_or_raise(self, exc)
+
     def first(self) -> T:
         return actions.first(self)
 
     def first_or(self, default: R) -> Union[T, R]:
         return actions.first_or(self, default)
 
+    def first_or_raise(self, exc: Union[str, Exception]) -> T:
+        return actions.first_or_raise(self, exc)
+
     def last(self) -> T:
         return actions.last(self)
 
     def last_or(self, default: R) -> Union[T, R]:
         return actions.last_or(self, default)
+
+    def last_or_raise(self, exc: Union[str, Exception]) -> T:
+        return actions.last_or_raise(self, exc)
 
     @overload
     def cast(self, type: Type[Tuple[K2, V2]]) -> PairQuery[K2, V2]:
@@ -608,25 +588,8 @@ class PairQuery(Generic[K, V]):
     ) -> Tuple[int, int]:
         ...
 
-    # @overload
-    # def to(self, func: Literal[list]) -> ListEx[Tuple[K,V]]:
-    #     return actions.to(self, func)
-
-    # @overload
-    # def to(self, func: Literal[dict]) -> DictEx[K,V]:
-    #     return actions.to(self, func)
-
-    # @overload
-    # def to(self, func: Callable[[Iterable[T]], R]) -> R:
-    #     return actions.to(self, func)
-
     def to(self, func: Callable[[Iterable[T]], R]) -> R:
         return actions.to(self, func)
-
-    # def to_list(self) -> ListEx[Tuple[K,V]]:
-    #     return ListEx(piter(self))
-    # def to_dict(self, duplicate: bool=...) -> DictEx[K,V]:
-    #     return DictEx(piter(self))
 
     def one(self) -> Tuple[K, V]:
         return actions.one(self)
@@ -634,17 +597,26 @@ class PairQuery(Generic[K, V]):
     def one_or(self, default: R) -> Union[Tuple[K, V], R]:
         return actions.one_or(self, default)
 
+    def one_or_raise(self, exc: Union[str, Exception]) -> Tuple[K, V]:
+        return actions.one_or_raise(self, exc)
+
     def first(self) -> Tuple[K, V]:
         return actions.first(self)
 
     def first_or(self, default: R) -> Union[Tuple[K, V], R]:
         return actions.first_or(self, default)
 
+    def first_or_raise(self, exc: Union[str, Exception]) -> Tuple[K, V]:
+        return actions.first_or_raise(self, exc)
+
     def last(self) -> Tuple[K, V]:
         return actions.last(self)
 
     def last_or(self, default: R) -> Union[Tuple[K, V], R]:
         return actions.last_or(self, default)
+
+    def last_or_raise(self, exc: Union[str, Exception]) -> Tuple[K, V]:
+        return actions.last_or_raise(self, exc)
 
     @overload
     def cast(self, type: Type[Tuple[K2, V2]]) -> PairQuery[K2, V2]:
@@ -985,11 +957,8 @@ class IndexQuery(Generic[K, V]):
     def get_or(self, key: K, default: R) -> Union[V, R]:
         return actions.get_or(self, key, default)
 
-    # def to_list(self) -> ListEx[Tuple[K,V]]:
-    #     return ListEx(piter(self))
-
-    # def to_dict(self) -> DictEx[K,V]:
-    #     return DictEx(piter(self))
+    def get_or_raise(self, key: K, exc: Union[str, Exception]) -> V:
+        return actions.get_or_raise(self, key, exc)
 
 
 # 継承時は右側に基底クラスを指定し、左へ上書きしていくイメージ

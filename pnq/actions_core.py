@@ -1488,7 +1488,19 @@ def to(self, finalizer):
     {1: "a", 2: "b"}
     ```
     """
-    return finalizer(x for x in __iter(self))
+    it = __iter(self)
+    if False:  # is_async
+        raise Exception()
+    else:
+        return finalizer(it)
+
+
+async def to_async(self, finalizer):
+    it = __iter(self)
+    if it.is_async:
+        return await finalizer(it)
+    else:
+        return await finalizer(it)
 
 
 @mark
@@ -1779,7 +1791,7 @@ def last_or(self, default):
 
 
 @mark
-def get_or_raise(self, key, exc: Exception):
+def get_or_raise(self, key, exc: Union[str, Exception]):
     """基本的な動作は`get`を参照ください。
     KeyErrorが発生した時、任意の例外を発生させます。
 
@@ -1793,11 +1805,19 @@ def get_or_raise(self, key, exc: Exception):
     raise Exception("Not Exist Key: 0")
     ```
     """
-    pass
+    undefined = object()
+    result = actions.get_or(self, key, undefined)
+    if result is undefined:
+        if isinstance(exc, str):
+            raise Exception(exc)
+        else:
+            raise exc
+    else:
+        return result
 
 
 @mark
-def one_or_raise(self, exc: Exception):
+def one_or_raise(self, exc: Union[str, Exception]):
     """基本的な動作は`one`を参照ください。
     NoElementErrorが発生した時、任意の例外を発生させます。
     NotOneElementErrorはキャッチしません。
@@ -1812,11 +1832,19 @@ def one_or_raise(self, exc: Exception):
     raise Exception("No exists.")
     ```
     """
-    pass
+    undefined = object()
+    result = actions.one_or(self, undefined)
+    if result is undefined:
+        if isinstance(exc, str):
+            raise Exception(exc)
+        else:
+            raise exc
+    else:
+        return result
 
 
 @mark
-def first_or_raise(self, exc: Exception):
+def first_or_raise(self, exc: Union[str, Exception]):
     """基本的な動作は`first`を参照ください。
     NoElementErrorが発生した時、任意の例外を発生させます。
 
@@ -1830,11 +1858,19 @@ def first_or_raise(self, exc: Exception):
     raise Exception("No exists.")
     ```
     """
-    pass
+    undefined = object()
+    result = actions.first_or(self, undefined)
+    if result is undefined:
+        if isinstance(exc, str):
+            raise Exception(exc)
+        else:
+            raise exc
+    else:
+        return result
 
 
 @mark
-def last_or_raise(self, exc: Exception):
+def last_or_raise(self, exc: Union[str, Exception]):
     """基本的な動作は`last`を参照ください。
     NoElementErrorが発生した時、任意の例外を発生させます。
 
@@ -1848,4 +1884,12 @@ def last_or_raise(self, exc: Exception):
     raise Exception("No exists.")
     ```
     """
-    pass
+    undefined = object()
+    result = actions.last_or(self, undefined)
+    if result is undefined:
+        if isinstance(exc, str):
+            raise Exception(exc)
+        else:
+            raise exc
+    else:
+        return result

@@ -497,6 +497,32 @@ class TestGetting:
 
         assert q.last_or(5) == 10
 
+    def test_raise(self):
+        q = pnq([10])
+        assert q.get_or_raise(0, "err") == 10
+        assert q.one_or_raise("err") == 10
+        assert q.first_or_raise("err") == 10
+        assert q.last_or_raise("err") == 10
+
+        q = pnq([])
+        with pytest.raises(Exception, match="err"):
+            q.get_or_raise(0, "err") == 10
+        with pytest.raises(Exception, match="err"):
+            q.one_or_raise("err") == 10
+        with pytest.raises(Exception, match="err"):
+            q.first_or_raise("err") == 10
+        with pytest.raises(Exception, match="err"):
+            q.last_or_raise("err") == 10
+
+        with pytest.raises(NotFoundError, match="err"):
+            q.get_or_raise(0, NotFoundError("err")) == 10
+        with pytest.raises(NotFoundError, match="err"):
+            q.one_or_raise(NotFoundError("err")) == 10
+        with pytest.raises(NotFoundError, match="err"):
+            q.first_or_raise(NotFoundError("err")) == 10
+        with pytest.raises(NotFoundError, match="err"):
+            q.last_or_raise(NotFoundError("err")) == 10
+
 
 class TestSlicer:
     def test_skip(self):
