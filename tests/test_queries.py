@@ -24,7 +24,7 @@ def catch(func):
     return wrapper
 
 
-class TestInit:
+class Test000_Init:
     def test_type(self):
         from typing import Iterable, Mapping
 
@@ -46,10 +46,6 @@ class TestInit:
         assert pnq([(1, 2)]).to(list) == [(1, 2)]
         assert pnq([(1, 2)]).to(dict) == {1: 2}
 
-        query = filter(lambda x: x == 1, [1, 2])
-        assert pnq(query).to(list) == [1]
-        assert pnq(query).to(list) == []
-
     def test_behavior(self):
         # クエリメソッドで実行する際は、キーバリューを返すように標準化しているが、
         # デフォルトの挙動は変えない
@@ -57,78 +53,13 @@ class TestInit:
         assert [x for x in q] == [1, 2]
         assert [x for x in reversed(q)] == [2, 1]
 
-
-def test_easy():
-
-    # assert pnq([{"key": 3, "name": "test"}]).lookup(lambda x: x["key"]).to(list) == [
-    #     (3, {"key": 3, "name": "test"})
-    # ]
-    # obj = pnq([{"key": 3, "name": "test"}]).lookup(lambda x: x["key"]).to(dict)
-    # assert obj[3] == {"key": 3, "name": "test"}
-    pass
+    def test_query(self):
+        pnq([1]).map(lambda x: x + 1).to(list) == [2]
+        pnq([1]).filter(lambda x: x == 1).to(list) == [1]
+        pnq([1]).filter(lambda x: x != 1).to(list) == []
 
 
-class TestFilter:
-    def test_filter(self):
-        assert pnq([1]).filter(lambda x: x == 1).to(list) == [1]
-        assert pnq([1]).filter(lambda x: x == 0).to(list) == []
-        assert pnq([1]).filter(lambda x: x == 0).to(list) == []
-
-    def test_filter_type(self):
-        assert pnq([1]).filter_type(int).to(list) == [1]
-        assert pnq([1]).filter_type(str).to(list) == []
-        assert pnq([1]).filter_type(bool).to(list) == []
-        assert pnq([True]).filter_type(bool).to(list) == [True]
-
-        # pythonの仕様でboolはintを継承しているのでヒットしてしまう
-        assert pnq([True]).filter_type(int).to(list) == [True]
-
-
-class TestMap:
-    def test_map(self):
-        assert pnq([1]).map(lambda x: x * 2).to(list) == [2]
-        assert pnq([None]).map(str).to(list) == [""]
-        assert str(None) == "None"
-
-    def test_select(self):
-        assert pnq([{"name": "a"}]).select("name").to(list) == ["a"]
-        assert pnq([{"name": "a"}]).select_item("name").to(list) == ["a"]
-        assert pnq([str]).select_attr("__name__").to(list) == ["str"]
-        assert pnq([dict(id=1)]).select_items().to(list) == [tuple()]
-        assert pnq([dict(id=1)]).select_items("id").to(list) == [(1,)]
-        assert pnq([dict(id=1, name="a")]).select_items("id", "name").to(list) == [
-            (1, "a")
-        ]
-        assert pnq([dict(id=1, name="a", age=5)]).select_items("id", "name").to(
-            list
-        ) == [(1, "a")]
-        assert pnq([str]).select_attrs().to(list) == [tuple()]
-        assert pnq([str]).select_attrs("__name__").to(list) == [("str",)]
-        assert pnq([str]).select_attrs("__name__", "__class__").to(list) == [
-            ("str", type)
-        ]
-
-    def test_unpack(self):
-        with pytest.raises(
-            TypeError, match="missing 1 required positional argument: 'v'"
-        ):
-            pnq([(1, 2)]).map(lambda k, v: k).to(list)
-        assert pnq([(1, 2)]).unpack(lambda k, v: k).to(list) == [1]
-        assert pnq([{"name": "test", "age": 20}]).unpack_kw(lambda name, age: name).to(
-            list
-        ) == ["test"]
-
-    def test_enumrate(self):
-        assert pnq([1]).enumerate().to(list) == [(0, 1)]
-
-    def test_cast(self):
-        # castは型注釈を誤魔化す
-        # 内部的に何もしないため、同じクエリオブジェクトを参照していることを検証する
-        q = pnq([1])
-        assert q.cast(str) == q
-
-
-class TestFinalizer:
+class Test010_Finalizer:
     class TestExecuting:
         @pytest.mark.parametrize(
             "src, typ, expect",
@@ -715,6 +646,137 @@ class TestSlicer:
         assert q.page(3, 2).to(list) == [5, 6]
 
 
+class Test020_Transform:
+    def test_map(self):
+        assert pnq([1]).map(lambda x: x * 2).to(list) == [2]
+        assert pnq([None]).map(str).to(list) == [""]
+        assert str(None) == "None"
+
+        with pytest.raises(TypeError, match="missing"):
+            pnq([]).map()
+
+        with pytest.raises(TypeError, match="None"):
+            pnq([]).map(None)
+
+    def test_map_star(self):
+        pass
+
+    def test_map_flat(self):
+        pass
+
+    def test_map_recursive(self):
+        pass
+
+    def test_unpack(self):
+        with pytest.raises(
+            TypeError, match="missing 1 required positional argument: 'v'"
+        ):
+            pnq([(1, 2)]).map(lambda k, v: k).to(list)
+        assert pnq([(1, 2)]).unpack(lambda k, v: k).to(list) == [1]
+        assert pnq([{"name": "test", "age": 20}]).unpack_kw(lambda name, age: name).to(
+            list
+        ) == ["test"]
+
+    def test_unpack_pos(self):
+        pass
+
+    def test_unpack_kw(self):
+        pass
+
+    def test_select(self):
+        assert pnq([{"name": "a"}]).select("name").to(list) == ["a"]
+        assert pnq([str]).select("__name__", attr=True).to(list) == ["str"]
+        assert pnq([dict(id=1, name="a")]).select("id", "name").to(list) == [(1, "a")]
+        assert pnq([str]).select("__name__", "__class__", attr=True).to(list) == [
+            ("str", type)
+        ]
+
+        with pytest.raises(TypeError, match="itemgetter expected 1"):
+            pnq([]).select()
+
+        with pytest.raises(TypeError, match="attrgetter expected 1"):
+            pnq([]).select(attr=True)
+
+    def test_select_as_tuple(self):
+        assert pnq([1]).select_as_tuple().to(list) == [()]
+        assert pnq([(10, 20)]).select_as_tuple(0).to(list) == [(10,)]
+        assert pnq([(10, 20)]).select_as_tuple(1).to(list) == [(20,)]
+        assert pnq([(10, 20)]).select_as_tuple(0, 1).to(list) == [(10, 20)]
+        assert pnq([(10, 20)]).select_as_tuple(1, 0).to(list) == [(20, 10)]
+
+        assert pnq([1]).select_as_tuple(attr=True).to(list) == [()]
+        assert pnq([str]).select_as_tuple("__name__", attr=True).to(list) == [("str",)]
+        assert pnq([str]).select_as_tuple("__class__", attr=True).to(list) == [(type,)]
+        assert pnq([str]).select_as_tuple("__name__", "__class__", attr=True).to(
+            list
+        ) == [("str", type)]
+        assert pnq([str]).select_as_tuple("__class__", "__name__", attr=True).to(
+            list
+        ) == [(type, "str")]
+
+    def test_select_as_dict(self):
+        assert pnq([1]).select_as_dict().to(list) == [{}]
+        assert pnq([(10, 20)]).select_as_dict(0).to(list) == [{0: 10}]
+        assert pnq([(10, 20)]).select_as_dict(1).to(list) == [{1: 20}]
+        assert pnq([(10, 20)]).select_as_dict(0, 1).to(list) == [{0: 10, 1: 20}]
+        assert pnq([(10, 20)]).select_as_dict(1, 0).to(list) == [{1: 20, 0: 10}]
+
+        assert pnq([1]).select_as_dict(attr=True).to(list) == [{}]
+        assert pnq([str]).select_as_dict("__name__", attr=True).to(list) == [
+            {"__name__": "str"}
+        ]
+        assert pnq([str]).select_as_dict("__class__", attr=True).to(list) == [
+            {"__class__": type}
+        ]
+        assert pnq([str]).select_as_dict("__name__", "__class__", attr=True).to(
+            list
+        ) == [{"__name__": "str", "__class__": type}]
+        assert pnq([str]).select_as_dict("__class__", "__name__", attr=True).to(
+            list
+        ) == [{"__class__": type, "__name__": "str"}]
+
+        assert pnq([str]).select_as_dict("__xxx__", attr=True, default=100).to(
+            list
+        ) == [{"__xxx__": 100}]
+
+        assert pnq([str]).select_as_dict(
+            "__name__", "__xxx__", attr=True, default=100
+        ).to(list) == [{"__name__": "str", "__xxx__": 100}]
+
+    def test_cast(self):
+        # castは型注釈を誤魔化す
+        # 内部的に何もしないため、同じクエリオブジェクトを参照していることを検証する
+        q = pnq([1])
+        assert q.cast(str) == q
+
+    def test_enumerate(self):
+        assert pnq([1]).enumerate().to(list) == [(0, 1)]
+
+    def test_group_by(self):
+        pass
+
+    def test_join(self):
+        pass
+
+    def test_group_join(self):
+        pass
+
+    def test_pivot_unstack(self):
+        pass
+
+    def test_pivot_stack(self):
+        pass
+
+    def test_request(self):
+        pass
+
+    def test_request_async(self):
+        pass
+
+    def test_debug(self):
+        pass
+
+
 class Hoge:
     def __init__(self, id, name=""):
         self.id = id
@@ -818,6 +880,22 @@ class TestSort:
         ]
 
 
+class Test030_Filter:
+    def test_filter(self):
+        assert pnq([1]).filter(lambda x: x == 1).to(list) == [1]
+        assert pnq([1]).filter(lambda x: x == 0).to(list) == []
+        assert pnq([1]).filter(lambda x: x == 0).to(list) == []
+
+    def test_filter_type(self):
+        assert pnq([1]).filter_type(int).to(list) == [1]
+        assert pnq([1]).filter_type(str).to(list) == []
+        assert pnq([1]).filter_type(bool).to(list) == []
+        assert pnq([True]).filter_type(bool).to(list) == [True]
+
+        # pythonの仕様でboolはintを継承しているのでヒットしてしまう
+        assert pnq([True]).filter_type(int).to(list) == [True]
+
+
 class TestSleep:
     def test_sync(self):
         pnq([1, 2, 3]).sleep(0).to(list) == [1, 2, 3]
@@ -841,9 +919,13 @@ class TestDict:
         return pnq({1: "a", 2: "b", 3: "c"})
 
     def test_init(self):
+        from typing import Tuple
+
+        import pnq as pq
+
         obj1 = pnq({1: "a", 2: "b", 3: "c"})
         obj2 = pnq([(1, "a"), (2, "b"), (3, "c")]).to(dict)
-        obj3 = pnq([(1, "a"), (2, "b"), (3, "c")]).to(DictEx)
+        obj3 = pnq([(1, "a"), (2, "b"), (3, "c")]).to(DictEx[int, str])
 
         cls = obj1.__class__
 

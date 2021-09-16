@@ -69,13 +69,9 @@ def lazy_reference(func):
 if not TYPE_CHECKING:
     # TODO: type hintを文字で囲むのが面倒なため仮定義 文字化して除去する
     class Query(Generic[T], Iterable[T]):
-        # def to(self, func: Callable[[Iterable[T]], R]) -> R:
-        #     return actions.to(self, func)
         ...
 
     class PairQuery(Generic[K, V], Iterable[Tuple[K, V]]):
-        # def to(self, func: Callable[[Iterable[Tuple[K, V]]], R]) -> R:
-        #     return actions.to(self, func)
         ...
 
     class IndexQuery(Generic[K, V]):
@@ -162,6 +158,14 @@ class Query(Generic[T]):
     def concat(self, selector=lambda x: x, delimiter: str = "") -> str:
         return actions.concat(self, selector, delimiter)
 
+    @overload
+    def to(self, func: Type[Iterable[T]]) -> Iterable[T]:
+        ...
+
+    @overload
+    def to(self, func: Callable[[Iterable[T]], R]) -> R:
+        ...
+
     def to(self, func: Callable[[Iterable[T]], R]) -> R:
         return actions.to(self, func)
 
@@ -205,99 +209,90 @@ class Query(Generic[T]):
         return actions.last_or_raise(self, exc)
 
     @overload
-    def cast(self, type: Type[Tuple[K2, V2]]) -> PairQuery[K2, V2]:
+    def cast(self, type: Type[Tuple[K2, V2]]) -> "PairQuery[K2, V2]":
         pass
 
     @overload
-    def cast(self, type: Type[R]) -> Query[R]:
+    def cast(self, type: Type[R]) -> "Query[R]":
         pass
 
-    @overload
-    def cast(self, type: Callable[[T], Tuple[K2, V2]]) -> PairQuery[K2, V2]:
-        pass
-
-    @overload
-    def cast(self, type: Callable[[T], R]) -> Query[R]:
-        pass
-
-    def cast(self, type: Type[R]) -> Query[R]:
+    def cast(self, type: Type[R]) -> "Query[R]":
         return self
 
     @lazy_iterate
-    def enumerate(self, start: int = 0, step: int = 1) -> PairQuery[int, T]:
+    def enumerate(self, start: int = 0, step: int = 1) -> "PairQuery[int, T]":
         yield from (x * step for x in enumerate(self, start))
 
     @overload
-    def map(self, type: Callable[[T], Tuple[K2, V2]]) -> PairQuery[K2, V2]:
+    def map(self, selector: Callable[[T], Tuple[K2, V2]]) -> "PairQuery[K2, V2]":
         pass
 
     @overload
-    def map(self, type: Callable[[T], R]) -> Query[R]:
+    def map(self, selector: Callable[[T], R]) -> "Query[R]":
         pass
 
-    @lazy_iterate
-    def map(self, selector: Callable[[T], R]) -> Query[R]:
-        if selector is str:
-            selector = lambda x: "" if x is None else str(x)
-        yield from map(selector, self)
+    def map(self, selector):
+        if selector is None:
+            raise TypeError("selector cannot be None")
+        return LazyIterate(actions.map, self, selector)
 
     @overload
-    def select(self, item) -> "Query[Any]":
+    def select(self, field) -> "Query[Any]":
         ...
 
     @overload
-    def select(self, item, *items) -> "Query[Tuple]":
-        ...
-
-    @lazy_iterate
-    def select(self, *items) -> "Query[Any]":
-        selector = itemgetter(*items)
-        yield from map(lambda x: selector(x), self)
-
-    select_item = select
-
-    @overload
-    def select_attr(self, attr: str) -> "Query[Any]":
+    def select(self, field1, field2, *fields) -> "PairQuery":
         ...
 
     @overload
-    def select_attr(self, attr: str, *attrs: str) -> "Query[Tuple]":
+    def select(self, field, *fields) -> "Query[Tuple]":
         ...
 
-    @lazy_iterate
-    def select_attr(self, *attrs: str) -> "Query[Any]":
-        selector = attrgetter(*attrs)
-        yield from map(lambda x: selector(x), self)
-
-    def select_items(self, *items) -> "Query[Tuple]":
-        if len(items) == 0:
-            selector = lambda x: tuple()  # type: ignore
-        elif len(items) == 1:
-            # itemgetter/getattrは引数が１の時、タプルでなくそのセレクトされた値を直接返のでタプルで返すようにする
-            name = items[0]
-            selector = lambda x: (x[name],)
+    def select(self, *fields, attr: bool = False) -> "Query[Any]":
+        if attr:
+            selector = attrgetter(*fields)
         else:
-            selector = itemgetter(*items)
+            selector = itemgetter(*fields)
+        return LazyIterate(actions.map, self, selector)
 
-        def pmap(self, selector):
-            yield from map(selector, self)
-
-        return LazyIterate(pmap, self, selector)
-
-    def select_attrs(self, *attrs: Any) -> "Query[Tuple]":
-        if len(attrs) == 0:
-            selector = lambda x: tuple()  # type: ignore
-        elif len(attrs) == 1:
-            # itemgetter/getattrは引数が１の時、タプルでなくそのセレクトされた値を直接返のでタプルで返すようにする
-            name = attrs[0]
-            selector = lambda x: (getattr(x, name),)
+    def select_as_tuple(self, *fields, attr: bool = False) -> "Query[Tuple]":
+        if len(fields) > 1:
+            if attr:
+                selector = attrgetter(*fields)
+            else:
+                selector = itemgetter(*fields)
+        elif len(fields) == 1:
+            field = fields[0]
+            if attr:
+                selector = lambda x: (getattr(x, field),)
+            else:
+                selector = lambda x: (x[field],)
         else:
-            selector = attrgetter(*attrs)
+            selector = lambda x: ()
 
-        def pmap(self, selector):
-            yield from map(selector, self)
+        return LazyIterate(actions.map, self, selector)
 
-        return LazyIterate(pmap, self, selector)
+    def select_as_dict(
+        self, *fields, attr: bool = False, default=NoReturn
+    ) -> "Query[Dict]":
+        if attr:
+            if default is NoReturn:
+                selector = lambda x: {k: getattr(x, k) for k in fields}  # noqa
+            else:
+                selector = lambda x: {k: getattr(x, k, default) for k in fields}  # noqa
+        else:
+            if default is NoReturn:
+                selector = lambda x: {k: x[k] for k in fields}  # noqa
+            else:
+
+                def get(obj, k):
+                    try:
+                        return obj[k]
+                    except Exception:
+                        return default
+
+                selector = lambda x: {k: get(x, k) for k in fields}  # noqa
+        return LazyIterate(actions.map, self, selector)
 
     @lazy_iterate
     def unpack(self, selector: Callable[..., R]) -> Query[R]:
@@ -590,6 +585,22 @@ class PairQuery(Generic[K, V]):
     def concat(self, selector=lambda x: x, delimiter: str = "") -> str:
         return actions.concat(self, selector, delimiter)
 
+    @overload
+    def to(self, func: Type[Mapping[K, V]]) -> Mapping[K, V]:
+        ...
+
+    @overload
+    def to(self, func: Callable[[Iterable[Tuple[K, V]]], R]) -> R:
+        ...
+
+    @overload
+    def to(self, func: Type[Iterable[T]]) -> Iterable[T]:
+        ...
+
+    @overload
+    def to(self, func: Callable[[Iterable[T]], R]) -> R:
+        ...
+
     def to(self, func: Callable[[Iterable[T]], R]) -> R:
         return actions.to(self, func)
 
@@ -633,41 +644,34 @@ class PairQuery(Generic[K, V]):
         return actions.last_or_raise(self, exc)
 
     @overload
-    def cast(self, type: Type[Tuple[K2, V2]]) -> PairQuery[K2, V2]:
+    def cast(self, type: Type[Tuple[K2, V2]]) -> "PairQuery[K2, V2]":
         pass
 
     @overload
-    def cast(self, type: Type[R]) -> Query[R]:
+    def cast(self, type: Type[R]) -> "Query[R]":
         pass
 
-    @overload
-    def cast(self, type: Callable[[Tuple[K, V]], Tuple[K2, V2]]) -> PairQuery[K2, V2]:
-        pass
-
-    @overload
-    def cast(self, type: Callable[[Tuple[K, V]], R]) -> Query[R]:
-        pass
-
-    def cast(self, type: Type[R]) -> Query[R]:
+    def cast(self, type: Type[R]) -> "Query[R]":
         return self
 
     @lazy_iterate
-    def enumerate(self, start: int = 0, step: int = 1) -> PairQuery[int, Tuple[K, V]]:
+    def enumerate(self, start: int = 0, step: int = 1) -> "PairQuery[int, Tuple[K,V]]":
         yield from (x * step for x in enumerate(self, start))
 
     @overload
-    def map(self, type: Callable[[Tuple[K, V]], Tuple[K2, V2]]) -> PairQuery[K2, V2]:
+    def map(
+        self, selector: Callable[[Tuple[K, V]], Tuple[K2, V2]]
+    ) -> "PairQuery[K2, V2]":
         pass
 
     @overload
-    def map(self, type: Callable[[Tuple[K, V]], R]) -> Query[R]:
+    def map(self, selector: Callable[[Tuple[K, V]], R]) -> "Query[R]":
         pass
 
-    @lazy_iterate
-    def map(self, selector: Callable[[Tuple[K, V]], R]) -> Query[R]:
-        if selector is str:
-            selector = lambda x: "" if x is None else str(x)
-        yield from map(selector, self)
+    def map(self, selector):
+        if selector is None:
+            raise TypeError("selector cannot be None")
+        return LazyIterate(actions.map, self, selector)
 
     @overload
     def select(self, item: Literal[0]) -> "Query[K]":
@@ -678,62 +682,62 @@ class PairQuery(Generic[K, V]):
         ...
 
     @overload
-    def select(self, item) -> "Query[Any]":
+    def select(self, field) -> "Query[Any]":
         ...
 
     @overload
-    def select(self, item, *items) -> "Query[Tuple]":
-        ...
-
-    @lazy_iterate
-    def select(self, *items) -> "Query[Any]":
-        selector = itemgetter(*items)
-        yield from map(lambda x: selector(x), self)
-
-    select_item = select
-
-    @overload
-    def select_attr(self, attr: str) -> "Query[Any]":
+    def select(self, field1, field2, *fields) -> "PairQuery":
         ...
 
     @overload
-    def select_attr(self, attr: str, *attrs: str) -> "Query[Tuple]":
+    def select(self, field, *fields) -> "Query[Tuple]":
         ...
 
-    @lazy_iterate
-    def select_attr(self, *attrs: str) -> "Query[Any]":
-        selector = attrgetter(*attrs)
-        yield from map(lambda x: selector(x), self)
-
-    def select_items(self, *items) -> "Query[Tuple]":
-        if len(items) == 0:
-            selector = lambda x: tuple()  # type: ignore
-        elif len(items) == 1:
-            # itemgetter/getattrは引数が１の時、タプルでなくそのセレクトされた値を直接返のでタプルで返すようにする
-            name = items[0]
-            selector = lambda x: (x[name],)
+    def select(self, *fields, attr: bool = False) -> "Query[Any]":
+        if attr:
+            selector = attrgetter(*fields)
         else:
-            selector = itemgetter(*items)
+            selector = itemgetter(*fields)
+        return LazyIterate(actions.map, self, selector)
 
-        def pmap(self, selector):
-            yield from map(selector, self)
-
-        return LazyIterate(pmap, self, selector)
-
-    def select_attrs(self, *attrs: Any) -> "Query[Tuple]":
-        if len(attrs) == 0:
-            selector = lambda x: tuple()  # type: ignore
-        elif len(attrs) == 1:
-            # itemgetter/getattrは引数が１の時、タプルでなくそのセレクトされた値を直接返のでタプルで返すようにする
-            name = attrs[0]
-            selector = lambda x: (getattr(x, name),)
+    def select_as_tuple(self, *fields, attr: bool = False) -> "Query[Tuple]":
+        if len(fields) > 1:
+            if attr:
+                selector = attrgetter(*fields)
+            else:
+                selector = itemgetter(*fields)
+        elif len(fields) == 1:
+            field = fields[0]
+            if attr:
+                selector = lambda x: (getattr(x, field),)
+            else:
+                selector = lambda x: (x[field],)
         else:
-            selector = attrgetter(*attrs)
+            selector = lambda x: ()
 
-        def pmap(self, selector):
-            yield from map(selector, self)
+        return LazyIterate(actions.map, self, selector)
 
-        return LazyIterate(pmap, self, selector)
+    def select_as_dict(
+        self, *fields, attr: bool = False, default=NoReturn
+    ) -> "Query[Dict]":
+        if attr:
+            if default is NoReturn:
+                selector = lambda x: {k: getattr(x, k) for k in fields}  # noqa
+            else:
+                selector = lambda x: {k: getattr(x, k, default) for k in fields}  # noqa
+        else:
+            if default is NoReturn:
+                selector = lambda x: {k: x[k] for k in fields}  # noqa
+            else:
+
+                def get(obj, k):
+                    try:
+                        return obj[k]
+                    except Exception:
+                        return default
+
+                selector = lambda x: {k: get(x, k) for k in fields}  # noqa
+        return LazyIterate(actions.map, self, selector)
 
     @lazy_iterate
     def unpack(self, selector: Callable[..., R]) -> Query[R]:
@@ -953,7 +957,7 @@ class PairQuery(Generic[K, V]):
 
 class IndexQuery(Generic[K, V]):
     @lazy_reference
-    def get_many(self, *keys: K) -> "IndexQuery[K, V]":
+    def get_many(self, *keys: K) -> IndexQuery[K, V]:
         undefined = object()
         for id in keys:
             obj = self.get_or(id, undefined)

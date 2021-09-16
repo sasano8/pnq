@@ -320,7 +320,11 @@ def __map(self, selector):
     [""]
     ```
     """
-    return map(selector, self)
+    if selector is str:
+        selector = lambda x: "" if x is None else str(x)
+    yield from map(selector, self)
+
+    # return map(selector, self)
 
 
 def starmap(self):
@@ -436,7 +440,7 @@ def unpack_kw(self, selector):
 
 
 @mark
-def select(self, item, *items):
+def select(self, field, *fields, attr: bool = False):
     """シーケンスの各要素からアイテムを選択し新しいフォームに射影します。
     複数のアイテムを選択した場合は、タプルとして射影します。
     `select_item`の別名です。
@@ -444,8 +448,8 @@ def select(self, item, *items):
     Args:
 
     * self: 変換対象のシーケンス
-    * item: 各要素から選択するアイテム
-    * items: 各要素から選択するアイテム
+    * field: 各要素から選択するアイテム
+    * fields: 各要素から選択するアイテム
 
     Returns: 選択したアイテムまたは複数のアイテム（タプル）を返すクエリ
 
@@ -489,82 +493,82 @@ def select_as_tuple(self, *fields, attr: bool = False):
     pass
 
 
-@mark
-def select_item(self, item, *items):
-    """`select`を参照ください。"""
-    pass
+# @mark
+# def select_item(self, item, *items):
+#     """`select`を参照ください。"""
+#     pass
 
 
-@mark
-def select_attr(self, attr, *attrs):
-    """シーケンスの各要素から属性を選択し新しいフォームに射影します。
-    複数の属性を選択した場合は、タプルとして射影します。
+# @mark
+# def select_attr(self, attr, *attrs):
+#     """シーケンスの各要素から属性を選択し新しいフォームに射影します。
+#     複数の属性を選択した場合は、タプルとして射影します。
 
-    Args:
+#     Args:
 
-    * self: 変換対象のシーケンス
-    * attr: 各要素から選択する属性
-    * attrs: 各要素から選択する属性
+#     * self: 変換対象のシーケンス
+#     * attr: 各要素から選択する属性
+#     * attrs: 各要素から選択する属性
 
-    Returns: 選択した属性または複数の属性（タプル）を返すクエリ
+#     Returns: 選択した属性または複数の属性（タプル）を返すクエリ
 
-    Usage:
-    ```
-    >>> obj = Person(id=1, name="bob")
-    >>> pnq.query([obj]).select_attr("name").to(list)
-    ["bob"]
-    >>> pnq.query([obj]).select_attr("id", "name").to(list)
-    [(1, "bob")]
-    ```
-    """
-    pass
-
-
-@mark
-def select_items(self, *items):
-    """シーケンスの各要素から複数のアイテムを選択し新しいフォームに射影します。
-    `select_item`と異なり、常にタプルを返します。
-
-    Args:
-
-    * self: 変換対象のシーケンス
-    * items: 各要素から選択するアイテム
-
-    Returns: 複数のアイテム（タプル）を返すクエリ
-
-    Usage:
-    ```
-    >>> pnq.query([(1, 2)]).select_items(0).to(list)
-    [(1,)]
-    >>> pnq.query([{"id": 1, "name": "a"}]).select_items("id", "name").to(list)
-    [(1, "a")]
-    ```
-    """
-    pass
+#     Usage:
+#     ```
+#     >>> obj = Person(id=1, name="bob")
+#     >>> pnq.query([obj]).select_attr("name").to(list)
+#     ["bob"]
+#     >>> pnq.query([obj]).select_attr("id", "name").to(list)
+#     [(1, "bob")]
+#     ```
+#     """
+#     pass
 
 
-@mark
-def select_attrs(self, *attrs):
-    """シーケンスの各要素から複数の属性を選択し新しいフォームに射影します。
-    `select_attr`と異なり、常にタプルを返します。
+# @mark
+# def select_items(self, *items):
+#     """シーケンスの各要素から複数のアイテムを選択し新しいフォームに射影します。
+#     `select_item`と異なり、常にタプルを返します。
 
-    Args:
+#     Args:
 
-    * self: 変換対象のシーケンス
-    * attrs: 各要素から選択する属性
+#     * self: 変換対象のシーケンス
+#     * items: 各要素から選択するアイテム
 
-    Returns: 複数の属性（タプル）を返すクエリ
+#     Returns: 複数のアイテム（タプル）を返すクエリ
 
-    Usage:
-    ```
-    >>> obj = Person(id=1, name="bob")
-    >>> pnq.query([obj]).select_attrs("name").to(list)
-    [("bob",)]
-    >>> pnq.query([obj]).select_attrs("id", "name").to(list)
-    [(1, "bob")]
-    ```
-    """
-    pass
+#     Usage:
+#     ```
+#     >>> pnq.query([(1, 2)]).select_items(0).to(list)
+#     [(1,)]
+#     >>> pnq.query([{"id": 1, "name": "a"}]).select_items("id", "name").to(list)
+#     [(1, "a")]
+#     ```
+#     """
+#     pass
+
+
+# @mark
+# def select_attrs(self, *attrs):
+#     """シーケンスの各要素から複数の属性を選択し新しいフォームに射影します。
+#     `select_attr`と異なり、常にタプルを返します。
+
+#     Args:
+
+#     * self: 変換対象のシーケンス
+#     * attrs: 各要素から選択する属性
+
+#     Returns: 複数の属性（タプル）を返すクエリ
+
+#     Usage:
+#     ```
+#     >>> obj = Person(id=1, name="bob")
+#     >>> pnq.query([obj]).select_attrs("name").to(list)
+#     [("bob",)]
+#     >>> pnq.query([obj]).select_attrs("id", "name").to(list)
+#     [(1, "bob")]
+#     ```
+#     """
+#     pass
 
 
 @mark
@@ -651,6 +655,59 @@ def group_join(self, right, on, select):
     pass
 
 
+def pivot_unstack(self, default=None):
+    """行方向に並んでいるデータを列方向に入れ替える
+    data = [
+        {"name": "test1", "age": 20},
+        {"name": "test2", "age": 25},
+        {"name": "test3", "age": 30, "sex": "male"},
+    ]
+    {'name': ['test1', 'test2', 'test3'], 'age': [20, 25, 30], 'sex': [None, None, 'male']}
+    """
+    from collections import defaultdict
+
+    dataframe = {}
+    data = []
+
+    # 全てのカラムを取得
+    for i, dic in enumerate(self):
+        data.append(dic)
+        for k, v in dic.keys():
+            dataframe[k] = None
+
+    # カラム分の領域を初期化
+    for k in dataframe:
+        dataframe[k] = []
+
+    # データをデータフレームに収める
+    for dic in data:
+        for k in dataframe.keys():
+            v = dic.get(k, default)
+            dataframe[k].append(v)
+
+    yield from dataframe.items()
+
+
+def pivot_stack(self):
+    """列方向に並んでいるデータを行方向に入れ替える
+    {'name': ['test1', 'test2', 'test3'], 'age': [20, 25, 30], 'sex': [None, None, 'male']}
+    data = [
+        {"name": "test1", "age": 20, "sex": None},
+        {"name": "test2", "age": 25, "sex": None},
+        {"name": "test3", "age": 30, "sex": "male"},
+    ]
+    """
+
+    columns = list(self.keys())
+
+    for i in range(len(columns)):
+        row = {}
+        for c in columns:
+            row[c] = self[c][i]
+
+        yield row
+
+
 @mark
 def request(self, func, unpack: bool = True, timeout: float = None, retry: int = None):
     """シーケンスから流れてくる値を関数に送出するように要求します。
@@ -720,68 +777,6 @@ async def request_gather(
     pool: int = 3,
 ):
     pass
-
-
-def to_dataframe():
-    """"""
-    [{"name": "test1", "age": 20}, {"name": "test2", "age": 22}]
-    {
-        "name": ["test1", "test2"],
-        "age": [20, 22],
-    }
-
-
-def pivot_unstack(self, default=None):
-    """行方向に並んでいるデータを列方向に入れ替える
-    data = [
-        {"name": "test1", "age": 20},
-        {"name": "test2", "age": 25},
-        {"name": "test3", "age": 30, "sex": "male"},
-    ]
-    {'name': ['test1', 'test2', 'test3'], 'age': [20, 25, 30], 'sex': [None, None, 'male']}
-    """
-    from collections import defaultdict
-
-    dataframe = {}
-    data = []
-
-    # 全てのカラムを取得
-    for i, dic in enumerate(self):
-        data.append(dic)
-        for k, v in dic.keys():
-            dataframe[k] = None
-
-    # カラム分の領域を初期化
-    for k in dataframe:
-        dataframe[k] = []
-
-    # データをデータフレームに収める
-    for dic in data:
-        for k in dataframe.keys():
-            v = dic.get(k, default)
-            dataframe[k].append(v)
-
-    yield from dataframe.items()
-
-
-def pivot_stack(self):
-    """列方向に並んでいるデータを行方向に入れ替える
-    {'name': ['test1', 'test2', 'test3'], 'age': [20, 25, 30], 'sex': [None, None, 'male']}
-    data = [
-        {"name": "test1", "age": 20, "sex": None},
-        {"name": "test2", "age": 25, "sex": None},
-        {"name": "test3", "age": 30, "sex": "male"},
-    ]
-    """
-
-    columns = list(self.keys())
-
-    for i in range(len(columns)):
-        row = {}
-        for c in columns:
-            row[c] = self[c][i]
-
-        yield row
 
 
 def debug(self, breakpoint=lambda x: x, printer=print):
@@ -1619,7 +1614,7 @@ async def to_async(self, cls):
 
 @mark
 def each(self, func=lambda x: x, unpack: bool = False):
-    """シーケンスから流れてくる値を関数に送出します。
+    """イテレーションを実行し、ら流れてくる要素を関数に送出します。
     例外はコントロールされません。
     関数を指定しない場合、単にイテレーションを実行します。
 
@@ -1637,10 +1632,6 @@ def each(self, func=lambda x: x, unpack: bool = False):
     >>> pnq.query([1,2]).each(print)
     1
     2
-    >>> @pnq.query([{"v1": 1, "v2": 2}]).dispatch
-    >>> def print_values(v1, v2):
-    >>>   print(v1, v2)
-    >>> 1, 2
     ```
     """
     for elm in __iter(self):
@@ -1649,6 +1640,18 @@ def each(self, func=lambda x: x, unpack: bool = False):
 
 @mark
 def each_unpack(self, func=lambda x: x):
+    """`each`実行時にキーワードアンパックしながら要素を送出します。
+    要素は辞書互換のオブジェクトを渡す必要があります。
+    基本的な動作は`each`を参照ください。
+
+    Usage:
+    ```
+    >>> @pnq.query([{"arg1": 1, "arg2": 2}]).each_unpack
+    >>> def print_values(arg1, arg2):
+    >>>   print(v1, v2)
+    >>> 1, 2
+    ```
+    """
     for elm in __iter(self):
         func(**elm)
 
@@ -1666,14 +1669,15 @@ async def each_async(self, func=async_dummy, unpack: bool = False):
 
     * self: フィルタ対象のシーケンス
     * func: 値の送出先の関数
-    * unpack_kw: 値をキーワードアンパックする
 
     Returns: `None`
 
     Usage:
     ```
     >>> results = []
-    >>> await pnq.query([1,2]).dispatch_async(results.append)
+    >>> async def append(x):
+    >>>    results.append(x)
+    >>> await pnq.query([1,2]).each_async(append)
     >>> print(results)
     [1, 2]
     ```
@@ -1727,7 +1731,7 @@ def get(self, key, default=NoReturn):
 
 
 @mark
-def one(self, default=NoReturn):
+def one(self):
     """シーケンス内の要素が１つであることを検証し、その要素を返します。
     検証に失敗した場合は、例外が発生します。
     デフォルト値を設定した場合は、要素が存在しない場合にデフォルト値を返します。
@@ -1769,7 +1773,7 @@ def one(self, default=NoReturn):
 
 
 @mark
-def first(self, default=NoReturn):
+def first(self):
     """シーケンス内の最初の要素を返します。
     要素が存在しない場合は、例外が発生します。
 

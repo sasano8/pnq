@@ -158,17 +158,29 @@
 ::: pnq.actions.to
     :docstring:
 
-::: pnq.actions.to_list
+::: pnq.actions.each
+    :docstring:
+
+::: pnq.actions.each_unpack
+    :docstring:
+
+::: pnq.actions.each_async
+    :docstring:
+
+::: pnq.actions.each_async_unpack
+    :docstring:
+
+<!-- ::: pnq.actions.to_list
     :docstring:
 
 ::: pnq.actions.to_dict
-    :docstring:
+    :docstring: -->
 
 ::: pnq.actions.lazy
     :docstring:
 
-::: pnq.actions.dispatch
-    :docstring:
+<!-- ::: pnq.actions.dispatch
+    :docstring: -->
 
 ## Finalizing - Aggregating
 
