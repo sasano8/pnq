@@ -276,7 +276,6 @@ class {{query.cls}}:
                 selector = lambda x: (x[field],)
         else:
             selector = lambda x: ()
-
         return LazyIterate(actions.map, self, selector)
 
     def select_as_dict(self, *fields, attr: bool = False, default=NoReturn) -> "Query[Dict]":
@@ -424,21 +423,35 @@ class {{query.cls}}:
     def reverse(self) -> "{{query.str}}":
         yield actions.reverse(self)
 
-    @lazy_iterate
-    def order(self, selector, desc: bool = False) -> "{{query.str}}":
-        yield from sorted(self, key=selector, reverse=desc)
+    def order_by(self, *fields, desc: bool = False, attr: bool = False) -> "{{query.str}}":
+        if not len(fields):
+            selector = None
+        else:
+            if attr:
+                selector = attrgetter(*fields)
+            else:
+                selector = itemgetter(*fields)
 
-    def order_by_items(
-        self, *items: Any, desc: bool = False
-    ) -> {{query.str}}:
-        selector = itemgetter(*items)
-        return self.order(selector, desc)
+        return LazyIterate(actions.order_by, self, selector=selector, desc=desc)
 
-    def order_by_attrs(
-        self: Iterable[T], *attrs: str, desc: bool = False
-    ) -> {{query.str}}:
-        selector = attrgetter(*attrs)
-        return self.order(selector, desc)
+    def order_by_map(self, selector=None, *, desc: bool = False) -> "{{query.str}}":
+        return LazyIterate(actions.order_by, self, selector=selector, desc=desc)
+
+    # @lazy_iterate
+    # def order(self, selector, desc: bool = False) -> "{{query.str}}":
+    #     yield from sorted(self, key=selector, reverse=desc)
+
+    # def order_by_items(
+    #     self, *items: Any, desc: bool = False
+    # ) -> {{query.str}}:
+    #     selector = itemgetter(*items)
+    #     return self.order(selector, desc)
+
+    # def order_by_attrs(
+    #     self: Iterable[T], *attrs: str, desc: bool = False
+    # ) -> {{query.str}}:
+    #     selector = attrgetter(*attrs)
+    #     return self.order(selector, desc)
 
     @lazy_iterate
     def sleep(self, seconds: float):

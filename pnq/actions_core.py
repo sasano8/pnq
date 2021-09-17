@@ -1231,7 +1231,7 @@ def take_page_calc(page: int, size: int):
 
 
 @mark
-def order_by(self, selector, desc: bool = False):
+def order_by(self, selector=None, desc: bool = False):
     """シーケンスの要素を昇順でソートします。
 
     Args:
@@ -1257,9 +1257,7 @@ def order_by(self, selector, desc: bool = False):
 
 @mark
 def order_by_fields(self, *fields, desc: bool = False, attr: bool = False):
-    selector = itemgetter(*items)
-    selector = attrgetter(*attrs)
-    return order_by(selector, desc)
+    raise NotImplementedError()
 
 
 @mark

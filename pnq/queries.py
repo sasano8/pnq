@@ -272,7 +272,6 @@ class Query(Generic[T]):
                 selector = lambda x: (x[field],)
         else:
             selector = lambda x: ()
-
         return LazyIterate(actions.map, self, selector)
 
     def select_as_dict(
@@ -425,17 +424,35 @@ class Query(Generic[T]):
     def reverse(self) -> "Query[T]":
         yield actions.reverse(self)
 
-    @lazy_iterate
-    def order(self, selector, desc: bool = False) -> "Query[T]":
-        yield from sorted(self, key=selector, reverse=desc)
+    def order_by(self, *fields, desc: bool = False, attr: bool = False) -> "Query[T]":
+        if not len(fields):
+            selector = None
+        else:
+            if attr:
+                selector = attrgetter(*fields)
+            else:
+                selector = itemgetter(*fields)
 
-    def order_by_items(self, *items: Any, desc: bool = False) -> Query[T]:
-        selector = itemgetter(*items)
-        return self.order(selector, desc)
+        return LazyIterate(actions.order_by, self, selector=selector, desc=desc)
 
-    def order_by_attrs(self: Iterable[T], *attrs: str, desc: bool = False) -> Query[T]:
-        selector = attrgetter(*attrs)
-        return self.order(selector, desc)
+    def order_by_map(self, selector=None, *, desc: bool = False) -> "Query[T]":
+        return LazyIterate(actions.order_by, self, selector=selector, desc=desc)
+
+    # @lazy_iterate
+    # def order(self, selector, desc: bool = False) -> "Query[T]":
+    #     yield from sorted(self, key=selector, reverse=desc)
+
+    # def order_by_items(
+    #     self, *items: Any, desc: bool = False
+    # ) -> Query[T]:
+    #     selector = itemgetter(*items)
+    #     return self.order(selector, desc)
+
+    # def order_by_attrs(
+    #     self: Iterable[T], *attrs: str, desc: bool = False
+    # ) -> Query[T]:
+    #     selector = attrgetter(*attrs)
+    #     return self.order(selector, desc)
 
     @lazy_iterate
     def sleep(self, seconds: float):
@@ -698,7 +715,6 @@ class PairQuery(Generic[K, V]):
                 selector = lambda x: (x[field],)
         else:
             selector = lambda x: ()
-
         return LazyIterate(actions.map, self, selector)
 
     def select_as_dict(
@@ -855,19 +871,37 @@ class PairQuery(Generic[K, V]):
     def reverse(self) -> "PairQuery[K,V]":
         yield actions.reverse(self)
 
-    @lazy_iterate
-    def order(self, selector, desc: bool = False) -> "PairQuery[K,V]":
-        yield from sorted(self, key=selector, reverse=desc)
+    def order_by(
+        self, *fields, desc: bool = False, attr: bool = False
+    ) -> "PairQuery[K,V]":
+        if not len(fields):
+            selector = None
+        else:
+            if attr:
+                selector = attrgetter(*fields)
+            else:
+                selector = itemgetter(*fields)
 
-    def order_by_items(self, *items: Any, desc: bool = False) -> PairQuery[K, V]:
-        selector = itemgetter(*items)
-        return self.order(selector, desc)
+        return LazyIterate(actions.order_by, self, selector=selector, desc=desc)
 
-    def order_by_attrs(
-        self: Iterable[T], *attrs: str, desc: bool = False
-    ) -> PairQuery[K, V]:
-        selector = attrgetter(*attrs)
-        return self.order(selector, desc)
+    def order_by_map(self, selector=None, *, desc: bool = False) -> "PairQuery[K,V]":
+        return LazyIterate(actions.order_by, self, selector=selector, desc=desc)
+
+    # @lazy_iterate
+    # def order(self, selector, desc: bool = False) -> "PairQuery[K,V]":
+    #     yield from sorted(self, key=selector, reverse=desc)
+
+    # def order_by_items(
+    #     self, *items: Any, desc: bool = False
+    # ) -> PairQuery[K,V]:
+    #     selector = itemgetter(*items)
+    #     return self.order(selector, desc)
+
+    # def order_by_attrs(
+    #     self: Iterable[T], *attrs: str, desc: bool = False
+    # ) -> PairQuery[K,V]:
+    #     selector = attrgetter(*attrs)
+    #     return self.order(selector, desc)
 
     @lazy_iterate
     def sleep(self, seconds: float):

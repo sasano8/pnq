@@ -983,7 +983,7 @@ class Test040_Must:
             pnq(frozenset((1, 2, 3))).must_get_many(4).to(list)
 
 
-class Test050_Partitioning:
+class Test050_Partition:
     def test_take(self):
         assert pnq([]).take(0).to(list) == []
         assert pnq([]).take(1).to(list) == []
@@ -1108,27 +1108,131 @@ class Hoge:
 
 
 class Test070_Sort:
-    def test_validate(self):
-        with pytest.raises(TypeError):
-            pnq([]).order_by_attrs()
+    def test_order_by_map(self):
+        assert pnq([]).order_by_map().to(list) == []
+        assert pnq([]).order_by_map(lambda x: x).to(list) == []
+        assert pnq([]).order_by_map(None).to(list) == []
 
-        pnq([]).order_by_attrs("id")
-        pnq([]).order_by_attrs("id", "name")
+        assert pnq([1]).order_by_map().to(list) == [1]
+        assert pnq([1]).order_by_map(lambda x: x).to(list) == [1]
+        assert pnq([1]).order_by_map(None).to(list) == [1]
 
-        with pytest.raises(TypeError):
-            pnq([]).order_by_items()
+        assert pnq([2, 1]).order_by_map().to(list) == [1, 2]
+        assert pnq([2, 1]).order_by_map(lambda x: x).to(list) == [1, 2]
+        assert pnq([2, 1]).order_by_map(desc=True).to(list) == [2, 1]
 
-        pnq([]).order_by_items("id")
-        pnq([]).order_by_items("id", "name")
+        assert pnq([2, 1]).order_by_map(desc=True).to(list) == [2, 1]
+        assert pnq([2, 1]).order_by_map(lambda x: x, desc=True).to(list) == [2, 1]
+
+        assert pnq([(2, 1), (1, 2)]).order_by_map(lambda x: x[0]).to(list) == [
+            (1, 2),
+            (2, 1),
+        ]
+
+        assert pnq([(2, 1), (1, 2)]).order_by_map(lambda x: x[0], desc=True).to(
+            list
+        ) == [
+            (2, 1),
+            (1, 2),
+        ]
+
+        assert pnq([(2, 1), (1, 2)]).order_by_map(lambda x: x[1], desc=True).to(
+            list
+        ) == [
+            (1, 2),
+            (2, 1),
+        ]
+
+        assert pnq([(0, 1, 2), (0, 2, 1), (0, 1, 1)]).order_by_map(
+            lambda x: (x[1], x[2])
+        ).to(list) == [(0, 1, 1), (0, 1, 2), (0, 2, 1)]
+
+        assert pnq([(0, 1, 2), (0, 2, 1), (0, 1, 1)]).order_by_map(
+            lambda x: (x[2], x[1])
+        ).to(list) == [(0, 1, 1), (0, 2, 1), (0, 1, 2)]
+
+    def test_order_by(self):
+        assert pnq([]).order_by().to(list) == []
+        assert pnq([]).order_by(attr=True).to(list) == []
+        assert pnq([]).order_by(attr=False).to(list) == []
+        assert pnq([]).order_by(desc=False).to(list) == []
+        assert pnq([]).order_by(desc=True).to(list) == []
+
+        assert pnq([1]).order_by().to(list) == [1]
+        assert pnq([1]).order_by(attr=True).to(list) == [1]
+        assert pnq([1]).order_by(attr=False).to(list) == [1]
+        assert pnq([1]).order_by(desc=False).to(list) == [1]
+        assert pnq([1]).order_by(desc=True).to(list) == [1]
+        assert pnq([(1, 2)]).order_by(0).to(list) == [(1, 2)]
+        assert pnq([(1, 2)]).order_by(1).to(list) == [(1, 2)]
+
+        with pytest.raises(IndexError, match="out of range"):
+            assert pnq([(1, 2)]).order_by(2).to(list) == [(1, 2)]
+
+        user_1_b = dict(id=1, name="b")
+        user_2_a = dict(id=2, name="a")
+
+        with pytest.raises(TypeError, match="not supported between instances"):
+            assert pnq([user_1_b, user_2_a]).order_by().to(list) == [user_1_b, user_2_a]
+
+        assert pnq([user_1_b, user_2_a]).order_by("id").to(list) == [user_1_b, user_2_a]
+        assert pnq([user_1_b, user_2_a]).order_by("id", desc=True).to(list) == [
+            user_2_a,
+            user_1_b,
+        ]
+
+        assert pnq([user_1_b, user_2_a]).order_by("name").to(list) == [
+            user_2_a,
+            user_1_b,
+        ]
+
+        assert pnq([user_1_b, user_2_a]).order_by("name", desc=True).to(list) == [
+            user_1_b,
+            user_2_a,
+        ]
+
+        class User:
+            def __init__(self, id, name):
+                self.id = id
+                self.name = name
+
+        user_1_b = User(**user_1_b)  # type: ignore
+        user_2_a = User(**user_2_a)  # type: ignore
+
+        with pytest.raises(TypeError, match="not supported between instances"):
+            assert pnq([user_1_b, user_2_a]).order_by().to(list) == [user_1_b, user_2_a]
+
+        assert pnq([user_1_b, user_2_a]).order_by("id", attr=True).to(list) == [
+            user_1_b,
+            user_2_a,
+        ]
+        assert pnq([user_1_b, user_2_a]).order_by("id", attr=True, desc=True).to(
+            list
+        ) == [
+            user_2_a,
+            user_1_b,
+        ]
+
+        assert pnq([user_1_b, user_2_a]).order_by("name", attr=True).to(list) == [
+            user_2_a,
+            user_1_b,
+        ]
+
+        assert pnq([user_1_b, user_2_a]).order_by("name", attr=True, desc=True).to(
+            list
+        ) == [
+            user_1_b,
+            user_2_a,
+        ]
 
     def test_no_elements(self):
         assert pnq([]).reverse().to(list) == []
         assert list(reversed(pnq([]))) == []
         assert pnq({}).reverse().to(list) == []
         assert list(reversed(pnq({}))) == []
-        assert pnq([]).order_by_attrs("id").to(list) == []
-        assert pnq([]).order_by_items("id").to(list) == []
-        assert pnq([]).order(lambda x: x).to(list) == []
+        # assert pnq([]).order_by_attrs("id").to(list) == []
+        # assert pnq([]).order_by_items("id").to(list) == []
+        # assert pnq([]).order(lambda x: x).to(list) == []
 
     def test_one_elements(self):
         obj = Hoge(id=10)
@@ -1138,10 +1242,10 @@ class Test070_Sort:
         assert pnq({1: "a"}).reverse().to(list) == [(1, "a")]
         # pythonの標準動作はreversedはキーのみを返す
         assert list(reversed(pnq({1: "a"}))) == [1]
-        assert pnq([obj]).order_by_attrs("id").to(list) == [obj]
-        assert pnq([tuple([10])]).order_by_items(0).to(list) == [(10,)]
-        assert pnq({1: "a"}).order_by_items(1).to(list) == [(1, "a")]
-        assert pnq([obj]).order(lambda x: x.id).to(list) == [obj]
+        # assert pnq([obj]).order_by_attrs("id").to(list) == [obj]
+        # assert pnq([tuple([10])]).order_by_items(0).to(list) == [(10,)]
+        # assert pnq({1: "a"}).order_by_items(1).to(list) == [(1, "a")]
+        # assert pnq([obj]).order(lambda x: x.id).to(list) == [obj]
 
     def test_two_elements(self):
         obj1 = Hoge(id=10, name="b")
@@ -1152,56 +1256,56 @@ class Test070_Sort:
         assert pnq({2: "a", 1: "a"}).reverse().to(list) == [(1, "a"), (2, "a")]
         # pythonの標準動作はreversedはキーのみを返す
         assert list(reversed(pnq({2: "a", 1: "a"}))) == [1, 2]
-        assert pnq([obj2, obj1]).order_by_attrs("id").to(list) == [obj1, obj2]
-        assert pnq([obj1, obj2]).order_by_attrs("id").to(list) == [obj1, obj2]
-        assert pnq([(2, 0), (1, 100)]).order_by_items(0).to(list) == [(1, 100), (2, 0)]
-        assert pnq([(2, 0), (1, 100)]).order_by_items(1).to(list) == [(2, 0), (1, 100)]
-        assert pnq({2: "a", 1: "b"}).order_by_items(0).to(list) == [(1, "b"), (2, "a")]
-        assert pnq({2: "a", 1: "b"}).order_by_items(1).to(list) == [(2, "a"), (1, "b")]
-        assert pnq([obj2, obj1]).order(lambda x: x.id).to(list) == [obj1, obj2]
-        assert pnq([obj2, obj1]).order(lambda x: x.name).to(list) == [obj2, obj1]
+        # assert pnq([obj2, obj1]).order_by_attrs("id").to(list) == [obj1, obj2]
+        # assert pnq([obj1, obj2]).order_by_attrs("id").to(list) == [obj1, obj2]
+        # assert pnq([(2, 0), (1, 100)]).order_by_items(0).to(list) == [(1, 100), (2, 0)]
+        # assert pnq([(2, 0), (1, 100)]).order_by_items(1).to(list) == [(2, 0), (1, 100)]
+        # assert pnq({2: "a", 1: "b"}).order_by_items(0).to(list) == [(1, "b"), (2, "a")]
+        # assert pnq({2: "a", 1: "b"}).order_by_items(1).to(list) == [(2, "a"), (1, "b")]
+        # assert pnq([obj2, obj1]).order(lambda x: x.id).to(list) == [obj1, obj2]
+        # assert pnq([obj2, obj1]).order(lambda x: x.name).to(list) == [obj2, obj1]
 
-    def test_multi_value(self):
-        obj1 = Hoge(id=10, name="b")
-        obj2 = Hoge(id=20, name="a")
-        obj3 = Hoge(id=30, name="a")
+    # def test_multi_value(self):
+    #     obj1 = Hoge(id=10, name="b")
+    #     obj2 = Hoge(id=20, name="a")
+    #     obj3 = Hoge(id=30, name="a")
 
-        assert pnq([obj3, obj2, obj1]).order(lambda x: (x.id, x.name)).to(list) == [
-            obj1,
-            obj2,
-            obj3,
-        ]
-        assert pnq([obj3, obj2, obj1]).order(lambda x: (x.name, x.id)).to(list) == [
-            obj2,
-            obj3,
-            obj1,
-        ]
+    #     assert pnq([obj3, obj2, obj1]).order(lambda x: (x.id, x.name)).to(list) == [
+    #         obj1,
+    #         obj2,
+    #         obj3,
+    #     ]
+    #     assert pnq([obj3, obj2, obj1]).order(lambda x: (x.name, x.id)).to(list) == [
+    #         obj2,
+    #         obj3,
+    #         obj1,
+    #     ]
 
-        assert pnq([obj3, obj2, obj1]).order_by_attrs("id", "name").to(list) == [
-            obj1,
-            obj2,
-            obj3,
-        ]
-        assert pnq([obj3, obj2, obj1]).order_by_attrs("name", "id").to(list) == [
-            obj2,
-            obj3,
-            obj1,
-        ]
+    #     assert pnq([obj3, obj2, obj1]).order_by_attrs("id", "name").to(list) == [
+    #         obj1,
+    #         obj2,
+    #         obj3,
+    #     ]
+    #     assert pnq([obj3, obj2, obj1]).order_by_attrs("name", "id").to(list) == [
+    #         obj2,
+    #         obj3,
+    #         obj1,
+    #     ]
 
-        dic1 = dict(id=10, name="b")
-        dic2 = dict(id=20, name="a")
-        dic3 = dict(id=30, name="a")
+    #     dic1 = dict(id=10, name="b")
+    #     dic2 = dict(id=20, name="a")
+    #     dic3 = dict(id=30, name="a")
 
-        assert pnq([dic3, dic2, dic1]).order_by_items("id", "name").to(list) == [
-            dic1,
-            dic2,
-            dic3,
-        ]
-        assert pnq([dic3, dic2, dic1]).order_by_items("name", "id").to(list) == [
-            dic2,
-            dic3,
-            dic1,
-        ]
+    #     assert pnq([dic3, dic2, dic1]).order_by_items("id", "name").to(list) == [
+    #         dic1,
+    #         dic2,
+    #         dic3,
+    #     ]
+    #     assert pnq([dic3, dic2, dic1]).order_by_items("name", "id").to(list) == [
+    #         dic2,
+    #         dic3,
+    #         dic1,
+    #     ]
 
 
 class TestSleep:
