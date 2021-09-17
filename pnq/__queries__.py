@@ -363,19 +363,19 @@ class {{query.cls}}:
         return filter(lambda x: isinstance(x, *types), self)
 
     @overload
-    def unique(self) -> "{{query.str}}":
+    def filter_unique(self) -> "{{query.str}}":
         ...
 
     @overload
-    def unique(self, selector: Callable[[{{query.row}}], Tuple[K2, V2]]) -> "{{pair.name}}[K2, V2]":
+    def filter_unique(self, selector: Callable[[{{query.row}}], Tuple[K2, V2]]) -> "{{pair.name}}[K2, V2]":
         ...
 
     @overload
-    def unique(self, selector: Callable[[{{query.row}}], R]) -> "{{sequence.name}}[R]":
+    def filter_unique(self, selector: Callable[[{{query.row}}], R]) -> "{{sequence.name}}[R]":
         ...
 
-    def unique(self, selector=None):
-        return LazyIterate(actions.unique, self, selector)
+    def filter_unique(self, selector=None):
+        return LazyIterate(actions.filter_unique, self, selector)
 
     def must(self, predicate: Callable[[{{query.row}}], bool], msg: str="") -> "{{query.str}}":
         """要素の検証に失敗した時例外を発生させる。"""
@@ -413,39 +413,12 @@ class {{query.cls}}:
         except StopIteration:
             return
 
-    @lazy_iterate
-    def range(self, start: int=..., stop: int=...) -> "{{query.str}}":
-        if start < 0:
-            start = 0
+    def take_range(self, start: int = 0, stop: int = None) -> "{{query.str}}":
+        return LazyIterate(actions.take_range, self, start=start, stop=stop)
 
-        if stop is None:
-            stop = float("inf")
-        elif stop < 0:
-            stop = 0
-        else:
-            pass
-
-        current = 0
-
-        try:
-            while current < start:
-                next(self)
-                current += 1
-        except StopIteration:
-            return
-
-        try:
-            while current < stop:
-                yield next(self)
-                current += 1
-        except StopIteration:
-            return
-
-    @lazy_reference
-    def page(self, page: int=..., size: int=...) -> "{{query.str}}":
-        start, stop = page_calc(page, size)
-        yield from self.range(start, stop)
-
+    def take_page(self, page: int, size: int) -> "{{query.str}}":
+        start, stop = actions.take_page_calc(page, size)
+        return LazyIterate(actions.take_range, self, start=start, stop=stop)
 
     @lazy_reference
     def reverse(self) -> "{{query.str}}":
@@ -712,13 +685,5 @@ def query(source):
         return LazyIterate(iter, source)
     else:
         raise Exception()
-
-
-def page_calc(page: int, size: int):
-    if size < 0:
-        raise ValueError("size must be >= 0")
-    start = (page - 1) * size
-    stop = start + size
-    return start, stop
 
 

@@ -9,6 +9,8 @@ from .actions_core import pivot_unstack as pivot_unstack
 from .actions_core import pivot_stack as pivot_stack
 
 # filtering
+from .actions_core import filter_unique as filter_unique
+
 # validating
 # sorting
 # partitioning
@@ -98,11 +100,11 @@ from .actions_core import union as union
 from .actions_core import union_all as union_all
 from .actions_core import union_intersect as union_intersect
 from .actions_core import union_minus as union_minus
-from .actions_core import unique as unique
 
 from .actions_core import value as value
 
 # other
 from .actions_core import raise_if_not_unique_keys
+from .actions_core import take_page_calc as take_page_calc
 
 # isort: on
