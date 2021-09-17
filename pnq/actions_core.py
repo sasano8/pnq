@@ -1300,7 +1300,9 @@ def order_by_shuffle(self):
     [3, 1, 2]
     ```
     """
-    pass
+    import random
+
+    yield from sorted(self, key=lambda k: random.random())
 
 
 ###########################################

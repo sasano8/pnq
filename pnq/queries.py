@@ -416,6 +416,9 @@ class Query(Generic[T]):
     def order_by_reverse(self) -> "Query[T]":
         return LazyReference(actions.order_by_reverse, self)
 
+    def order_by_shuffle(self) -> "Query[T]":
+        return LazyIterate(actions.order_by_shuffle, self)
+
     @lazy_iterate
     def sleep(self, seconds: float):
         from time import sleep
@@ -847,6 +850,9 @@ class PairQuery(Generic[K, V]):
 
     def order_by_reverse(self) -> "PairQuery[K,V]":
         return LazyReference(actions.order_by_reverse, self)
+
+    def order_by_shuffle(self) -> "PairQuery[K,V]":
+        return LazyIterate(actions.order_by_shuffle, self)
 
     @lazy_iterate
     def sleep(self, seconds: float):

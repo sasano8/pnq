@@ -412,6 +412,9 @@ class {{query.cls}}:
     def order_by_reverse(self) -> "{{query.str}}":
         return LazyReference(actions.order_by_reverse, self)
 
+    def order_by_shuffle(self) -> "{{query.str}}":
+        return LazyIterate(actions.order_by_shuffle, self)
+
     @lazy_iterate
     def sleep(self, seconds: float):
         from time import sleep

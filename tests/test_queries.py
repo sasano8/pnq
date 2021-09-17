@@ -1248,7 +1248,21 @@ class Test070_Sort:
         assert pnq((x for x in range(3))).order_by_reverse().to(list) == [2, 1, 0]
 
     def test_order_by_shuffle(self):
-        pass
+        base = [1, 2, 3]
+        results = []
+
+        for i in range(100):
+            result = pnq([1, 2, 3]).order_by_shuffle().to(list)
+            results.append(result)
+
+        different = 0
+
+        for result in results:
+            if result != base:
+                different += 1
+
+        # 100 - (100 / 6) = 84
+        assert different > (84 * 0.5)  # 50%まで偏りを許容する
 
 
 class TestSleep:
