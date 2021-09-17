@@ -3,7 +3,14 @@ from typing import Iterable, List, Mapping, Tuple
 
 import pytest
 
-from pnq.exceptions import NoElementError, NotFoundError, NotOneElementError
+from pnq.exceptions import (
+    DuplicateElementError,
+    MustError,
+    MustTypeError,
+    NoElementError,
+    NotFoundError,
+    NotOneElementError,
+)
 from pnq.queries import DictEx, IndexQuery, ListEx, PairQuery, Query, SetEx, query
 
 # from pnq import query as pnq
@@ -836,7 +843,9 @@ class Test030_Filter:
     def test_filter(self):
         assert pnq([1]).filter(lambda x: x == 1).to(list) == [1]
         assert pnq([1]).filter(lambda x: x == 0).to(list) == []
-        assert pnq([1]).filter(lambda x: x == 0).to(list) == []
+
+        with pytest.raises(TypeError, match="missing"):
+            pnq([1]).filter().to(list)
 
     def test_filter_type(self):
         assert pnq([1]).filter_type(int).to(list) == [1]
@@ -872,6 +881,106 @@ class Test030_Filter:
         assert pnq([(0, 0, 0), (0, 1, 1), (0, 0, 2)]).unique(lambda x: (x[0], x[1])).to(
             list
         ) == [(0, 0), (0, 1)]
+
+
+class Test040_Must:
+    def test_must(self):
+        with pytest.raises(TypeError, match="missing"):
+            pnq([1]).must().to(list)
+
+        assert pnq([1]).must(lambda x: x == 1).to(list) == [1]
+
+        with pytest.raises(MustError):
+            assert pnq([1]).must(lambda x: x == 0).to(list) == []
+
+        with pytest.raises(MustError, match="12345"):
+            pnq([1]).must(lambda x: x == 0, msg="12345").to(list)
+
+    def test_must_type(self):
+        with pytest.raises(TypeError, match="missing"):
+            pnq([1]).must_type().to(list)
+
+        with pytest.raises(MustTypeError, match="is not .*str"):
+            pnq([1]).must_type(str).to(list)
+
+        assert pnq([1]).must_type(int).to(list)
+
+        with pytest.raises(MustTypeError, match="is not .*list.*dict"):
+            pnq([1]).must_type(list, dict).to(list)
+
+        assert pnq([1]).must_type(list, int).to(list)
+        assert pnq([1]).must_type(int, list).to(list)
+
+    def test_must_unique(self):
+        assert pnq([]).must_unique().to(list) == []
+        assert pnq([1]).must_unique().to(list) == [1]
+
+        with pytest.raises(DuplicateElementError, match="1"):
+            assert pnq([1, 1]).must_unique().to(list) == [1]
+
+        with pytest.raises(DuplicateElementError, match="1"):
+            assert pnq([(0, 1), (0, 1)]).must_unique().to(list) == [1]
+
+        assert pnq([(0, 1, 1), (0, 1, 2)]).must_unique().to(list) == [
+            (0, 1, 1),
+            (0, 1, 2),
+        ]
+
+        with pytest.raises(DuplicateElementError):
+            pnq([(0, 1, 1), (0, 1, 2)]).must_unique(lambda x: (x[0], x[1])).to(list)
+
+    def test_must_get_many(self):
+        # list
+        assert pnq([]).must_get_many().to(list) == []
+
+        with pytest.raises(NotFoundError, match="0"):
+            pnq([]).must_get_many(0).to(list)
+
+        assert pnq([10]).must_get_many(0).to(list) == [10]
+
+        with pytest.raises(NotFoundError, match="1"):
+            pnq([10]).must_get_many(1).to(list)
+
+        assert pnq([10, 20]).must_get_many(0, 1).to(list) == [10, 20]
+
+        with pytest.raises(NotFoundError, match="2"):
+            pnq([10, 20]).must_get_many(1, 2).to(list)
+
+        # dict
+        assert pnq({"a": 1, "b": 2, "c": 3}).must_get_many("b", "c").to(list) == [
+            ("b", 2),
+            ("c", 3),
+        ]
+
+        with pytest.raises(NotFoundError, match="d"):
+            pnq({"a": 1, "b": 2, "c": 3}).must_get_many("d").to(list)
+
+        # tuple
+        assert pnq((1, 2, 3)).must_get_many(1, 2).to(list) == [
+            2,
+            3,
+        ]
+
+        with pytest.raises(NotFoundError, match="3"):
+            pnq((1, 2, 3)).must_get_many(3).to(list)
+
+        # set
+        assert pnq(set((1, 2, 3))).must_get_many(2, 3).to(list) == [
+            2,
+            3,
+        ]
+
+        with pytest.raises(NotFoundError, match="4"):
+            pnq(set((1, 2, 3))).must_get_many(4).to(list)
+
+        # frozen set
+        assert pnq(frozenset((1, 2, 3))).must_get_many(2, 3).to(list) == [
+            2,
+            3,
+        ]
+
+        with pytest.raises(NotFoundError, match="4"):
+            pnq(frozenset((1, 2, 3))).must_get_many(4).to(list)
 
 
 class Hoge:

@@ -47,7 +47,6 @@ from .actions_core import __dict as dict
 
 from .actions_core import distinct as distinct
 from .actions_core import exists as exists
-from .actions_core import filter_in as filter_in
 from .actions_core import filter_type as filter_type
 from .actions_core import first as first
 from .actions_core import first_or as first_or
@@ -102,5 +101,8 @@ from .actions_core import union_minus as union_minus
 from .actions_core import unique as unique
 
 from .actions_core import value as value
+
+# other
+from .actions_core import raise_if_not_unique_keys
 
 # isort: on

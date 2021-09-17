@@ -16,7 +16,15 @@ class MustError(PnqException):
     """
     クエリがシーケンス全体あるいはシーケンスの要素に対して任意の特性を持っていることを要求したが失敗した
 
-    関連: `must_unique`
+    関連: `must`
+    """
+
+
+class MustTypeError(PnqException, TypeError):
+    """
+    クエリがシーケンスの要素に対して任意の型であることを要求したが失敗した
+
+    関連: `must_type`
     """
 
 
