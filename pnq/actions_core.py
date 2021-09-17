@@ -20,6 +20,8 @@ from typing import (
 
 from .exceptions import (
     DuplicateElementError,
+    MustError,
+    MustTypeError,
     NoElementError,
     NotFoundError,
     NotOneElementError,
@@ -841,13 +843,7 @@ def __filter(self, predicate):
 
 
 @mark
-# セレクタ引数はなし。可変長引数にセレクタを放り込んでしまったりややこしい。
-def filter_in(self, *values):
-    pass
-
-
-@mark
-def must(self, predicate):
+def must(self, predicate, msg=""):
     """述語に基づいてシーケンスの要素を検証します。
     検証に失敗した場合、即時に例外が発生します。
 
@@ -868,7 +864,7 @@ def must(self, predicate):
     """
     for elm in self:
         if not predicate(elm):
-            raise ValueError(elm)
+            raise MustError(f"{msg} {elm}")
         yield elm
 
 
@@ -898,7 +894,7 @@ def filter_type(self, *types):
 
 
 @mark
-def must_type(self, *types):
+def must_type(self, types):
     """シーケンスの要素が指定した型のいずれかであるか検証します。
     検証に失敗した場合、即時に例外が発生します。
     型は複数指定することができ、`isinstance`の挙動に準じます。
@@ -917,8 +913,8 @@ def must_type(self, *types):
     ```
     """
     for elm in self:
-        if not isinstance(elm, *types):
-            raise TypeError(f"{elm} is not {types}")
+        if not isinstance(elm, types):
+            raise MustTypeError(f"{elm} is not {tuple(x.__name__ for x in types)}")
         yield elm
 
 
@@ -982,14 +978,30 @@ def must_unique(self, selector=None):
             yield value
 
 
+def raise_if_not_unique_keys(keys):
+    if isinstance(keys, set):
+        unique = keys
+    else:
+        unique = set(keys)
+    if len(unique) != len(keys):
+        raise TypeError(f"can't accept duplicate keys: {keys}")
+
+
 @mark
 def get_many(self, *keys):
+    # undefined = object()
+    # raise_if_not_unique_keys(keys)
+    # for id in keys:
+    #     obj = get_or(self, id, undefined)
+    #     if obj is not undefined:
+    #         yield id, obj
     ...
 
 
 def get_many_for_mapping(self, *keys):
     """"""
     undefined = object()
+    raise_if_not_unique_keys(keys)
     for id in keys:
         obj = get_or(self, id, undefined)
         if obj is not undefined:
@@ -999,6 +1011,7 @@ def get_many_for_mapping(self, *keys):
 def get_many_for_sequence(self, *keys):
     """"""
     undefined = object()
+    raise_if_not_unique_keys(keys)
     for id in keys:
         obj = get_or(self, id, undefined)
         if obj is not undefined:
@@ -1008,6 +1021,7 @@ def get_many_for_sequence(self, *keys):
 def get_many_for_set(self, *keys):
     """"""
     undefined = object()
+    raise_if_not_unique_keys(keys)
     for id in keys:
         obj = get_or(self, id, undefined)
         if obj is not undefined:
@@ -1015,9 +1029,37 @@ def get_many_for_set(self, *keys):
 
 
 @mark
-def must_get_many(self, *keys):
-    """"""
-    pass
+def must_get_many(self, *keys, typ: Literal["set", "seq", "map"]):
+    """`get_many`を実行し、全てのキーを取得できなかった場合例外を発生させます。
+    検証が完了するまで、ストリームは保留されます。
+    """
+
+    not_exists = set()
+    key_values = []
+    raise_if_not_unique_keys(keys)
+    undefined = object()
+
+    for k in keys:
+        val = get(self, k, undefined)
+        if val is undefined:
+            not_exists.add(k)
+        else:
+            key_values.append((k, val))
+
+    if not_exists:
+        raise NotFoundError(str(not_exists))
+
+    if typ == "map":
+        for k, v in key_values:
+            yield k, v
+    elif typ == "seq":
+        for k, v in key_values:
+            yield v
+    elif typ == "set":
+        for k, v in key_values:
+            yield k
+    else:
+        raise TypeError(f"unknown type: {typ}")
 
 
 ###########################################

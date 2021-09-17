@@ -376,29 +376,16 @@ class Query(Generic[T]):
     def unique(self, selector=None):
         return LazyIterate(actions.unique, self, selector)
 
-    @lazy_iterate
-    def must(self, predicate: Callable[[T], bool], msg: str = ...) -> "Query[T]":
+    def must(self, predicate: Callable[[T], bool], msg: str = "") -> "Query[T]":
         """要素の検証に失敗した時例外を発生させる。"""
-        for elm in self:
-            if not predicate(elm):
-                raise ValueError(f"{msg} {elm}")
-            yield elm
+        return LazyIterate(actions.must, self, predicate, msg)
 
-    @lazy_iterate
-    def must_unique(self, selector: Callable[[T], R]):
-        seen = set()
-        duplicated = []
-        for elm in source:
-            if selector(elm) in seen:
-                duplicated.append(elm)
-            else:
-                seen.add(selector(elm))
+    def must_type(self, type, *types: Type) -> "Query[T]":
+        """要素の検証に失敗した時例外を発生させる。"""
+        return LazyIterate(actions.must_type, self, (type, *types))
 
-        if duplicated:
-            raise ValueError(f"Duplicated elements: {duplicated}")
-
-        for elm in source:
-            yield elm
+    def must_unique(self, selector: Callable[[T], R] = None):
+        return LazyIterate(actions.must_unique, self, selector)
 
     @lazy_iterate
     def skip(self, count: int) -> "Query[T]":
@@ -843,31 +830,18 @@ class PairQuery(Generic[K, V]):
     def unique(self, selector=None):
         return LazyIterate(actions.unique, self, selector)
 
-    @lazy_iterate
     def must(
-        self, predicate: Callable[[Tuple[K, V]], bool], msg: str = ...
+        self, predicate: Callable[[Tuple[K, V]], bool], msg: str = ""
     ) -> "PairQuery[K,V]":
         """要素の検証に失敗した時例外を発生させる。"""
-        for elm in self:
-            if not predicate(elm):
-                raise ValueError(f"{msg} {elm}")
-            yield elm
+        return LazyIterate(actions.must, self, predicate, msg)
 
-    @lazy_iterate
-    def must_unique(self, selector: Callable[[T], R]):
-        seen = set()
-        duplicated = []
-        for elm in source:
-            if selector(elm) in seen:
-                duplicated.append(elm)
-            else:
-                seen.add(selector(elm))
+    def must_type(self, type, *types: Type) -> "PairQuery[K,V]":
+        """要素の検証に失敗した時例外を発生させる。"""
+        return LazyIterate(actions.must_type, self, (type, *types))
 
-        if duplicated:
-            raise ValueError(f"Duplicated elements: {duplicated}")
-
-        for elm in source:
-            yield elm
+    def must_unique(self, selector: Callable[[T], R] = None):
+        return LazyIterate(actions.must_unique, self, selector)
 
     @lazy_iterate
     def skip(self, count: int) -> "PairQuery[K,V]":
@@ -997,7 +971,10 @@ class PairQuery(Generic[K, V]):
 
 
 class IndexQuery(Generic[K, V]):
-    def get_many(self, *keys: K) -> "IndexQuery[K,V]":
+    def get_many(self, *keys) -> "IndexQuery[K,V]":
+        raise NotImplementedError()
+
+    def must_get_many(self, *keys) -> "IndexQuery[K,V]":
         raise NotImplementedError()
 
     @overload
@@ -1057,6 +1034,10 @@ class ListEx(Instance, IndexQuery[int, T], Query[T], List[T]):
     def get_many(self, *keys):
         return LazyReference(actions.get_many_for_sequence, self, *keys)
 
+    @no_type_check
+    def must_get_many(self, *keys):
+        return LazyReference(actions.must_get_many, self, *keys, typ="seq")
+
 
 class TupleEx(Instance, IndexQuery[int, T], Query[T], Tuple[T]):
     def __piter__(self):
@@ -1069,6 +1050,10 @@ class TupleEx(Instance, IndexQuery[int, T], Query[T], Tuple[T]):
     @no_type_check
     def get_many(self, *keys):
         return LazyReference(actions.get_many_for_sequence, self, *keys)
+
+    @no_type_check
+    def must_get_many(self, *keys):
+        return LazyReference(actions.must_get_many, self, *keys, typ="seq")
 
 
 class DictEx(Instance, IndexQuery[K, V], PairQuery[K, V], Dict[K, V]):
@@ -1096,6 +1081,10 @@ class DictEx(Instance, IndexQuery[K, V], PairQuery[K, V], Dict[K, V]):
     def get_many(self, *keys):
         return LazyReference(actions.get_many_for_mapping, self, *keys)
 
+    @no_type_check
+    def must_get_many(self, *keys):
+        return LazyReference(actions.must_get_many, self, *keys, typ="map")
+
 
 class SetEx(Instance, IndexQuery[T, T], Query[T], Set[T]):
     def __piter__(self):
@@ -1115,6 +1104,10 @@ class SetEx(Instance, IndexQuery[T, T], Query[T], Set[T]):
     def get_many(self, *keys):
         return LazyReference(actions.get_many_for_set, self, *keys)
 
+    @no_type_check
+    def must_get_many(self, *keys):
+        return LazyReference(actions.must_get_many, self, *keys, typ="set")
+
 
 class FrozenSetEx(Instance, IndexQuery[T, T], Query[T], FrozenSet[T]):
     def __piter__(self):
@@ -1133,6 +1126,10 @@ class FrozenSetEx(Instance, IndexQuery[T, T], Query[T], FrozenSet[T]):
     @no_type_check
     def get_many(self, *keys):
         return LazyReference(actions.get_many_for_set, self, *keys)
+
+    @no_type_check
+    def must_get_many(self, *keys):
+        return LazyReference(actions.must_get_many, self, *keys, typ="set")
 
 
 @overload
