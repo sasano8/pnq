@@ -362,19 +362,21 @@ class Query(Generic[T]):
         return filter(lambda x: isinstance(x, *types), self)
 
     @overload
-    def unique(self) -> "Query[T]":
+    def filter_unique(self) -> "Query[T]":
         ...
 
     @overload
-    def unique(self, selector: Callable[[T], Tuple[K2, V2]]) -> "PairQuery[K2, V2]":
+    def filter_unique(
+        self, selector: Callable[[T], Tuple[K2, V2]]
+    ) -> "PairQuery[K2, V2]":
         ...
 
     @overload
-    def unique(self, selector: Callable[[T], R]) -> "Query[R]":
+    def filter_unique(self, selector: Callable[[T], R]) -> "Query[R]":
         ...
 
-    def unique(self, selector=None):
-        return LazyIterate(actions.unique, self, selector)
+    def filter_unique(self, selector=None):
+        return LazyIterate(actions.filter_unique, self, selector)
 
     def must(self, predicate: Callable[[T], bool], msg: str = "") -> "Query[T]":
         """要素の検証に失敗した時例外を発生させる。"""
@@ -412,38 +414,12 @@ class Query(Generic[T]):
         except StopIteration:
             return
 
-    @lazy_iterate
-    def range(self, start: int = ..., stop: int = ...) -> "Query[T]":
-        if start < 0:
-            start = 0
+    def take_range(self, start: int = 0, stop: int = None) -> "Query[T]":
+        return LazyIterate(actions.take_range, self, start=start, stop=stop)
 
-        if stop is None:
-            stop = float("inf")
-        elif stop < 0:
-            stop = 0
-        else:
-            pass
-
-        current = 0
-
-        try:
-            while current < start:
-                next(self)
-                current += 1
-        except StopIteration:
-            return
-
-        try:
-            while current < stop:
-                yield next(self)
-                current += 1
-        except StopIteration:
-            return
-
-    @lazy_reference
-    def page(self, page: int = ..., size: int = ...) -> "Query[T]":
-        start, stop = page_calc(page, size)
-        yield from self.range(start, stop)
+    def take_page(self, page: int, size: int) -> "Query[T]":
+        start, stop = actions.take_page_calc(page, size)
+        return LazyIterate(actions.take_range, self, start=start, stop=stop)
 
     @lazy_reference
     def reverse(self) -> "Query[T]":
@@ -814,21 +790,21 @@ class PairQuery(Generic[K, V]):
         return filter(lambda x: isinstance(x, *types), self)
 
     @overload
-    def unique(self) -> "PairQuery[K,V]":
+    def filter_unique(self) -> "PairQuery[K,V]":
         ...
 
     @overload
-    def unique(
+    def filter_unique(
         self, selector: Callable[[Tuple[K, V]], Tuple[K2, V2]]
     ) -> "PairQuery[K2, V2]":
         ...
 
     @overload
-    def unique(self, selector: Callable[[Tuple[K, V]], R]) -> "Query[R]":
+    def filter_unique(self, selector: Callable[[Tuple[K, V]], R]) -> "Query[R]":
         ...
 
-    def unique(self, selector=None):
-        return LazyIterate(actions.unique, self, selector)
+    def filter_unique(self, selector=None):
+        return LazyIterate(actions.filter_unique, self, selector)
 
     def must(
         self, predicate: Callable[[Tuple[K, V]], bool], msg: str = ""
@@ -868,38 +844,12 @@ class PairQuery(Generic[K, V]):
         except StopIteration:
             return
 
-    @lazy_iterate
-    def range(self, start: int = ..., stop: int = ...) -> "PairQuery[K,V]":
-        if start < 0:
-            start = 0
+    def take_range(self, start: int = 0, stop: int = None) -> "PairQuery[K,V]":
+        return LazyIterate(actions.take_range, self, start=start, stop=stop)
 
-        if stop is None:
-            stop = float("inf")
-        elif stop < 0:
-            stop = 0
-        else:
-            pass
-
-        current = 0
-
-        try:
-            while current < start:
-                next(self)
-                current += 1
-        except StopIteration:
-            return
-
-        try:
-            while current < stop:
-                yield next(self)
-                current += 1
-        except StopIteration:
-            return
-
-    @lazy_reference
-    def page(self, page: int = ..., size: int = ...) -> "PairQuery[K,V]":
-        start, stop = page_calc(page, size)
-        yield from self.range(start, stop)
+    def take_page(self, page: int, size: int) -> "PairQuery[K,V]":
+        start, stop = actions.take_page_calc(page, size)
+        return LazyIterate(actions.take_range, self, start=start, stop=stop)
 
     @lazy_reference
     def reverse(self) -> "PairQuery[K,V]":
@@ -1164,11 +1114,3 @@ def query(source):
         return LazyIterate(iter, source)
     else:
         raise Exception()
-
-
-def page_calc(page: int, size: int):
-    if size < 0:
-        raise ValueError("size must be >= 0")
-    start = (page - 1) * size
-    stop = start + size
-    return start, stop

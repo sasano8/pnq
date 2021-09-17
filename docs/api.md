@@ -73,7 +73,7 @@
 ::: pnq.actions.filter_type
     :docstring:
 
-::: pnq.actions.unique
+::: pnq.actions.filter_unique
     :docstring:
 
 ::: pnq.actions.get_many
@@ -84,24 +84,13 @@
 ::: pnq.actions.must
     :docstring:
 
+::: pnq.actions.must_type
+    :docstring:
+
 ::: pnq.actions.must_unique
     :docstring:
 
 ::: pnq.actions.must_get_many
-    :docstring:
-
-## Sorting
-
-::: pnq.actions.order_by
-    :docstring:
-
-::: pnq.actions.order_by_fields
-    :docstring:
-
-::: pnq.actions.order_by_reverse
-    :docstring:
-
-::: pnq.actions.order_by_shuffle
     :docstring:
 
 ## Partitioning
@@ -122,6 +111,20 @@
     :docstring:
 
 ::: pnq.actions.take_page
+    :docstring:
+
+## Sorting
+
+::: pnq.actions.order_by
+    :docstring:
+
+::: pnq.actions.order_by_fields
+    :docstring:
+
+::: pnq.actions.order_by_reverse
+    :docstring:
+
+::: pnq.actions.order_by_shuffle
     :docstring:
 
 ## Expanding

@@ -919,7 +919,7 @@ def must_type(self, types):
 
 
 @mark
-def unique(self, selector=None):
+def filter_unique(self, selector=None):
     """シーケンスの要素から重複する要素を除去する。
     セレクタによって選択された値に対して重複が検証され、その値を返す。
 
@@ -947,7 +947,7 @@ def unique(self, selector=None):
             yield value
 
 
-distinct = unique
+distinct = filter_unique
 
 
 @mark
@@ -1148,7 +1148,7 @@ def skip_while(self, predicate):
 
 
 @mark
-def take_range(self, start: int = 0, stop: int = ...):
+def take_range(self, start: int = 0, stop: int = None):
     """シーケンスから指定した範囲の要素を返します。
 
     Args:
@@ -1167,6 +1167,31 @@ def take_range(self, start: int = 0, stop: int = ...):
     [3, 4, 5]
     ```
     """
+    if start < 0:
+        start = 0
+
+    if stop is None:
+        stop = float("inf")
+    elif stop < 0:
+        stop = 0
+    else:
+        pass
+
+    current = 0
+
+    try:
+        while current < start:
+            next(self)
+            current += 1
+    except StopIteration:
+        yield from ()
+
+    try:
+        while current < stop:
+            yield next(self)
+            current += 1
+    except StopIteration:
+        pass
 
 
 @mark
@@ -1190,6 +1215,14 @@ def take_page(self, page: int, size: int):
     [3, 4, 5]
     ```
     """
+
+
+def take_page_calc(page: int, size: int):
+    if size < 0:
+        raise ValueError("size must be >= 0")
+    start = (page - 1) * size
+    stop = start + size
+    return start, stop
 
 
 ###########################################
