@@ -1101,12 +1101,6 @@ class Test050_Partition:
         assert q.take_page(3, 2).to(list) == [5, 6]
 
 
-class Hoge:
-    def __init__(self, id, name=""):
-        self.id = id
-        self.name = name
-
-
 class Test070_Sort:
     def test_order_by_map(self):
         assert pnq([]).order_by_map().to(list) == []
@@ -1250,6 +1244,8 @@ class Test070_Sort:
 
         with pytest.raises(NotImplementedError, match="Set has no order"):
             assert pnq(frozenset([2, 1])).order_by_reverse().to(list) == [1, 2]
+
+        assert pnq((x for x in range(3))).order_by_reverse().to(list) == [2, 1, 0]
 
     def test_order_by_shuffle(self):
         pass
