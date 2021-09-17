@@ -983,6 +983,105 @@ class Test040_Must:
             pnq(frozenset((1, 2, 3))).must_get_many(4).to(list)
 
 
+class Test050_Partitioning:
+    def test_skip(self):
+        assert pnq([]).skip(0).to(list) == []
+        assert pnq([]).skip(1).to(list) == []
+        assert pnq([1]).skip(0).to(list) == [1]
+        assert pnq([1]).skip(1).to(list) == []
+        assert pnq([1, 2]).skip(0).to(list) == [1, 2]
+        assert pnq([1, 2]).skip(1).to(list) == [2]
+        assert pnq([1, 2]).skip(2).to(list) == []
+        assert pnq([1, 2]).skip(3).to(list) == []
+
+    def test_take(self):
+        assert pnq([]).take(0).to(list) == []
+        assert pnq([]).take(1).to(list) == []
+        assert pnq([1]).take(0).to(list) == []
+        assert pnq([1]).take(1).to(list) == [1]
+        assert pnq([1, 2]).take(0).to(list) == []
+        assert pnq([1, 2]).take(1).to(list) == [1]
+        assert pnq([1, 2]).take(2).to(list) == [1, 2]
+        assert pnq([1, 2]).take(3).to(list) == [1, 2]
+
+    def test_range(self):
+        q = pnq([1, 2, 3, 4, 5, 6])
+
+        assert q.range(0, -1).to(list) == []
+        assert q.range(0, 0).to(list) == []
+
+        assert q.range(-1, 0).to(list) == []
+        assert q.range(0, 1).to(list) == [1]
+        assert q.range(1, 2).to(list) == [2]
+        assert q.range(2, 3).to(list) == [3]
+
+        assert q.range(-2, 0).to(list) == []
+        assert q.range(0, 2).to(list) == [1, 2]
+        assert q.range(2, 4).to(list) == [3, 4]
+        assert q.range(4, 6).to(list) == [5, 6]
+
+        assert q.range(5, 6).to(list) == [6]
+        assert q.range(5, 7).to(list) == [6]
+        assert q.range(6, 7).to(list) == []
+
+    def test_page(self):
+        from pnq.queries import page_calc
+
+        with pytest.raises(ValueError):
+            page_calc(0, -1)
+
+        assert page_calc(-1, 0) == (0, 0)
+
+        assert page_calc(0, 0) == (0, 0)
+        assert page_calc(1, 0) == (0, 0)
+        assert page_calc(2, 0) == (0, 0)
+        assert page_calc(3, 0) == (0, 0)
+
+        assert page_calc(0, 1) == (-1, 0)
+        assert page_calc(1, 1) == (0, 1)
+        assert page_calc(2, 1) == (1, 2)
+        assert page_calc(3, 1) == (2, 3)
+
+        assert page_calc(0, 2) == (-2, 0)
+        assert page_calc(1, 2) == (0, 2)
+        assert page_calc(2, 2) == (2, 4)
+        assert page_calc(3, 2) == (4, 6)
+
+        arr = [1, 2, 3, 4, 5, 6]
+
+        assert arr[0:0] == []
+        assert arr[0:0] == []
+        assert arr[0:0] == []
+        assert arr[0:0] == []
+
+        assert arr[-1:0] == []
+        assert arr[0:1] == [1]
+        assert arr[1:2] == [2]
+        assert arr[2:3] == [3]
+
+        assert arr[-2:0] == []
+        assert arr[0:2] == [1, 2]
+        assert arr[2:4] == [3, 4]
+        assert arr[4:6] == [5, 6]
+
+        q = pnq(arr)
+
+        assert q.page(0, 0).to(list) == []
+        assert q.page(1, 0).to(list) == []
+        assert q.page(2, 0).to(list) == []
+        assert q.page(3, 0).to(list) == []
+
+        assert q.page(0, 1).to(list) == []
+        assert q.page(1, 1).to(list) == [1]
+        assert q.page(2, 1).to(list) == [2]
+        assert q.page(3, 1).to(list) == [3]
+
+        assert q.page(0, 2).to(list) == []
+        assert q.page(1, 2).to(list) == [1, 2]
+        assert q.page(2, 2).to(list) == [3, 4]
+        assert q.page(3, 2).to(list) == [5, 6]
+
+
 class Hoge:
     def __init__(self, id, name=""):
         self.id = id
@@ -1149,102 +1248,3 @@ class TestDict:
         assert db.items().to(list) == [(1, "a"), (2, "b"), (3, "c")]
 
         assert isinstance(db.to(dict), dict)
-
-
-class TestSlicer:
-    def test_skip(self):
-        assert pnq([]).skip(0).to(list) == []
-        assert pnq([]).skip(1).to(list) == []
-        assert pnq([1]).skip(0).to(list) == [1]
-        assert pnq([1]).skip(1).to(list) == []
-        assert pnq([1, 2]).skip(0).to(list) == [1, 2]
-        assert pnq([1, 2]).skip(1).to(list) == [2]
-        assert pnq([1, 2]).skip(2).to(list) == []
-        assert pnq([1, 2]).skip(3).to(list) == []
-
-    def test_take(self):
-        assert pnq([]).take(0).to(list) == []
-        assert pnq([]).take(1).to(list) == []
-        assert pnq([1]).take(0).to(list) == []
-        assert pnq([1]).take(1).to(list) == [1]
-        assert pnq([1, 2]).take(0).to(list) == []
-        assert pnq([1, 2]).take(1).to(list) == [1]
-        assert pnq([1, 2]).take(2).to(list) == [1, 2]
-        assert pnq([1, 2]).take(3).to(list) == [1, 2]
-
-    def test_range(self):
-        q = pnq([1, 2, 3, 4, 5, 6])
-
-        assert q.range(0, -1).to(list) == []
-        assert q.range(0, 0).to(list) == []
-
-        assert q.range(-1, 0).to(list) == []
-        assert q.range(0, 1).to(list) == [1]
-        assert q.range(1, 2).to(list) == [2]
-        assert q.range(2, 3).to(list) == [3]
-
-        assert q.range(-2, 0).to(list) == []
-        assert q.range(0, 2).to(list) == [1, 2]
-        assert q.range(2, 4).to(list) == [3, 4]
-        assert q.range(4, 6).to(list) == [5, 6]
-
-        assert q.range(5, 6).to(list) == [6]
-        assert q.range(5, 7).to(list) == [6]
-        assert q.range(6, 7).to(list) == []
-
-    def test_page(self):
-        from pnq.queries import page_calc
-
-        with pytest.raises(ValueError):
-            page_calc(0, -1)
-
-        assert page_calc(-1, 0) == (0, 0)
-
-        assert page_calc(0, 0) == (0, 0)
-        assert page_calc(1, 0) == (0, 0)
-        assert page_calc(2, 0) == (0, 0)
-        assert page_calc(3, 0) == (0, 0)
-
-        assert page_calc(0, 1) == (-1, 0)
-        assert page_calc(1, 1) == (0, 1)
-        assert page_calc(2, 1) == (1, 2)
-        assert page_calc(3, 1) == (2, 3)
-
-        assert page_calc(0, 2) == (-2, 0)
-        assert page_calc(1, 2) == (0, 2)
-        assert page_calc(2, 2) == (2, 4)
-        assert page_calc(3, 2) == (4, 6)
-
-        arr = [1, 2, 3, 4, 5, 6]
-
-        assert arr[0:0] == []
-        assert arr[0:0] == []
-        assert arr[0:0] == []
-        assert arr[0:0] == []
-
-        assert arr[-1:0] == []
-        assert arr[0:1] == [1]
-        assert arr[1:2] == [2]
-        assert arr[2:3] == [3]
-
-        assert arr[-2:0] == []
-        assert arr[0:2] == [1, 2]
-        assert arr[2:4] == [3, 4]
-        assert arr[4:6] == [5, 6]
-
-        q = pnq(arr)
-
-        assert q.page(0, 0).to(list) == []
-        assert q.page(1, 0).to(list) == []
-        assert q.page(2, 0).to(list) == []
-        assert q.page(3, 0).to(list) == []
-
-        assert q.page(0, 1).to(list) == []
-        assert q.page(1, 1).to(list) == [1]
-        assert q.page(2, 1).to(list) == [2]
-        assert q.page(3, 1).to(list) == [3]
-
-        assert q.page(0, 2).to(list) == []
-        assert q.page(1, 2).to(list) == [1, 2]
-        assert q.page(2, 2).to(list) == [3, 4]
-        assert q.page(3, 2).to(list) == [5, 6]
