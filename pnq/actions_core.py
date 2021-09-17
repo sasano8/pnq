@@ -669,7 +669,7 @@ def request(self, func, retry: int = None):
 
     Args:
 
-    * self: フィルタ対象のシーケンス
+    * self: 辞書を要素とするシーケンス
     * func: 値の送出先の関数
 
     Returns: 実行結果
@@ -683,10 +683,10 @@ def request(self, func, retry: int = None):
     >>>     raise ValueError(val)
     >>>
     >>> for res in pnq.query([{"id": 1, "val": True}, {"id": 2, "val": False}]).request(do_something):
-    >>>   if not res.err:
-    >>>     print(res.to_dict())
+    >>>   if res.err:
+    >>>     print(f"ERROR: {res.to_dict()}")
     >>>   else:
-    >>>     print(res.result)
+    >>>     print(f"SUCCESS: {res.to_dict()}")
     ```
     """
     from .requests import Response, StopWatch
@@ -718,24 +718,25 @@ async def request_async(self, func, timeout: float = None, retry: int = None):
 
     Args:
 
-    * self: フィルタ対象のシーケンス
+    * self: 辞書を要素とするシーケンス
     * func: 値の送出先の関数
 
     Returns: 実行結果
 
     Usage:
     ```
-    >>> def do_something(id, val):
+    >>> async def do_something(id, val):
     >>>   if val:
     >>>     return 1
     >>>   else:
     >>>     raise ValueError(val)
     >>>
-    >>> for res in pnq.query([{"id": 1, "val": True}, {"id": 2, "val": False}]).request(do_something):
-    >>>   if not res.err:
-    >>>     print(res.to_dict())
+    >>> params = pnq.query([{"id": 1, "val": True}, {"id": 2, "val": False}])
+    >>> async for res in params.request_async(do_something):
+    >>>   if res.err:
+    >>>     print(f"ERROR: {res.to_dict()}")
     >>>   else:
-    >>>     print(res.result)
+    >>>     print(f"SUCCESS: {res.to_dict()}")
     ```
     """
     from .requests import Response, StopWatch
@@ -1274,7 +1275,13 @@ def order_by_reverse(self):
     [3, 2, 1]
     ```
     """
-    yield from reversed(list(__iter(self)))
+    if hasattr(self, "__reversed__"):
+        if isinstance(self, Mapping):
+            return ((k, self[k]) for k in reversed(self))  # type: ignore
+        else:
+            return reversed(self)
+    else:
+        return reversed(list(__iter(self)))
 
 
 @mark
@@ -1609,11 +1616,11 @@ def concat(self, selector=lambda x: x, delimiter: str = ""):
 
 @mark
 def to(self, finalizer):
-    """クエリを即時評価し、評価結果をファイナライザによって処理します。
+    """ストリームをファイナライザによって処理します。
 
     Args:
 
-    * self: バイパス対象のシーケンス
+    * self: 評価するシーケンス
     * finalizer: イテレータを受け取るクラス・関数
 
     Returns: ファイナライザが返す結果
@@ -1670,7 +1677,7 @@ def lazy(self, finalizer):
 
 @mark
 async def to_async(self, cls):
-    """クエリを即時評価し、評価結果をファイナライザによって処理します。
+    """非同期ストリームをファイナライザによって処理します。
     クエリが非同期処理を要求する場合のみ使用してください。
 
     Args:
@@ -1774,7 +1781,7 @@ async def each_async_unpack(self, func=async_dummy):
     ```
     >>> results = []
     >>> async def append(arg1, arg2):
-    >>>    results.append((id, name))
+    >>>    results.append((arg1, arg2))
     >>> await pnq.query([{"arg1": 1, "arg2": 2}]).each_async_unpack(append)
     >>> print(results)
     [(1, 2)]

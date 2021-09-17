@@ -36,6 +36,7 @@ https://pypi.org/project/pnq/
 - コレクション操作に関する多彩な操作
 - アクセシブルなインターフェース
 - 型ヒントの活用
+- 非同期ストリームに対応
 
 ## Documentation
 

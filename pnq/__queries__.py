@@ -60,30 +60,6 @@ def lazy_reference(func):
     return wrapper
 
 
-
-if not TYPE_CHECKING:
-    # TODO: type hintを文字で囲むのが面倒なため仮定義 文字化して除去する
-    class Query(Generic[T], Iterable[T]):
-        ...
-
-    class PairQuery(Generic[K, V], Iterable[Tuple[K, V]]):
-        ...
-
-    class IndexQuery(Generic[K, V]):
-        pass
-
-
-    class ListEx(Generic[T], Sequence[T]):
-        pass
-
-
-    class DictEx(Generic[K, V], Mapping[K, V]):
-        pass
-
-
-    class SetEx(Generic[T], Iterable[T]):
-        pass
-
 {% for query in queries %}
 
 
@@ -351,7 +327,7 @@ class {{query.cls}}:
         yield from filter(predicate, self)  # type: ignore
 
     @lazy_iterate
-    def filter_type(self, *types: Type[R]) -> {{query.str}}:
+    def filter_type(self, *types: Type[R]) -> "{{query.str}}":
         def normalize(type):
             if type is None:
                 return None.__class__
@@ -419,10 +395,6 @@ class {{query.cls}}:
         start, stop = actions.take_page_calc(page, size)
         return LazyIterate(actions.take_range, self, start=start, stop=stop)
 
-    @lazy_reference
-    def reverse(self) -> "{{query.str}}":
-        yield actions.reverse(self)
-
     def order_by(self, *fields, desc: bool = False, attr: bool = False) -> "{{query.str}}":
         if not len(fields):
             selector = None
@@ -437,21 +409,8 @@ class {{query.cls}}:
     def order_by_map(self, selector=None, *, desc: bool = False) -> "{{query.str}}":
         return LazyIterate(actions.order_by, self, selector=selector, desc=desc)
 
-    # @lazy_iterate
-    # def order(self, selector, desc: bool = False) -> "{{query.str}}":
-    #     yield from sorted(self, key=selector, reverse=desc)
-
-    # def order_by_items(
-    #     self, *items: Any, desc: bool = False
-    # ) -> {{query.str}}:
-    #     selector = itemgetter(*items)
-    #     return self.order(selector, desc)
-
-    # def order_by_attrs(
-    #     self: Iterable[T], *attrs: str, desc: bool = False
-    # ) -> {{query.str}}:
-    #     selector = attrgetter(*attrs)
-    #     return self.order(selector, desc)
+    def order_by_reverse(self) -> "{{query.str}}":
+        return LazyReference(actions.order_by_reverse, self)
 
     @lazy_iterate
     def sleep(self, seconds: float):
@@ -561,9 +520,9 @@ class ListEx(Instance, IndexQuery[int, T], Query[T], List[T]):
     def __piter__(self):
         return self.__iter__()
 
-    @lazy_reference
-    def reverse(self) -> "Query[T]":
-        yield from reversed(self)
+    # @lazy_reference
+    # def reverse(self) -> "Query[T]":
+    #     yield from reversed(self)
 
     @no_type_check
     def get_many(self, *keys):
@@ -578,9 +537,9 @@ class TupleEx(Instance, IndexQuery[int, T], Query[T], Tuple[T]):
     def __piter__(self):
         return self.__iter__()
 
-    @lazy_reference
-    def reverse(self) -> "Query[T]":
-        yield from reversed(self)
+    # @lazy_reference
+    # def reverse(self) -> "Query[T]":
+    #     yield from reversed(self)
 
     @no_type_check
     def get_many(self, *keys):
@@ -607,10 +566,10 @@ class DictEx(Instance, IndexQuery[K, V], PairQuery[K, V], Dict[K, V]):
     def items(self):
         yield from super().items()
 
-    @lazy_reference
-    def reverse(self) -> "PairQuery[K, V]":
-        for key in reversed(self):
-            yield key, self[key]
+    # @lazy_reference
+    # def reverse(self) -> "PairQuery[K, V]":
+    #     for key in reversed(self):
+    #         yield key, self[key]
 
     @no_type_check
     def get_many(self, *keys):
@@ -631,9 +590,8 @@ class SetEx(Instance, IndexQuery[T, T], Query[T], Set[T]):
         else:
             raise NotFoundError(key)
 
-    @lazy_reference
-    def reverse(self) -> "Query[T]":
-        yield from reversed(self)
+    def order_by_reverse(self) -> "Query[T]":
+        raise NotImplementedError("Set has no order.")
 
     @no_type_check
     def get_many(self, *keys):
@@ -654,9 +612,8 @@ class FrozenSetEx(Instance, IndexQuery[T, T], Query[T], FrozenSet[T]):
         else:
             raise NotFoundError(key)
 
-    @lazy_reference
-    def reverse(self) -> "Query[T]":
-        yield from reversed(self)
+    def order_by_reverse(self) -> "Query[T]":
+        raise NotImplementedError("Set has no order.")
 
     @no_type_check
     def get_many(self, *keys):

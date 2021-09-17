@@ -69,27 +69,6 @@ def lazy_reference(func):
     return wrapper
 
 
-if not TYPE_CHECKING:
-    # TODO: type hintを文字で囲むのが面倒なため仮定義 文字化して除去する
-    class Query(Generic[T], Iterable[T]):
-        ...
-
-    class PairQuery(Generic[K, V], Iterable[Tuple[K, V]]):
-        ...
-
-    class IndexQuery(Generic[K, V]):
-        pass
-
-    class ListEx(Generic[T], Sequence[T]):
-        pass
-
-    class DictEx(Generic[K, V], Mapping[K, V]):
-        pass
-
-    class SetEx(Generic[T], Iterable[T]):
-        pass
-
-
 class Query(Generic[T]):
     def len(self) -> int:
         return actions.len(self)
@@ -350,7 +329,7 @@ class Query(Generic[T]):
         yield from filter(predicate, self)  # type: ignore
 
     @lazy_iterate
-    def filter_type(self, *types: Type[R]) -> Query[T]:
+    def filter_type(self, *types: Type[R]) -> "Query[T]":
         def normalize(type):
             if type is None:
                 return None.__class__
@@ -420,10 +399,6 @@ class Query(Generic[T]):
         start, stop = actions.take_page_calc(page, size)
         return LazyIterate(actions.take_range, self, start=start, stop=stop)
 
-    @lazy_reference
-    def reverse(self) -> "Query[T]":
-        yield actions.reverse(self)
-
     def order_by(self, *fields, desc: bool = False, attr: bool = False) -> "Query[T]":
         if not len(fields):
             selector = None
@@ -438,21 +413,8 @@ class Query(Generic[T]):
     def order_by_map(self, selector=None, *, desc: bool = False) -> "Query[T]":
         return LazyIterate(actions.order_by, self, selector=selector, desc=desc)
 
-    # @lazy_iterate
-    # def order(self, selector, desc: bool = False) -> "Query[T]":
-    #     yield from sorted(self, key=selector, reverse=desc)
-
-    # def order_by_items(
-    #     self, *items: Any, desc: bool = False
-    # ) -> Query[T]:
-    #     selector = itemgetter(*items)
-    #     return self.order(selector, desc)
-
-    # def order_by_attrs(
-    #     self: Iterable[T], *attrs: str, desc: bool = False
-    # ) -> Query[T]:
-    #     selector = attrgetter(*attrs)
-    #     return self.order(selector, desc)
+    def order_by_reverse(self) -> "Query[T]":
+        return LazyReference(actions.order_by_reverse, self)
 
     @lazy_iterate
     def sleep(self, seconds: float):
@@ -795,7 +757,7 @@ class PairQuery(Generic[K, V]):
         yield from filter(predicate, self)  # type: ignore
 
     @lazy_iterate
-    def filter_type(self, *types: Type[R]) -> PairQuery[K, V]:
+    def filter_type(self, *types: Type[R]) -> "PairQuery[K,V]":
         def normalize(type):
             if type is None:
                 return None.__class__
@@ -867,10 +829,6 @@ class PairQuery(Generic[K, V]):
         start, stop = actions.take_page_calc(page, size)
         return LazyIterate(actions.take_range, self, start=start, stop=stop)
 
-    @lazy_reference
-    def reverse(self) -> "PairQuery[K,V]":
-        yield actions.reverse(self)
-
     def order_by(
         self, *fields, desc: bool = False, attr: bool = False
     ) -> "PairQuery[K,V]":
@@ -887,21 +845,8 @@ class PairQuery(Generic[K, V]):
     def order_by_map(self, selector=None, *, desc: bool = False) -> "PairQuery[K,V]":
         return LazyIterate(actions.order_by, self, selector=selector, desc=desc)
 
-    # @lazy_iterate
-    # def order(self, selector, desc: bool = False) -> "PairQuery[K,V]":
-    #     yield from sorted(self, key=selector, reverse=desc)
-
-    # def order_by_items(
-    #     self, *items: Any, desc: bool = False
-    # ) -> PairQuery[K,V]:
-    #     selector = itemgetter(*items)
-    #     return self.order(selector, desc)
-
-    # def order_by_attrs(
-    #     self: Iterable[T], *attrs: str, desc: bool = False
-    # ) -> PairQuery[K,V]:
-    #     selector = attrgetter(*attrs)
-    #     return self.order(selector, desc)
+    def order_by_reverse(self) -> "PairQuery[K,V]":
+        return LazyReference(actions.order_by_reverse, self)
 
     @lazy_iterate
     def sleep(self, seconds: float):
@@ -1010,9 +955,9 @@ class ListEx(Instance, IndexQuery[int, T], Query[T], List[T]):
     def __piter__(self):
         return self.__iter__()
 
-    @lazy_reference
-    def reverse(self) -> "Query[T]":
-        yield from reversed(self)
+    # @lazy_reference
+    # def reverse(self) -> "Query[T]":
+    #     yield from reversed(self)
 
     @no_type_check
     def get_many(self, *keys):
@@ -1027,9 +972,9 @@ class TupleEx(Instance, IndexQuery[int, T], Query[T], Tuple[T]):
     def __piter__(self):
         return self.__iter__()
 
-    @lazy_reference
-    def reverse(self) -> "Query[T]":
-        yield from reversed(self)
+    # @lazy_reference
+    # def reverse(self) -> "Query[T]":
+    #     yield from reversed(self)
 
     @no_type_check
     def get_many(self, *keys):
@@ -1056,10 +1001,10 @@ class DictEx(Instance, IndexQuery[K, V], PairQuery[K, V], Dict[K, V]):
     def items(self):
         yield from super().items()
 
-    @lazy_reference
-    def reverse(self) -> "PairQuery[K, V]":
-        for key in reversed(self):
-            yield key, self[key]
+    # @lazy_reference
+    # def reverse(self) -> "PairQuery[K, V]":
+    #     for key in reversed(self):
+    #         yield key, self[key]
 
     @no_type_check
     def get_many(self, *keys):
@@ -1080,9 +1025,8 @@ class SetEx(Instance, IndexQuery[T, T], Query[T], Set[T]):
         else:
             raise NotFoundError(key)
 
-    @lazy_reference
-    def reverse(self) -> "Query[T]":
-        yield from reversed(self)
+    def order_by_reverse(self) -> "Query[T]":
+        raise NotImplementedError("Set has no order.")
 
     @no_type_check
     def get_many(self, *keys):
@@ -1103,9 +1047,8 @@ class FrozenSetEx(Instance, IndexQuery[T, T], Query[T], FrozenSet[T]):
         else:
             raise NotFoundError(key)
 
-    @lazy_reference
-    def reverse(self) -> "Query[T]":
-        yield from reversed(self)
+    def order_by_reverse(self) -> "Query[T]":
+        raise NotImplementedError("Set has no order.")
 
     @no_type_check
     def get_many(self, *keys):
