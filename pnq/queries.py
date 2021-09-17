@@ -7,6 +7,7 @@ from typing import (
     Any,
     Callable,
     Dict,
+    FrozenSet,
     Generic,
     Iterable,
     Iterator,
@@ -20,6 +21,7 @@ from typing import (
     Type,
     TypeVar,
     Union,
+    no_type_check,
     overload,
 )
 
@@ -295,22 +297,17 @@ class Query(Generic[T]):
                 selector = lambda x: {k: get(x, k) for k in fields}  # noqa
         return LazyIterate(actions.map, self, selector)
 
-    # @lazy_iterate
-    # def unpack(self, selector: Callable[..., R]) -> Query[R]:
-    #     for elm in self:
-    #         yield selector(*elm)  # type: ignore
-
     @lazy_iterate
-    def unpack_pos(self, selector: Callable[..., R]) -> Query[R]:
+    def unpack_pos(self, selector: Callable[..., R]) -> "Query[R]":
         return LazyIterate(actions.unpack_pos, self, selector)
 
     @lazy_iterate
-    def unpack_kw(self, selector: Callable[..., R]) -> Query[R]:
+    def unpack_kw(self, selector: Callable[..., R]) -> "Query[R]":
         return LazyIterate(actions.unpack_kw, self, selector)
 
     def group_by(
         self, selector: Callable[[T], Tuple[K2, V2]] = lambda x: x
-    ) -> PairQuery[K2, List[V2]]:
+    ) -> "PairQuery[K2, List[V2]]":
         return LazyIterate(actions.group_by, self, selector)
 
     def pivot_unstack(self, default=None) -> "PairQuery[Any, List]":
@@ -337,7 +334,7 @@ class Query(Generic[T]):
         return LazyIterate(actions.request_async, self, func, retry)
 
     @lazy_iterate
-    def distinct(self, selector: Callable[[T], Any], msg: str = ...) -> Query[T]:
+    def distinct(self, selector: Callable[[T], Any], msg: str = ...) -> "Query[T]":
         duplicate = set()
         for elm in self:
             value = selector(elm)
@@ -350,7 +347,7 @@ class Query(Generic[T]):
         raise NotImplementedError()
 
     @lazy_iterate
-    def filter(self, predicate: Callable[[T], bool]) -> Query[T]:
+    def filter(self, predicate: Callable[[T], bool]) -> "Query[T]":
         yield from filter(predicate, self)  # type: ignore
 
     @lazy_iterate
@@ -364,8 +361,23 @@ class Query(Generic[T]):
         types = tuple((normalize(x) for x in types))
         return filter(lambda x: isinstance(x, *types), self)
 
+    @overload
+    def unique(self) -> "Query[T]":
+        ...
+
+    @overload
+    def unique(self, selector: Callable[[T], Tuple[K2, V2]]) -> "PairQuery[K2, V2]":
+        ...
+
+    @overload
+    def unique(self, selector: Callable[[T], R]) -> "Query[R]":
+        ...
+
+    def unique(self, selector=None):
+        return LazyIterate(actions.unique, self, selector)
+
     @lazy_iterate
-    def must(self, predicate: Callable[[T], bool], msg: str = ...) -> Query[T]:
+    def must(self, predicate: Callable[[T], bool], msg: str = ...) -> "Query[T]":
         """要素の検証に失敗した時例外を発生させる。"""
         for elm in self:
             if not predicate(elm):
@@ -389,7 +401,7 @@ class Query(Generic[T]):
             yield elm
 
     @lazy_iterate
-    def skip(self, count: int) -> Query[T]:
+    def skip(self, count: int) -> "Query[T]":
         current = 0
 
         try:
@@ -403,7 +415,7 @@ class Query(Generic[T]):
             yield elm
 
     @lazy_iterate
-    def take(self, count: int) -> Query[T]:
+    def take(self, count: int) -> "Query[T]":
         current = 0
 
         try:
@@ -414,7 +426,7 @@ class Query(Generic[T]):
             return
 
     @lazy_iterate
-    def range(self, start: int = ..., stop: int = ...) -> Query[T]:
+    def range(self, start: int = ..., stop: int = ...) -> "Query[T]":
         if start < 0:
             start = 0
 
@@ -442,16 +454,16 @@ class Query(Generic[T]):
             return
 
     @lazy_reference
-    def page(self, page: int = ..., size: int = ...) -> Query[T]:
+    def page(self, page: int = ..., size: int = ...) -> "Query[T]":
         start, stop = page_calc(page, size)
         yield from self.range(start, stop)
 
     @lazy_reference
-    def reverse(self) -> Query[T]:
+    def reverse(self) -> "Query[T]":
         yield actions.reverse(self)
 
     @lazy_iterate
-    def order(self, selector, desc: bool = False) -> Query[T]:
+    def order(self, selector, desc: bool = False) -> "Query[T]":
         yield from sorted(self, key=selector, reverse=desc)
 
     def order_by_items(self, *items: Any, desc: bool = False) -> Query[T]:
@@ -532,7 +544,7 @@ class PairQuery(Generic[K, V]):
         return actions.contains(self, value, selector)
 
     @overload
-    def min(self, *, default=NoReturn) -> Union[V, NoReturn]:
+    def min(self, *, default=NoReturn) -> Union[Tuple[K, V], NoReturn]:
         ...
 
     @overload
@@ -547,7 +559,7 @@ class PairQuery(Generic[K, V]):
         return actions.min(self, selector, default)
 
     @overload
-    def max(self, *, default=NoReturn) -> Union[V, NoReturn]:
+    def max(self, *, default=NoReturn) -> Union[Tuple[K, V], NoReturn]:
         ...
 
     @overload
@@ -562,7 +574,7 @@ class PairQuery(Generic[K, V]):
         return actions.max(self, selector, default)
 
     @overload
-    def sum(self) -> V:
+    def sum(self) -> Tuple[K, V]:
         ...
 
     @overload
@@ -573,7 +585,7 @@ class PairQuery(Generic[K, V]):
         return actions.sum(self, selector)
 
     @overload
-    def average(self) -> V:
+    def average(self) -> Tuple[K, V]:
         ...
 
     @overload
@@ -748,22 +760,17 @@ class PairQuery(Generic[K, V]):
                 selector = lambda x: {k: get(x, k) for k in fields}  # noqa
         return LazyIterate(actions.map, self, selector)
 
-    # @lazy_iterate
-    # def unpack(self, selector: Callable[..., R]) -> Query[R]:
-    #     for elm in self:
-    #         yield selector(*elm)  # type: ignore
-
     @lazy_iterate
-    def unpack_pos(self, selector: Callable[..., R]) -> Query[R]:
+    def unpack_pos(self, selector: Callable[..., R]) -> "Query[R]":
         return LazyIterate(actions.unpack_pos, self, selector)
 
     @lazy_iterate
-    def unpack_kw(self, selector: Callable[..., R]) -> Query[R]:
+    def unpack_kw(self, selector: Callable[..., R]) -> "Query[R]":
         return LazyIterate(actions.unpack_kw, self, selector)
 
     def group_by(
         self, selector: Callable[[Tuple[K, V]], Tuple[K2, V2]] = lambda x: x
-    ) -> PairQuery[K2, List[V2]]:
+    ) -> "PairQuery[K2, List[V2]]":
         return LazyIterate(actions.group_by, self, selector)
 
     def pivot_unstack(self, default=None) -> "PairQuery[Any, List]":
@@ -792,7 +799,7 @@ class PairQuery(Generic[K, V]):
     @lazy_iterate
     def distinct(
         self, selector: Callable[[Tuple[K, V]], Any], msg: str = ...
-    ) -> PairQuery[K, V]:
+    ) -> "PairQuery[K,V]":
         duplicate = set()
         for elm in self:
             value = selector(elm)
@@ -805,7 +812,7 @@ class PairQuery(Generic[K, V]):
         raise NotImplementedError()
 
     @lazy_iterate
-    def filter(self, predicate: Callable[[Tuple[K, V]], bool]) -> PairQuery[K, V]:
+    def filter(self, predicate: Callable[[Tuple[K, V]], bool]) -> "PairQuery[K,V]":
         yield from filter(predicate, self)  # type: ignore
 
     @lazy_iterate
@@ -819,10 +826,27 @@ class PairQuery(Generic[K, V]):
         types = tuple((normalize(x) for x in types))
         return filter(lambda x: isinstance(x, *types), self)
 
+    @overload
+    def unique(self) -> "PairQuery[K,V]":
+        ...
+
+    @overload
+    def unique(
+        self, selector: Callable[[Tuple[K, V]], Tuple[K2, V2]]
+    ) -> "PairQuery[K2, V2]":
+        ...
+
+    @overload
+    def unique(self, selector: Callable[[Tuple[K, V]], R]) -> "Query[R]":
+        ...
+
+    def unique(self, selector=None):
+        return LazyIterate(actions.unique, self, selector)
+
     @lazy_iterate
     def must(
         self, predicate: Callable[[Tuple[K, V]], bool], msg: str = ...
-    ) -> PairQuery[K, V]:
+    ) -> "PairQuery[K,V]":
         """要素の検証に失敗した時例外を発生させる。"""
         for elm in self:
             if not predicate(elm):
@@ -846,7 +870,7 @@ class PairQuery(Generic[K, V]):
             yield elm
 
     @lazy_iterate
-    def skip(self, count: int) -> PairQuery[K, V]:
+    def skip(self, count: int) -> "PairQuery[K,V]":
         current = 0
 
         try:
@@ -860,7 +884,7 @@ class PairQuery(Generic[K, V]):
             yield elm
 
     @lazy_iterate
-    def take(self, count: int) -> PairQuery[K, V]:
+    def take(self, count: int) -> "PairQuery[K,V]":
         current = 0
 
         try:
@@ -871,7 +895,7 @@ class PairQuery(Generic[K, V]):
             return
 
     @lazy_iterate
-    def range(self, start: int = ..., stop: int = ...) -> PairQuery[K, V]:
+    def range(self, start: int = ..., stop: int = ...) -> "PairQuery[K,V]":
         if start < 0:
             start = 0
 
@@ -899,16 +923,16 @@ class PairQuery(Generic[K, V]):
             return
 
     @lazy_reference
-    def page(self, page: int = ..., size: int = ...) -> PairQuery[K, V]:
+    def page(self, page: int = ..., size: int = ...) -> "PairQuery[K,V]":
         start, stop = page_calc(page, size)
         yield from self.range(start, stop)
 
     @lazy_reference
-    def reverse(self) -> PairQuery[K, V]:
+    def reverse(self) -> "PairQuery[K,V]":
         yield actions.reverse(self)
 
     @lazy_iterate
-    def order(self, selector, desc: bool = False) -> PairQuery[K, V]:
+    def order(self, selector, desc: bool = False) -> "PairQuery[K,V]":
         yield from sorted(self, key=selector, reverse=desc)
 
     def order_by_items(self, *items: Any, desc: bool = False) -> PairQuery[K, V]:
@@ -973,13 +997,8 @@ class PairQuery(Generic[K, V]):
 
 
 class IndexQuery(Generic[K, V]):
-    @lazy_reference
-    def get_many(self, *keys: K) -> IndexQuery[K, V]:
-        undefined = object()
-        for id in keys:
-            obj = self.get_or(id, undefined)
-            if not obj is undefined:
-                yield id, obj
+    def get_many(self, *keys: K) -> "IndexQuery[K,V]":
+        raise NotImplementedError()
 
     @overload
     def get(self, key: K) -> V:
@@ -1034,6 +1053,23 @@ class ListEx(Instance, IndexQuery[int, T], Query[T], List[T]):
     def reverse(self) -> "Query[T]":
         yield from reversed(self)
 
+    @no_type_check
+    def get_many(self, *keys):
+        return LazyReference(actions.get_many_for_sequence, self, *keys)
+
+
+class TupleEx(Instance, IndexQuery[int, T], Query[T], Tuple[T]):
+    def __piter__(self):
+        return self.__iter__()
+
+    @lazy_reference
+    def reverse(self) -> "Query[T]":
+        yield from reversed(self)
+
+    @no_type_check
+    def get_many(self, *keys):
+        return LazyReference(actions.get_many_for_sequence, self, *keys)
+
 
 class DictEx(Instance, IndexQuery[K, V], PairQuery[K, V], Dict[K, V]):
     def __piter__(self):
@@ -1056,6 +1092,10 @@ class DictEx(Instance, IndexQuery[K, V], PairQuery[K, V], Dict[K, V]):
         for key in reversed(self):
             yield key, self[key]
 
+    @no_type_check
+    def get_many(self, *keys):
+        return LazyReference(actions.get_many_for_mapping, self, *keys)
+
 
 class SetEx(Instance, IndexQuery[T, T], Query[T], Set[T]):
     def __piter__(self):
@@ -1070,6 +1110,29 @@ class SetEx(Instance, IndexQuery[T, T], Query[T], Set[T]):
     @lazy_reference
     def reverse(self) -> "Query[T]":
         yield from reversed(self)
+
+    @no_type_check
+    def get_many(self, *keys):
+        return LazyReference(actions.get_many_for_set, self, *keys)
+
+
+class FrozenSetEx(Instance, IndexQuery[T, T], Query[T], FrozenSet[T]):
+    def __piter__(self):
+        return self.__iter__()
+
+    def __getitem__(self, key: T):
+        if key in self:
+            return key
+        else:
+            raise NotFoundError(key)
+
+    @lazy_reference
+    def reverse(self) -> "Query[T]":
+        yield from reversed(self)
+
+    @no_type_check
+    def get_many(self, *keys):
+        return LazyReference(actions.get_many_for_set, self, *keys)
 
 
 @overload
@@ -1094,6 +1157,12 @@ def query(source):
         return DictEx(source)
     elif isinstance(source, list):
         return ListEx(source)
+    elif isinstance(source, tuple):
+        return TupleEx(source)
+    elif isinstance(source, set):
+        return SetEx(source)
+    elif isinstance(source, frozenset):
+        return FrozenSetEx(source)
     elif hasattr(source, "__iter__"):
         return LazyIterate(iter, source)
     else:

@@ -120,14 +120,14 @@ def __iter(self, selector=None):
         else:
             it = self
 
-    return __get_iterator(it, selector)
+    return __map_nullable(it, selector)
 
 
-def __get_iterator(iterator, selector):
+def __map_nullable(self, selector):
     if selector is None:
-        return iterator
+        return self
     else:
-        return map(selector, iterator)
+        return map(selector, self)
 
 
 @mark
@@ -323,9 +323,14 @@ def __map(self, selector):
     """
     if selector is str:
         selector = lambda x: "" if x is None else str(x)
-    yield from map(selector, self)
+    return map(selector, self)
 
-    # return map(selector, self)
+
+def __map_nullable(self, selector):
+    if selector is None:
+        yield from self
+    else:
+        yield from map(selector, self)
 
 
 def starmap(self):
@@ -918,7 +923,7 @@ def must_type(self, *types):
 
 
 @mark
-def unique(self, selector):
+def unique(self, selector=None):
     """シーケンスの要素から重複する要素を除去する。
     セレクタによって選択された値に対して重複が検証され、その値を返す。
 
@@ -938,20 +943,19 @@ def unique(self, selector):
     ```
     """
     duplidate = set()
-    for elm in self:
-        value = selector(elm)
+    for value in __map_nullable(self, selector):
         if value in duplidate:
             pass
         else:
             duplidate.add(value)
-            yield elm
+            yield value
 
 
 distinct = unique
 
 
 @mark
-def must_unique(self, selector=lambda x: x, immediate: bool = True):
+def must_unique(self, selector=None):
     """シーケンスの要素から値を選択し、選択した値が重複していないか検証します。
 
     Args:
@@ -970,19 +974,44 @@ def must_unique(self, selector=lambda x: x, immediate: bool = True):
 
     """
     duplidate = set()
-    for elm in self:
-        value = selector(elm)
+    for value in __map_nullable(self, selector):
         if value in duplidate:
-            raise DuplicateElementError(elm)
+            raise DuplicateElementError(value)
         else:
             duplidate.add(value)
-            yield elm
+            yield value
 
 
 @mark
 def get_many(self, *keys):
+    ...
+
+
+def get_many_for_mapping(self, *keys):
     """"""
-    pass
+    undefined = object()
+    for id in keys:
+        obj = get_or(self, id, undefined)
+        if obj is not undefined:
+            yield id, obj
+
+
+def get_many_for_sequence(self, *keys):
+    """"""
+    undefined = object()
+    for id in keys:
+        obj = get_or(self, id, undefined)
+        if obj is not undefined:
+            yield obj
+
+
+def get_many_for_set(self, *keys):
+    """"""
+    undefined = object()
+    for id in keys:
+        obj = get_or(self, id, undefined)
+        if obj is not undefined:
+            yield id
 
 
 @mark

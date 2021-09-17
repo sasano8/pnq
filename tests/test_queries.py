@@ -25,14 +25,7 @@ def catch(func):
 
 
 class Test000_Init:
-    def test_type(self):
-        from typing import Iterable, Mapping
-
-        assert isinstance(pnq([]), Iterable)
-        assert not isinstance(pnq([]), Mapping)
-        assert isinstance(pnq({}), Mapping)
-
-    def test_init(self):
+    def test_create_query(self):
         assert pnq([]).to(list) == []
         assert pnq([]).to(dict) == {}
         assert pnq({}).to(list) == []
@@ -46,14 +39,24 @@ class Test000_Init:
         assert pnq([(1, 2)]).to(list) == [(1, 2)]
         assert pnq([(1, 2)]).to(dict) == {1: 2}
 
-    def test_behavior(self):
+    def test_query_type(self):
+        from typing import Iterable, Mapping
+
+        assert isinstance(pnq([]), Iterable)
+        assert not isinstance(pnq([]), Mapping)
+        assert isinstance(pnq({}), Mapping)
+        assert isinstance(pnq(tuple()), Iterable)
+        assert isinstance(pnq(set()), Iterable)
+        assert isinstance(pnq(frozenset()), Iterable)
+
+    def test_iter_compatibility(self):
         # クエリメソッドで実行する際は、キーバリューを返すように標準化しているが、
-        # デフォルトの挙動は変えない
+        # forのデフォルトの挙動は変えない
         q = pnq({1: "a", 2: "b"})
         assert [x for x in q] == [1, 2]
         assert [x for x in reversed(q)] == [2, 1]
 
-    def test_query(self):
+    def test_simple_query(self):
         pnq([1]).map(lambda x: x + 1).to(list) == [2]
         pnq([1]).filter(lambda x: x == 1).to(list) == [1]
         pnq([1]).filter(lambda x: x != 1).to(list) == []
@@ -513,7 +516,7 @@ class Test010_Finalizer:
 
             assert q.last_or(5) == 10
 
-        def test_raise(self):
+        def test_get_or_raise(self):
             q = pnq([10])
             assert q.get_or_raise(0, "err") == 10
             assert q.one_or_raise("err") == 10
@@ -545,105 +548,6 @@ class Test010_Finalizer:
                 q.one_or_raise("err")
             assert q.first_or_raise("err") == 10
             assert q.last_or_raise("err") == 20
-
-
-class TestSlicer:
-    def test_skip(self):
-        assert pnq([]).skip(0).to(list) == []
-        assert pnq([]).skip(1).to(list) == []
-        assert pnq([1]).skip(0).to(list) == [1]
-        assert pnq([1]).skip(1).to(list) == []
-        assert pnq([1, 2]).skip(0).to(list) == [1, 2]
-        assert pnq([1, 2]).skip(1).to(list) == [2]
-        assert pnq([1, 2]).skip(2).to(list) == []
-        assert pnq([1, 2]).skip(3).to(list) == []
-
-    def test_take(self):
-        assert pnq([]).take(0).to(list) == []
-        assert pnq([]).take(1).to(list) == []
-        assert pnq([1]).take(0).to(list) == []
-        assert pnq([1]).take(1).to(list) == [1]
-        assert pnq([1, 2]).take(0).to(list) == []
-        assert pnq([1, 2]).take(1).to(list) == [1]
-        assert pnq([1, 2]).take(2).to(list) == [1, 2]
-        assert pnq([1, 2]).take(3).to(list) == [1, 2]
-
-    def test_range(self):
-        q = pnq([1, 2, 3, 4, 5, 6])
-
-        assert q.range(0, -1).to(list) == []
-        assert q.range(0, 0).to(list) == []
-
-        assert q.range(-1, 0).to(list) == []
-        assert q.range(0, 1).to(list) == [1]
-        assert q.range(1, 2).to(list) == [2]
-        assert q.range(2, 3).to(list) == [3]
-
-        assert q.range(-2, 0).to(list) == []
-        assert q.range(0, 2).to(list) == [1, 2]
-        assert q.range(2, 4).to(list) == [3, 4]
-        assert q.range(4, 6).to(list) == [5, 6]
-
-        assert q.range(5, 6).to(list) == [6]
-        assert q.range(5, 7).to(list) == [6]
-        assert q.range(6, 7).to(list) == []
-
-    def test_page(self):
-        from pnq.queries import page_calc
-
-        with pytest.raises(ValueError):
-            page_calc(0, -1)
-
-        assert page_calc(-1, 0) == (0, 0)
-
-        assert page_calc(0, 0) == (0, 0)
-        assert page_calc(1, 0) == (0, 0)
-        assert page_calc(2, 0) == (0, 0)
-        assert page_calc(3, 0) == (0, 0)
-
-        assert page_calc(0, 1) == (-1, 0)
-        assert page_calc(1, 1) == (0, 1)
-        assert page_calc(2, 1) == (1, 2)
-        assert page_calc(3, 1) == (2, 3)
-
-        assert page_calc(0, 2) == (-2, 0)
-        assert page_calc(1, 2) == (0, 2)
-        assert page_calc(2, 2) == (2, 4)
-        assert page_calc(3, 2) == (4, 6)
-
-        arr = [1, 2, 3, 4, 5, 6]
-
-        assert arr[0:0] == []
-        assert arr[0:0] == []
-        assert arr[0:0] == []
-        assert arr[0:0] == []
-
-        assert arr[-1:0] == []
-        assert arr[0:1] == [1]
-        assert arr[1:2] == [2]
-        assert arr[2:3] == [3]
-
-        assert arr[-2:0] == []
-        assert arr[0:2] == [1, 2]
-        assert arr[2:4] == [3, 4]
-        assert arr[4:6] == [5, 6]
-
-        q = pnq(arr)
-
-        assert q.page(0, 0).to(list) == []
-        assert q.page(1, 0).to(list) == []
-        assert q.page(2, 0).to(list) == []
-        assert q.page(3, 0).to(list) == []
-
-        assert q.page(0, 1).to(list) == []
-        assert q.page(1, 1).to(list) == [1]
-        assert q.page(2, 1).to(list) == [2]
-        assert q.page(3, 1).to(list) == [3]
-
-        assert q.page(0, 2).to(list) == []
-        assert q.page(1, 2).to(list) == [1, 2]
-        assert q.page(2, 2).to(list) == [3, 4]
-        assert q.page(3, 2).to(list) == [5, 6]
 
 
 class Test020_Transform:
@@ -928,13 +832,55 @@ class Test020_Transform:
         asyncio.run(main())
 
 
+class Test030_Filter:
+    def test_filter(self):
+        assert pnq([1]).filter(lambda x: x == 1).to(list) == [1]
+        assert pnq([1]).filter(lambda x: x == 0).to(list) == []
+        assert pnq([1]).filter(lambda x: x == 0).to(list) == []
+
+    def test_filter_type(self):
+        assert pnq([1]).filter_type(int).to(list) == [1]
+        assert pnq([1]).filter_type(str).to(list) == []
+        assert pnq([1]).filter_type(bool).to(list) == []
+        assert pnq([True]).filter_type(bool).to(list) == [True]
+
+        # pythonの仕様でboolはintを継承しているのでヒットしてしまう
+        assert pnq([True]).filter_type(int).to(list) == [True]
+
+    def test_get_many(self):
+        assert pnq([0, 10, 20]).get_many(2).to(list) == [20]
+        assert pnq([0, 10, 20]).get_many(0, 1).to(list) == [0, 10]
+
+        db = pnq({1: "a", 2: "b", 3: "c"})
+        assert db.get_many(1, 2).to(list) == [(1, "a"), (2, "b")]
+        assert db.get_many(4).to(list) == []
+
+        assert pnq((0, 10, 20)).get_many(2).to(list) == [20]
+        assert pnq((0, 10, 20)).get_many(1, 0).to(list) == [10, 0]
+
+        assert pnq(set((0, 10, 20))).get_many(20).to(list) == [20]
+        assert pnq(set((0, 10, 20))).get_many(10, 20).to(list) == [10, 20]
+
+        assert pnq(frozenset((0, 10, 20))).get_many(20).to(list) == [20]
+        assert pnq(frozenset((0, 10, 20))).get_many(10, 20).to(list) == [10, 20]
+
+    def test_unique(self):
+        assert pnq([(0, 0), (0, 1), (0, 0)]).unique(lambda x: (x[0], x[1])).to(
+            list
+        ) == [(0, 0), (0, 1)]
+
+        assert pnq([(0, 0, 0), (0, 1, 1), (0, 0, 2)]).unique(lambda x: (x[0], x[1])).to(
+            list
+        ) == [(0, 0), (0, 1)]
+
+
 class Hoge:
     def __init__(self, id, name=""):
         self.id = id
         self.name = name
 
 
-class TestSort:
+class Test070_Sort:
     def test_validate(self):
         with pytest.raises(TypeError):
             pnq([]).order_by_attrs()
@@ -1031,22 +977,6 @@ class TestSort:
         ]
 
 
-class Test030_Filter:
-    def test_filter(self):
-        assert pnq([1]).filter(lambda x: x == 1).to(list) == [1]
-        assert pnq([1]).filter(lambda x: x == 0).to(list) == []
-        assert pnq([1]).filter(lambda x: x == 0).to(list) == []
-
-    def test_filter_type(self):
-        assert pnq([1]).filter_type(int).to(list) == [1]
-        assert pnq([1]).filter_type(str).to(list) == []
-        assert pnq([1]).filter_type(bool).to(list) == []
-        assert pnq([True]).filter_type(bool).to(list) == [True]
-
-        # pythonの仕様でboolはintを継承しているのでヒットしてしまう
-        assert pnq([True]).filter_type(int).to(list) == [True]
-
-
 class TestSleep:
     def test_sync(self):
         pnq([1, 2, 3]).sleep(0).to(list) == [1, 2, 3]
@@ -1110,3 +1040,102 @@ class TestDict:
         assert db.items().to(list) == [(1, "a"), (2, "b"), (3, "c")]
 
         assert isinstance(db.to(dict), dict)
+
+
+class TestSlicer:
+    def test_skip(self):
+        assert pnq([]).skip(0).to(list) == []
+        assert pnq([]).skip(1).to(list) == []
+        assert pnq([1]).skip(0).to(list) == [1]
+        assert pnq([1]).skip(1).to(list) == []
+        assert pnq([1, 2]).skip(0).to(list) == [1, 2]
+        assert pnq([1, 2]).skip(1).to(list) == [2]
+        assert pnq([1, 2]).skip(2).to(list) == []
+        assert pnq([1, 2]).skip(3).to(list) == []
+
+    def test_take(self):
+        assert pnq([]).take(0).to(list) == []
+        assert pnq([]).take(1).to(list) == []
+        assert pnq([1]).take(0).to(list) == []
+        assert pnq([1]).take(1).to(list) == [1]
+        assert pnq([1, 2]).take(0).to(list) == []
+        assert pnq([1, 2]).take(1).to(list) == [1]
+        assert pnq([1, 2]).take(2).to(list) == [1, 2]
+        assert pnq([1, 2]).take(3).to(list) == [1, 2]
+
+    def test_range(self):
+        q = pnq([1, 2, 3, 4, 5, 6])
+
+        assert q.range(0, -1).to(list) == []
+        assert q.range(0, 0).to(list) == []
+
+        assert q.range(-1, 0).to(list) == []
+        assert q.range(0, 1).to(list) == [1]
+        assert q.range(1, 2).to(list) == [2]
+        assert q.range(2, 3).to(list) == [3]
+
+        assert q.range(-2, 0).to(list) == []
+        assert q.range(0, 2).to(list) == [1, 2]
+        assert q.range(2, 4).to(list) == [3, 4]
+        assert q.range(4, 6).to(list) == [5, 6]
+
+        assert q.range(5, 6).to(list) == [6]
+        assert q.range(5, 7).to(list) == [6]
+        assert q.range(6, 7).to(list) == []
+
+    def test_page(self):
+        from pnq.queries import page_calc
+
+        with pytest.raises(ValueError):
+            page_calc(0, -1)
+
+        assert page_calc(-1, 0) == (0, 0)
+
+        assert page_calc(0, 0) == (0, 0)
+        assert page_calc(1, 0) == (0, 0)
+        assert page_calc(2, 0) == (0, 0)
+        assert page_calc(3, 0) == (0, 0)
+
+        assert page_calc(0, 1) == (-1, 0)
+        assert page_calc(1, 1) == (0, 1)
+        assert page_calc(2, 1) == (1, 2)
+        assert page_calc(3, 1) == (2, 3)
+
+        assert page_calc(0, 2) == (-2, 0)
+        assert page_calc(1, 2) == (0, 2)
+        assert page_calc(2, 2) == (2, 4)
+        assert page_calc(3, 2) == (4, 6)
+
+        arr = [1, 2, 3, 4, 5, 6]
+
+        assert arr[0:0] == []
+        assert arr[0:0] == []
+        assert arr[0:0] == []
+        assert arr[0:0] == []
+
+        assert arr[-1:0] == []
+        assert arr[0:1] == [1]
+        assert arr[1:2] == [2]
+        assert arr[2:3] == [3]
+
+        assert arr[-2:0] == []
+        assert arr[0:2] == [1, 2]
+        assert arr[2:4] == [3, 4]
+        assert arr[4:6] == [5, 6]
+
+        q = pnq(arr)
+
+        assert q.page(0, 0).to(list) == []
+        assert q.page(1, 0).to(list) == []
+        assert q.page(2, 0).to(list) == []
+        assert q.page(3, 0).to(list) == []
+
+        assert q.page(0, 1).to(list) == []
+        assert q.page(1, 1).to(list) == [1]
+        assert q.page(2, 1).to(list) == [2]
+        assert q.page(3, 1).to(list) == [3]
+
+        assert q.page(0, 2).to(list) == []
+        assert q.page(1, 2).to(list) == [1, 2]
+        assert q.page(2, 2).to(list) == [3, 4]
+        assert q.page(3, 2).to(list) == [5, 6]

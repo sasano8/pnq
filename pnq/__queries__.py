@@ -7,6 +7,7 @@ from typing import (
     Any,
     Callable,
     Dict,
+    FrozenSet,
     Generic,
     Iterable,
     Iterator,
@@ -20,6 +21,7 @@ from typing import (
     Type,
     TypeVar,
     Union,
+    no_type_check,
     overload,
 )
 
@@ -105,7 +107,7 @@ class {{query.cls}}:
         return actions.contains(self, value, selector)
 
     @overload
-    def min(self, *, default=NoReturn) -> Union[{{query.value}}, NoReturn]: ...
+    def min(self, *, default=NoReturn) -> Union[{{query.row}}, NoReturn]: ...
 
     @overload
     def min(self, selector: Callable[[{{query.row}}], R]=lambda x: x, default=NoReturn) -> R: ...
@@ -113,21 +115,21 @@ class {{query.cls}}:
         return actions.min(self, selector, default)
 
     @overload
-    def max(self, *, default=NoReturn) -> Union[{{query.value}}, NoReturn]: ...
+    def max(self, *, default=NoReturn) -> Union[{{query.row}}, NoReturn]: ...
     @overload
     def max(self, selector: Callable[[{{query.row}}], R]=lambda x: x, default=NoReturn) -> R: ...
     def max(self, selector: Callable[[{{query.row}}], R]=lambda x: x, default=NoReturn) -> R:
         return actions.max(self, selector, default)
 
     @overload
-    def sum(self) -> {{query.value}}: ...
+    def sum(self) -> {{query.row}}: ...
     @overload
     def sum(self, selector: Callable[[{{query.row}}], R]=lambda x: x) -> R: ...
     def sum(self, selector: Callable[[{{query.row}}], R]=lambda x: x) -> R:
         return actions.sum(self, selector)
 
     @overload
-    def average(self) -> {{query.value}}: ...
+    def average(self) -> {{query.row}}: ...
     @overload
     def average(self, selector: Callable[[{{query.row}}], R]=lambda x: x) -> R: ...
     def average(self, selector: Callable[[{{query.row}}], R]=lambda x: x) -> R:
@@ -295,20 +297,15 @@ class {{query.cls}}:
                 selector = lambda x: {k: get(x, k) for k in fields} # noqa
         return LazyIterate(actions.map, self, selector)
 
-    # @lazy_iterate
-    # def unpack(self, selector: Callable[..., R]) -> {{sequence.name}}[R]:
-    #     for elm in self:
-    #         yield selector(*elm)  # type: ignore
-
     @lazy_iterate
-    def unpack_pos(self, selector: Callable[..., R]) -> {{sequence.name}}[R]:
+    def unpack_pos(self, selector: Callable[..., R]) -> "{{sequence.name}}[R]":
         return LazyIterate(actions.unpack_pos, self, selector)
 
     @lazy_iterate
-    def unpack_kw(self, selector: Callable[..., R]) -> {{sequence.name}}[R]:
+    def unpack_kw(self, selector: Callable[..., R]) -> "{{sequence.name}}[R]":
         return LazyIterate(actions.unpack_kw, self, selector)
 
-    def group_by(self, selector: Callable[[{{query.row}}], Tuple[K2, V2]] = lambda x: x) -> {{pair.name}}[K2, List[V2]]:
+    def group_by(self, selector: Callable[[{{query.row}}], Tuple[K2, V2]] = lambda x: x) -> "{{pair.name}}[K2, List[V2]]":
         return LazyIterate(actions.group_by, self, selector)
 
     def pivot_unstack(self, default=None) -> "PairQuery[Any, List]":
@@ -338,7 +335,7 @@ class {{query.cls}}:
         return LazyIterate(actions.request_async, self, func, retry)
 
     @lazy_iterate
-    def distinct(self, selector: Callable[[{{query.row}}], Any], msg: str=...) -> {{query.str}}:
+    def distinct(self, selector: Callable[[{{query.row}}], Any], msg: str=...) -> "{{query.str}}":
         duplicate = set()
         for elm in self:
             value = selector(elm)
@@ -351,7 +348,7 @@ class {{query.cls}}:
         raise NotImplementedError()
 
     @lazy_iterate
-    def filter(self, predicate: Callable[[{{query.row}}], bool]) -> {{query.str}}:
+    def filter(self, predicate: Callable[[{{query.row}}], bool]) -> "{{query.str}}":
         yield from filter(predicate, self)  # type: ignore
 
     @lazy_iterate
@@ -365,9 +362,23 @@ class {{query.cls}}:
         types = tuple((normalize(x) for x in types))
         return filter(lambda x: isinstance(x, *types), self)
 
+    @overload
+    def unique(self) -> "{{query.str}}":
+        ...
+
+    @overload
+    def unique(self, selector: Callable[[{{query.row}}], Tuple[K2, V2]]) -> "{{pair.name}}[K2, V2]":
+        ...
+
+    @overload
+    def unique(self, selector: Callable[[{{query.row}}], R]) -> "{{sequence.name}}[R]":
+        ...
+
+    def unique(self, selector=None):
+        return LazyIterate(actions.unique, self, selector)
 
     @lazy_iterate
-    def must(self, predicate: Callable[[{{query.row}}], bool], msg: str=...) -> {{query.str}}:
+    def must(self, predicate: Callable[[{{query.row}}], bool], msg: str=...) -> "{{query.str}}":
         """要素の検証に失敗した時例外を発生させる。"""
         for elm in self:
             if not predicate(elm):
@@ -394,7 +405,7 @@ class {{query.cls}}:
 
 
     @lazy_iterate
-    def skip(self, count: int) -> {{query.str}}:
+    def skip(self, count: int) -> "{{query.str}}":
         current = 0
 
         try:
@@ -408,7 +419,7 @@ class {{query.cls}}:
             yield elm
 
     @lazy_iterate
-    def take(self, count: int) -> {{query.str}}:
+    def take(self, count: int) -> "{{query.str}}":
         current = 0
 
         try:
@@ -419,7 +430,7 @@ class {{query.cls}}:
             return
 
     @lazy_iterate
-    def range(self, start: int=..., stop: int=...) -> {{query.str}}:
+    def range(self, start: int=..., stop: int=...) -> "{{query.str}}":
         if start < 0:
             start = 0
 
@@ -447,17 +458,17 @@ class {{query.cls}}:
             return
 
     @lazy_reference
-    def page(self, page: int=..., size: int=...) -> {{query.str}}:
+    def page(self, page: int=..., size: int=...) -> "{{query.str}}":
         start, stop = page_calc(page, size)
         yield from self.range(start, stop)
 
 
     @lazy_reference
-    def reverse(self) -> {{query.str}}:
+    def reverse(self) -> "{{query.str}}":
         yield actions.reverse(self)
 
     @lazy_iterate
-    def order(self, selector, desc: bool = False) -> {{query.str}}:
+    def order(self, selector, desc: bool = False) -> "{{query.str}}":
         yield from sorted(self, key=selector, reverse=desc)
 
     def order_by_items(
@@ -522,13 +533,8 @@ class {{query.cls}}:
     {% else %}
 class {{query.cls}}:
 
-    @lazy_reference
-    def get_many(self, *keys: {{query.K}}) -> {{query.str}}:
-        undefined = object()
-        for id in keys:
-            obj = self.get_or(id, undefined)
-            if not obj is undefined:
-                yield id, obj
+    def get_many(self, *keys: {{query.K}}) -> "{{query.str}}":
+        raise NotImplementedError()
 
     @overload
     def get(self, key: {{query.K}}) -> {{query.V}}:
@@ -586,6 +592,23 @@ class ListEx(Instance, IndexQuery[int, T], Query[T], List[T]):
     def reverse(self) -> "Query[T]":
         yield from reversed(self)
 
+    @no_type_check
+    def get_many(self, *keys):
+        return LazyReference(actions.get_many_for_sequence, self, *keys)
+
+
+class TupleEx(Instance, IndexQuery[int, T], Query[T], Tuple[T]):
+    def __piter__(self):
+        return self.__iter__()
+
+    @lazy_reference
+    def reverse(self) -> "Query[T]":
+        yield from reversed(self)
+
+    @no_type_check
+    def get_many(self, *keys):
+        return LazyReference(actions.get_many_for_sequence, self, *keys)
+
 
 class DictEx(Instance, IndexQuery[K, V], PairQuery[K, V], Dict[K, V]):
     def __piter__(self):
@@ -608,6 +631,10 @@ class DictEx(Instance, IndexQuery[K, V], PairQuery[K, V], Dict[K, V]):
         for key in reversed(self):
             yield key, self[key]
 
+    @no_type_check
+    def get_many(self, *keys):
+        return LazyReference(actions.get_many_for_mapping, self, *keys)
+
 
 class SetEx(Instance, IndexQuery[T, T], Query[T], Set[T]):
     def __piter__(self):
@@ -622,6 +649,29 @@ class SetEx(Instance, IndexQuery[T, T], Query[T], Set[T]):
     @lazy_reference
     def reverse(self) -> "Query[T]":
         yield from reversed(self)
+
+    @no_type_check
+    def get_many(self, *keys):
+        return LazyReference(actions.get_many_for_set, self, *keys)
+
+
+class FrozenSetEx(Instance, IndexQuery[T, T], Query[T], FrozenSet[T]):
+    def __piter__(self):
+        return self.__iter__()
+
+    def __getitem__(self, key: T):
+        if key in self:
+            return key
+        else:
+            raise NotFoundError(key)
+
+    @lazy_reference
+    def reverse(self) -> "Query[T]":
+        yield from reversed(self)
+
+    @no_type_check
+    def get_many(self, *keys):
+        return LazyReference(actions.get_many_for_set, self, *keys)
 
 
 @overload
@@ -646,6 +696,12 @@ def query(source):
         return DictEx(source)
     elif isinstance(source, list):
         return ListEx(source)
+    elif isinstance(source, tuple):
+        return TupleEx(source)
+    elif isinstance(source, set):
+        return SetEx(source)
+    elif isinstance(source, frozenset):
+        return FrozenSetEx(source)
     elif hasattr(source, "__iter__"):
         return LazyIterate(iter, source)
     else:
