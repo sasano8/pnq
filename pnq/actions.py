@@ -55,6 +55,9 @@ from .actions_core import first_or_raise as first_or_raise
 from .actions_core import get as get
 from .actions_core import get_or as get_or
 from .actions_core import get_many as get_many
+from .actions_core import get_many_for_mapping as get_many_for_mapping
+from .actions_core import get_many_for_sequence as get_many_for_sequence
+from .actions_core import get_many_for_set as get_many_for_set
 from .actions_core import get_or_raise as get_or_raise
 from .actions_core import group_by as group_by
 from .actions_core import group_join as group_join

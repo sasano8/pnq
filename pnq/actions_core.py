@@ -120,14 +120,14 @@ def __iter(self, selector=None):
         else:
             it = self
 
-    return __get_iterator(it, selector)
+    return __map_nullable(it, selector)
 
 
-def __get_iterator(iterator, selector):
+def __map_nullable(self, selector):
     if selector is None:
-        return iterator
+        return self
     else:
-        return map(selector, iterator)
+        return map(selector, self)
 
 
 @mark
@@ -323,9 +323,14 @@ def __map(self, selector):
     """
     if selector is str:
         selector = lambda x: "" if x is None else str(x)
-    yield from map(selector, self)
+    return map(selector, self)
 
-    # return map(selector, self)
+
+def __map_nullable(self, selector):
+    if selector is None:
+        yield from self
+    else:
+        yield from map(selector, self)
 
 
 def starmap(self):
@@ -655,21 +660,17 @@ def pivot_stack(self):
 
 
 @mark
-def request(self, func, unpack: bool = True, retry: int = None):
-    """シーケンスから流れてくる値を関数に送出するように要求します。
+def request(self, func, retry: int = None):
+    """シーケンスから流れてくる値を同期関数に送出するように要求します。
     例外はキャッチされ、実行結果を返すイテレータを生成します。
-    関数呼び出し時に要素がtupleまたはdictの場合、要素はデフォルトでアンパックされます。
-    関数に非同期関数も渡すことができます。
-
-    クエリの非同期実行についてを参照ください。
+    関数呼び出し時にキーワードアンパックするため、要素は辞書である必要があります。
 
     Args:
 
     * self: フィルタ対象のシーケンス
     * func: 値の送出先の関数
-    * unpack_kw: 値をアンパックする
 
-    Returns: 実行結果を含むタプル
+    Returns: 実行結果
 
     Usage:
     ```
@@ -679,13 +680,11 @@ def request(self, func, unpack: bool = True, retry: int = None):
     >>>   else:
     >>>     raise ValueError(val)
     >>>
-    >>> for elm, err, result, *_ in pnq.query([{"id": 1, "val": True}, {"id": 1, "val": False}]).request(do_something):
-    >>>   if not err:
-    >>>     print(elm, err, result)
-    True, None, 1
+    >>> for res in pnq.query([{"id": 1, "val": True}, {"id": 2, "val": False}]).request(do_something):
+    >>>   if not res.err:
+    >>>     print(res.to_dict())
     >>>   else:
-    >>>     print(elm, err, result)
-    False, ValueError("False"), None
+    >>>     print(res.result)
     ```
     """
     from .requests import Response, StopWatch
@@ -710,9 +709,33 @@ def request(self, func, unpack: bool = True, retry: int = None):
         yield res
 
 
-async def request_async(
-    self, func, unpack: bool = True, timeout: float = None, retry: int = None
-):
+async def request_async(self, func, timeout: float = None, retry: int = None):
+    """シーケンスから流れてくる値を非同期関数に送出するように要求します。
+    例外はキャッチされ、実行結果を返すイテレータを生成します。
+    関数呼び出し時にキーワードアンパックするため、要素は辞書である必要があります。
+
+    Args:
+
+    * self: フィルタ対象のシーケンス
+    * func: 値の送出先の関数
+
+    Returns: 実行結果
+
+    Usage:
+    ```
+    >>> def do_something(id, val):
+    >>>   if val:
+    >>>     return 1
+    >>>   else:
+    >>>     raise ValueError(val)
+    >>>
+    >>> for res in pnq.query([{"id": 1, "val": True}, {"id": 2, "val": False}]).request(do_something):
+    >>>   if not res.err:
+    >>>     print(res.to_dict())
+    >>>   else:
+    >>>     print(res.result)
+    ```
+    """
     from .requests import Response, StopWatch
 
     if retry:
@@ -900,7 +923,7 @@ def must_type(self, *types):
 
 
 @mark
-def unique(self, selector):
+def unique(self, selector=None):
     """シーケンスの要素から重複する要素を除去する。
     セレクタによって選択された値に対して重複が検証され、その値を返す。
 
@@ -920,20 +943,19 @@ def unique(self, selector):
     ```
     """
     duplidate = set()
-    for elm in self:
-        value = selector(elm)
+    for value in __map_nullable(self, selector):
         if value in duplidate:
             pass
         else:
             duplidate.add(value)
-            yield elm
+            yield value
 
 
 distinct = unique
 
 
 @mark
-def must_unique(self, selector=lambda x: x, immediate: bool = True):
+def must_unique(self, selector=None):
     """シーケンスの要素から値を選択し、選択した値が重複していないか検証します。
 
     Args:
@@ -952,19 +974,44 @@ def must_unique(self, selector=lambda x: x, immediate: bool = True):
 
     """
     duplidate = set()
-    for elm in self:
-        value = selector(elm)
+    for value in __map_nullable(self, selector):
         if value in duplidate:
-            raise DuplicateElementError(elm)
+            raise DuplicateElementError(value)
         else:
             duplidate.add(value)
-            yield elm
+            yield value
 
 
 @mark
 def get_many(self, *keys):
+    ...
+
+
+def get_many_for_mapping(self, *keys):
     """"""
-    pass
+    undefined = object()
+    for id in keys:
+        obj = get_or(self, id, undefined)
+        if obj is not undefined:
+            yield id, obj
+
+
+def get_many_for_sequence(self, *keys):
+    """"""
+    undefined = object()
+    for id in keys:
+        obj = get_or(self, id, undefined)
+        if obj is not undefined:
+            yield obj
+
+
+def get_many_for_set(self, *keys):
+    """"""
+    undefined = object()
+    for id in keys:
+        obj = get_or(self, id, undefined)
+        if obj is not undefined:
+            yield id
 
 
 @mark
@@ -1599,7 +1646,7 @@ def each(self, func=lambda x: x):
 @mark
 def each_unpack(self, func=lambda x: x):
     """`each`実行時にキーワードアンパックしながら要素を送出します。
-    要素は辞書互換のオブジェクトを渡す必要があります。
+    与える要素は辞書である必要があります。
     基本的な動作は`each`を参照ください。
 
     Usage:
@@ -1647,6 +1694,7 @@ async def each_async(self, func=async_dummy):
 @mark
 async def each_async_unpack(self, func=async_dummy):
     """`each_async`実行時にキーワードアンパックしながら要素を送出します。
+    与える要素は辞書である必要があります。
     基本的な動作は`each_async`を参照ください。
 
     Usage:

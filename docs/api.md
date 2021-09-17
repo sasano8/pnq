@@ -70,6 +70,9 @@
 ::: pnq.actions.filter
     :docstring:
 
+::: pnq.actions.filter_type
+    :docstring:
+
 ::: pnq.actions.unique
     :docstring:
 
