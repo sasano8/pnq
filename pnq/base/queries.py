@@ -1,7 +1,7 @@
 import asyncio
 from .core import Query, IterType
 from operator import itemgetter, attrgetter
-from typing import NoReturn
+from typing import NoReturn, Callable
 from collections import defaultdict
 
 exports = []
@@ -10,6 +10,21 @@ exports = []
 def mark(func):
     exports.append(func)
     return func
+
+
+@mark
+class Lazy(Query):
+    def __init__(self, source, finalizer: Callable, *args, **kwargs):
+        super().__init__(source)
+        self.finalizer = finalizer
+        self.args = args
+        self.kwargs = kwargs
+
+    def __call__(self):
+        return self.finalizer(self.source, *self.args, **self.kwargs)
+
+    def __await__(self):
+        return self.finalizer(self.source, *self.args, **self.kwargs).__await__()
 
 
 @mark
@@ -330,6 +345,28 @@ class Debug(Query):
             printer(v)
             breakpoint(v)
             yield v
+
+
+@mark
+class MapDebugger(Query):
+    """同期イテレータと非同期イテレータのどちらが実行されているか確認するデバッグ用のクエリです。"""
+
+    def __init__(
+        self, source, selector_sync=lambda x: -10, selector_async=lambda x: 10
+    ) -> None:
+        super().__init__(source)
+        self.selector_sync = selector_sync
+        self.selector_async = selector_async
+
+    def _impl_iter(self):
+        selector_sync = self.selector_sync
+        for v in self:
+            yield selector_sync(v)
+
+    async def _impl_aiter(self):
+        selector_async = self.selector_async
+        async for v in self:
+            yield selector_async(v)
 
 
 @mark
