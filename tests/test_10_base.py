@@ -4,7 +4,7 @@ from functools import wraps
 import pytest
 
 from pnq.base.core import IterType, Query, QueryNormal, QuerySyncToAsync
-from pnq.base.queries import Map, AsyncMap, Lazy, DebugMap
+from pnq.base.queries import AsyncMap, DebugMap, Lazy, Map
 
 
 def async_test(func):

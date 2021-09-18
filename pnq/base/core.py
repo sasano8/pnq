@@ -1,7 +1,6 @@
 from enum import Flag
 from typing import TYPE_CHECKING
 
-
 if TYPE_CHECKING:
     # python3.7には含まれていない
     from typing import final

@@ -1083,8 +1083,9 @@ if TYPE_CHECKING:
     from .base import queries
 
 else:
-    from .base import queries
     import types
+
+    from .base import queries
 
     classess = []
 

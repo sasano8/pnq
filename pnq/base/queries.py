@@ -1,8 +1,9 @@
 import asyncio
-from .core import Query, IterType
-from operator import itemgetter, attrgetter
-from typing import NoReturn, Callable
 from collections import defaultdict
+from operator import attrgetter, itemgetter
+from typing import Callable, NoReturn
+
+from .core import IterType, Query
 
 exports = []
 

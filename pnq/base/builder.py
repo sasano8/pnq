@@ -1,4 +1,4 @@
-from .core import Query, QueryNormal, QueryDict, QuerySeq
+from .core import Query, QueryDict, QueryNormal, QuerySeq
 
 
 class Builder:
