@@ -1267,7 +1267,8 @@ class Test070_Sort:
 
 class Test100_Sleep:
     def test_sync(self):
-        pnq([1, 2, 3]).sleep(0).to(list) == [1, 2, 3]
+        with pytest.raises(NotImplementedError):
+            pnq([1, 2, 3]).sleep(0).to(list) == [1, 2, 3]
 
     def test_async(self):
         import asyncio

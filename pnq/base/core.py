@@ -132,10 +132,14 @@ class QuerySyncToAsync(Query):
 
     iter_type = IterType.ASYNC
 
-    def __iter__(self):
-        if not (self.run_iter_type & IterType.NORMAL):
-            raise NotImplementedError(f"{self.__class__} can't __iter__()")
-        return self._impl_iter()
+    def __init__(self, source):
+        self.source = source
+        self.run_iter_type = self.iter_type
+
+    # def __iter__(self):
+    #     if not (self.run_iter_type & IterType.NORMAL):
+    #         raise NotImplementedError(f"{self.__class__} can't __iter__()")
+    #     return self._impl_iter()
 
     def _impl_iter(self):
         raise NotImplementedError()

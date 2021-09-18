@@ -420,10 +420,12 @@ class Query(Generic[T]):
         return LazyIterate(actions.order_by_shuffle, self)
 
     def sleep(self, seconds: float) -> "Query[T]":
-        return LazyIterate(actions.sleep, self, seconds=seconds)
+        return queries.Sleep(self, seconds)
+        # return LazyIterate(actions.sleep, self, seconds=seconds)
 
     def sleep_async(self, seconds: float) -> "Query[T]":
-        return LazyIterate(actions.sleep_async, self, seconds=seconds)
+        return queries.Sleep(self, seconds)
+        # return LazyIterate(actions.sleep_async, self, seconds=seconds)
 
     class SyncAsync:
         def __init__(self, sync_func, async_func, *args, **kwargs) -> None:
@@ -845,10 +847,12 @@ class PairQuery(Generic[K, V]):
         return LazyIterate(actions.order_by_shuffle, self)
 
     def sleep(self, seconds: float) -> "PairQuery[K,V]":
-        return LazyIterate(actions.sleep, self, seconds=seconds)
+        return queries.Sleep(self, seconds)
+        # return LazyIterate(actions.sleep, self, seconds=seconds)
 
     def sleep_async(self, seconds: float) -> "PairQuery[K,V]":
-        return LazyIterate(actions.sleep_async, self, seconds=seconds)
+        return queries.Sleep(self, seconds)
+        # return LazyIterate(actions.sleep_async, self, seconds=seconds)
 
     class SyncAsync:
         def __init__(self, sync_func, async_func, *args, **kwargs) -> None:
@@ -1085,14 +1089,21 @@ if TYPE_CHECKING:
 else:
     import types
 
+    class Queries:
+        pass
+
     from .base import queries
 
-    classess = []
+    classess = Queries()
 
     for cls in queries.exports:
         baseclasses = (cls, Query[T])
         created = types.new_class(cls.__name__, baseclasses)
-        classess.append(created)
+        # classess.append(created)
+
+        setattr(classess, cls.__name__, created)
 
     # print(classess)
     # print(classess[0].__name__)
+
+    queries = classess

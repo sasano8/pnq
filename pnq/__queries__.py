@@ -416,10 +416,12 @@ class {{query.cls}}:
         return LazyIterate(actions.order_by_shuffle, self)
 
     def sleep(self, seconds: float) -> "{{query.str}}":
-        return LazyIterate(actions.sleep, self, seconds=seconds)
+        return queries.Sleep(self, seconds)
+        # return LazyIterate(actions.sleep, self, seconds=seconds)
 
     def sleep_async(self, seconds: float) -> "{{query.str}}":
-        return LazyIterate(actions.sleep_async, self, seconds=seconds)
+        return queries.Sleep(self, seconds)
+        # return LazyIterate(actions.sleep_async, self, seconds=seconds)
 
     class SyncAsync:
         def __init__(self, sync_func, async_func, *args, **kwargs) -> None:
@@ -652,3 +654,31 @@ def query(source):
         raise Exception()
 
 
+if TYPE_CHECKING:
+    from .base import queries
+
+else:
+    import types
+
+    class Queries:
+        pass
+
+    from .base import queries
+
+    classess = Queries()
+
+    for cls in queries.exports:
+        baseclasses = (cls, Query[T])
+        created = types.new_class(cls.__name__, baseclasses)
+        # classess.append(created)
+
+        setattr(classess, cls.__name__, created)
+
+    # print(classess)
+    # print(classess[0].__name__)
+
+    queries = classess
+
+# from .base import builder
+
+# class QueryBuilder(builder.Builder):
