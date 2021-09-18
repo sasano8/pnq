@@ -1077,3 +1077,21 @@ def query(source):
         return LazyIterate(iter, source)
     else:
         raise Exception()
+
+
+if TYPE_CHECKING:
+    from .base import queries
+
+else:
+    from .base import queries
+    import types
+
+    classess = []
+
+    for cls in queries.exports:
+        baseclasses = (cls, Query[T])
+        created = types.new_class(cls.__name__, baseclasses)
+        classess.append(created)
+
+    # print(classess)
+    # print(classess[0].__name__)
