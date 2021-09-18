@@ -1,4 +1,12 @@
 from enum import Flag
+from typing import TYPE_CHECKING
+
+
+if TYPE_CHECKING:
+    # python3.7には含まれていない
+    from typing import final
+else:
+    final = lambda x: x  # noqa
 
 
 class IterType(Flag):
@@ -9,7 +17,10 @@ class IterType(Flag):
 
 
 def get_iter_type(source):
-    if hasattr(source, "__aiter__"):
+    run_iter_type = getattr(source, "run_iter_type", None)
+    if run_iter_type:
+        return run_iter_type
+    elif hasattr(source, "__aiter__"):
         if hasattr(source, "__iter__"):
             return IterType.BOTH
         else:
@@ -36,18 +47,19 @@ class Query:
 
     def __init__(self, source):
         self.source = source
-        self.source_iter_type = get_iter_type(source)
+        source_iter_type = get_iter_type(source)
 
         # ソースの属性を継承し、クエリでタイプが強制された時はそのタイプを使う
         if self.iter_type == IterType.BOTH:
-            self.run_iter_type = self.source_iter_type
+            self.run_iter_type = source_iter_type
         else:
             if self.iter_type == IterType.ASYNC:
                 self.run_iter_type = self.iter_type
 
-                if self.source_iter_type & IterType.ASYNC:
+                if source_iter_type & IterType.ASYNC:
                     pass
                 else:
+                    # aiterのみ実行可能にする
                     self.source = QuerySyncToAsync(self.source)
             else:
                 raise TypeError("can not convert sync iterator to any iteraotr.")
@@ -77,15 +89,42 @@ class QueryNormal(Query):
     def __init__(self, source):
         # sourceは__iter__しか実装していないので、
         # 自身を渡して__iter__と__aiter__を持っていると錯覚させる
+        self.run_iter_type = IterType.BOTH
         super().__init__(self)
         self.source = source
 
     def _impl_iter(self):
         return self.source.__iter__()
 
+    @final
     async def _impl_aiter(self):
-        for v in self.source.__iter__():
+        for v in self._impl_iter():
             yield v
+
+
+class QuerySeq(QueryNormal):
+    """リストなどをクエリ化します"""
+
+    def _impl_iter(self):
+        return self.source.__iter__()
+
+    def __reversed__(self):
+        return self.source.__reversed__()
+
+
+class QueryDict(QueryNormal):
+    """辞書などをクエリ化します"""
+
+    def _impl_iter(self):
+        return self.source.items().__iter__()
+
+    def __reversed__(self):
+        return self.source.items().__reversed__()
+
+
+async def sync_to_async_iterator(it):
+    for x in it:
+        yield x
 
 
 class QuerySyncToAsync(Query):
@@ -102,7 +141,7 @@ class QuerySyncToAsync(Query):
     def _impl_iter(self):
         raise NotImplementedError()
 
-    async def _impl_aiter(self):
+    def _impl_aiter(self):
         it = None
         try:
             it = iter(self.source)
@@ -110,37 +149,35 @@ class QuerySyncToAsync(Query):
             pass
 
         if it:
-            for v in it:
-                yield v
+            return sync_to_async_iterator(it)
         else:
-            async for v in self.source:
-                yield v
+            return self.source.__aiter__()
 
 
-class Map(Query):
-    def __init__(self, source, selector):
-        super().__init__(source)
-        self.selector = selector
+# class Map(Query):
+#     def __init__(self, source, selector):
+#         super().__init__(source)
+#         self.selector = selector
 
-    def _impl_iter(self):
-        selector = self.selector
-        for x in self.source:
-            yield selector(x)
+#     def _impl_iter(self):
+#         selector = self.selector
+#         for x in self.source:
+#             yield selector(x)
 
-    async def _impl_aiter(self):
-        selector = self.selector
-        async for x in self.source:
-            yield selector(x)
+#     async def _impl_aiter(self):
+#         selector = self.selector
+#         async for x in self.source:
+#             yield selector(x)
 
 
-class AsyncMap(Query):
-    iter_type = IterType.ASYNC
+# class AsyncMap(Query):
+#     iter_type = IterType.ASYNC
 
-    def __init__(self, source, func):
-        super().__init__(source)
-        self.func = func
+#     def __init__(self, source, func):
+#         super().__init__(source)
+#         self.func = func
 
-    async def _impl_aiter(self):
-        func = self.func
-        async for x in self.source:
-            yield await func(x)
+#     async def _impl_aiter(self):
+#         func = self.func
+#         async for x in self.source:
+#             yield await func(x)
