@@ -348,7 +348,7 @@ class Debug(Query):
 
 
 @mark
-class MapDebugger(Query):
+class DebugMap(Query):
     """同期イテレータと非同期イテレータのどちらが実行されているか確認するデバッグ用のクエリです。"""
 
     def __init__(
@@ -360,12 +360,12 @@ class MapDebugger(Query):
 
     def _impl_iter(self):
         selector_sync = self.selector_sync
-        for v in self:
+        for v in self.source:
             yield selector_sync(v)
 
     async def _impl_aiter(self):
         selector_async = self.selector_async
-        async for v in self:
+        async for v in self.source:
             yield selector_async(v)
 
 

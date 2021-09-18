@@ -4,7 +4,7 @@ from functools import wraps
 import pytest
 
 from pnq.base.core import IterType, Query, QueryNormal, QuerySyncToAsync
-from pnq.base.queries import Map, AsyncMap
+from pnq.base.queries import Map, AsyncMap, Lazy, DebugMap
 
 
 def async_test(func):
@@ -22,6 +22,10 @@ async def create_aiter():
     yield 4
     yield 5
     yield 6
+
+
+async def list_async(aiter):
+    return [x async for x in aiter]
 
 
 def test_iter_type():
@@ -108,3 +112,17 @@ class Test010_Async:
         with pytest.raises(NotImplementedError):
             assert list(q9) == [16, 32, 48]
         assert [x async for x in q9] == [16, 32, 48]
+
+    @async_test
+    async def test_lazy(self):
+        assert Lazy(Query([1, 2, 3]), list)() == [1, 2, 3]
+        assert await Lazy(Query(create_aiter()), list_async) == [4, 5, 6]
+
+    @async_test
+    async def test_map_debug(self):
+        map_five = lambda x: 5  # noqa
+        map_ten = lambda x: 10  # noqa
+        assert Lazy(DebugMap(Query([1, 2, 3]), map_five, map_ten), list)() == [5, 5, 5]
+        assert await Lazy(
+            DebugMap(Query(create_aiter()), map_five, map_ten), list_async
+        ) == [10, 10, 10]
