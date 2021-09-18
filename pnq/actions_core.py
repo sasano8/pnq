@@ -302,6 +302,8 @@ def __range(*args, **kwargs):
 ###########################################
 # mapping
 ###########################################
+
+
 @mark
 @name_as("map")
 def __map(self, selector):
@@ -2078,3 +2080,22 @@ def last_or_raise(self, exc: Union[str, Exception]):
             raise exc
     else:
         return result
+
+
+###########################################
+# sleeping
+###########################################
+def sleep(self, seconds: float):
+    from time import sleep as sleep_
+
+    for elm in self:
+        yield elm
+        sleep_(seconds)
+
+
+async def sleep_async(self, seconds: float):
+    from asyncio import sleep as sleep_
+
+    for elm in self:
+        yield elm
+        await sleep_(seconds)

@@ -103,8 +103,12 @@ from .actions_core import union_minus as union_minus
 
 from .actions_core import value as value
 
+# sleep
+from .actions_core import sleep as sleep
+from .actions_core import sleep_async as sleep_async
+
 # other
-from .actions_core import raise_if_not_unique_keys
+from .actions_core import raise_if_not_unique_keys as raise_if_not_unique_keys
 from .actions_core import take_page_calc as take_page_calc
 
 # isort: on

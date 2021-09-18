@@ -27,6 +27,13 @@ class QueryBase:
     def __iter__(self):
         return self.__piter__()
 
+    async def __aiter__(self):
+        async for elm in piter(self):
+            yield elm
+
+    def is_generator(self):
+        return True if self.source is None else False
+
     def __str__(self) -> str:
         kwargs = [f"{k}={v}" for k, v in self.kwargs.items()]
         params = list(self.args) + kwargs
@@ -83,13 +90,6 @@ class QueryBase:
             return arg.__name__
         else:
             return arg
-
-    async def __aiter__(self):
-        async for elm in piter(self):
-            yield elm
-
-    def is_generator(self):
-        return True if self.source is None else False
 
 
 class LazyGenerator(QueryBase):
