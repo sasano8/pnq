@@ -1265,7 +1265,7 @@ class Test070_Sort:
         assert different > (84 * 0.5)  # 50%まで偏りを許容する
 
 
-class TestSleep:
+class Test100_Sleep:
     def test_sync(self):
         pnq([1, 2, 3]).sleep(0).to(list) == [1, 2, 3]
 
@@ -1275,6 +1275,7 @@ class TestSleep:
         results = []
 
         async def func():
+            q = pnq([1, 2, 3]).sleep_async(0)
             async for elm in pnq([1, 2, 3]).sleep_async(0):
                 results.append(elm)
 
@@ -1288,10 +1289,6 @@ class TestDict:
         return pnq({1: "a", 2: "b", 3: "c"})
 
     def test_init(self):
-        from typing import Tuple
-
-        import pnq as pq
-
         obj1 = pnq({1: "a", 2: "b", 3: "c"})
         obj2 = pnq([(1, "a"), (2, "b"), (3, "c")]).to(dict)
         obj3 = pnq([(1, "a"), (2, "b"), (3, "c")]).to(DictEx[int, str])
