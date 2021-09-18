@@ -1,9 +1,10 @@
 import asyncio
 from functools import wraps
+
 import pytest
 
-
-from pnq.base import IterType, Query, QueryNormal, QuerySyncToAsync, Map, AsyncMap
+from pnq.base.core import IterType, Query, QueryNormal, QuerySyncToAsync
+from pnq.base.queries import Map, AsyncMap
 
 
 def async_test(func):
