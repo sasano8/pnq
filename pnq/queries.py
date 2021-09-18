@@ -419,21 +419,11 @@ class Query(Generic[T]):
     def order_by_shuffle(self) -> "Query[T]":
         return LazyIterate(actions.order_by_shuffle, self)
 
-    @lazy_iterate
-    def sleep(self, seconds: float):
-        from time import sleep
+    def sleep(self, seconds: float) -> "Query[T]":
+        return LazyIterate(actions.sleep, self, seconds=seconds)
 
-        for elm in self:
-            yield elm
-            sleep(seconds)
-
-    @lazy_iterate
-    async def sleep_async(self, seconds: float):
-        from asyncio import sleep
-
-        for elm in self:
-            yield elm
-            await sleep(seconds)
+    def sleep_async(self, seconds: float) -> "Query[T]":
+        return LazyIterate(actions.sleep_async, self, seconds=seconds)
 
     class SyncAsync:
         def __init__(self, sync_func, async_func, *args, **kwargs) -> None:
@@ -854,21 +844,11 @@ class PairQuery(Generic[K, V]):
     def order_by_shuffle(self) -> "PairQuery[K,V]":
         return LazyIterate(actions.order_by_shuffle, self)
 
-    @lazy_iterate
-    def sleep(self, seconds: float):
-        from time import sleep
+    def sleep(self, seconds: float) -> "PairQuery[K,V]":
+        return LazyIterate(actions.sleep, self, seconds=seconds)
 
-        for elm in self:
-            yield elm
-            sleep(seconds)
-
-    @lazy_iterate
-    async def sleep_async(self, seconds: float):
-        from asyncio import sleep
-
-        for elm in self:
-            yield elm
-            await sleep(seconds)
+    def sleep_async(self, seconds: float) -> "PairQuery[K,V]":
+        return LazyIterate(actions.sleep_async, self, seconds=seconds)
 
     class SyncAsync:
         def __init__(self, sync_func, async_func, *args, **kwargs) -> None:

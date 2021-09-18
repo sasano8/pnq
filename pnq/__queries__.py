@@ -415,19 +415,11 @@ class {{query.cls}}:
     def order_by_shuffle(self) -> "{{query.str}}":
         return LazyIterate(actions.order_by_shuffle, self)
 
-    @lazy_iterate
-    def sleep(self, seconds: float):
-        from time import sleep
-        for elm in self:
-            yield elm
-            sleep(seconds)
+    def sleep(self, seconds: float) -> "{{query.str}}":
+        return LazyIterate(actions.sleep, self, seconds=seconds)
 
-    @lazy_iterate
-    async def sleep_async(self, seconds: float):
-        from asyncio import sleep
-        for elm in self:
-            yield elm
-            await sleep(seconds)
+    def sleep_async(self, seconds: float) -> "{{query.str}}":
+        return LazyIterate(actions.sleep_async, self, seconds=seconds)
 
     class SyncAsync:
         def __init__(self, sync_func, async_func, *args, **kwargs) -> None:
