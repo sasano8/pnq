@@ -1,9 +1,9 @@
 from functools import wraps
-from typing import Iterable, List, Mapping, Tuple
+from typing import List
 
 import pytest
 
-from pnq.exceptions import (
+from pnq.base.exceptions import (
     DuplicateElementError,
     MustError,
     MustTypeError,
@@ -11,10 +11,20 @@ from pnq.exceptions import (
     NotFoundError,
     NotOneElementError,
 )
+
+# from pnq.exceptions import NoElementError, NotFoundError, NotOneElementError
 from pnq.queries import DictEx, IndexQuery, ListEx, PairQuery, Query, SetEx, query
 
-# from pnq import query as pnq
 pnq = query
+
+
+class Aiter:
+    def __init__(self, source) -> None:
+        self.source = source
+
+    async def __aiter__(self):
+        for v in self.source:
+            yield v
 
 
 def catch(func):
@@ -51,22 +61,77 @@ class Test000_Init:
 
         assert isinstance(pnq([]), Iterable)
         assert not isinstance(pnq([]), Mapping)
-        assert isinstance(pnq({}), Mapping)
+        assert not isinstance(pnq({}), Mapping)  # クエリ化したら辞書互換でないように変更
+        assert isinstance(pnq({}), Iterable)
         assert isinstance(pnq(tuple()), Iterable)
         assert isinstance(pnq(set()), Iterable)
         assert isinstance(pnq(frozenset()), Iterable)
-
-    def test_iter_compatibility(self):
-        # クエリメソッドで実行する際は、キーバリューを返すように標準化しているが、
-        # forのデフォルトの挙動は変えない
-        q = pnq({1: "a", 2: "b"})
-        assert [x for x in q] == [1, 2]
-        assert [x for x in reversed(q)] == [2, 1]
 
     def test_simple_query(self):
         pnq([1]).map(lambda x: x + 1).to(list) == [2]
         pnq([1]).filter(lambda x: x == 1).to(list) == [1]
         pnq([1]).filter(lambda x: x != 1).to(list) == []
+
+    @pytest.mark.parametrize(
+        "src",
+        [[1], {1: "a"}, {1}, frozenset([1]), (1, 2), (x for x in range(1)), Aiter([1])],
+    )
+    def test_forbid_protocol(self, src):
+        # 関連するプロトコルを実装すると副作用が生じるので実装しない
+        # __iter__と__aiter__のみ可能なことを強調する
+
+        # __len__を実装していると、list(obj)とした時に無限ループが起きる原因になる
+        query = pnq(src)
+        assert not hasattr(query, "__len__")
+        assert not hasattr(query.map(lambda x: x), "__len__")
+
+        # 副作用が多いので実装しない
+        assert not hasattr(query, "__getitem__")
+        assert not hasattr(query.map(lambda x: x), "__getitem__")
+
+        # keysを実装しているとdict(obj)時にdict型と勘違いされるため実装しない
+        assert not hasattr(query, "keys")
+        assert not hasattr(query.map(lambda x: x), "keys")
+
+        # lenとgetitemを実装しなければ副作用はなさそうだが実装しないこととする
+        assert not hasattr(query, "__reversed__")
+        assert not hasattr(query.map(lambda x: x), "__reversed__")
+
+        from typing import Iterable, Mapping
+
+        assert isinstance(query, Iterable)
+        assert not isinstance(query, Mapping)  # マッピングでないこと
+
+        try:
+            assert list(query)
+            if isinstance(src, dict):
+                assert dict(query)
+
+        except Exception as e:
+            msg = str(e)
+            if not "can't __iter__" in msg:
+                raise
+
+    @pytest.mark.parametrize(
+        "src, expect",
+        [
+            ([1, 2], [2, 1]),
+            ({1: "a", 2: "b"}, [(2, "b"), (1, "a")]),
+            ({1}, [1]),
+            (frozenset([1]), [1]),
+            ((1, 2), [2, 1]),
+            ((x for x in range(1)), [1]),
+        ],
+    )
+    def test_compatibility(self, src, expect):
+        with pytest.raises(TypeError, match="object is not reversible"):
+            reversed(pnq(src))
+
+        with pytest.raises(TypeError, match="has no len"):
+            len(pnq(src))
+
+        with pytest.raises(TypeError, match="object is not subscriptable"):
+            pnq(src)[0]
 
 
 class Test010_Finalizer:
@@ -455,12 +520,12 @@ class Test010_Finalizer:
             with pytest.raises(NoElementError):
                 q.last()
 
-            assert q.get(1, None) is None
+            # assert q.get(1, None) is None # デフォルト値を受け入れ不可にした
             assert q.get_or(1, None) is None
             assert q.first_or(None) is None
             assert q.one_or(None) is None
             assert q.last_or(None) is None
-            assert q.get(0, 1) == 1
+            # assert q.get(0, 1) == 1 # デフォルト値を受け入れ不可にした
             assert q.get_or(0, 1) == 1
             assert q.first_or(2) == 2
             assert q.one_or(3) == 3
@@ -478,13 +543,13 @@ class Test010_Finalizer:
             assert q.one() == 5
             assert q.last() == 5
 
-            assert q.get(0, None) == 5
+            # assert q.get(0, None) == 5 # デフォルト値を受け入れ不可にした
             assert q.get_or(0, None) == 5
             assert q.first_or(None) == 5
             assert q.one_or(None) == 5
             assert q.last_or(None) == 5
 
-            assert q.get(0, 1) == 5
+            # assert q.get(0, 1) == 5 # デフォルト値を受け入れ不可にした
             assert q.get_or(0, 1) == 5
             assert q.first_or(2) == 5
             assert q.one_or(3) == 5
@@ -500,9 +565,9 @@ class Test010_Finalizer:
                 q.one()
             assert q.last() == 10
 
-            assert q.get(0, None) == -10
+            # assert q.get(0, None) == -10 # デフォルト値を受け入れ不可にした
             assert q.get_or(0, None) == -10
-            assert q.get(1, None) == 10
+            # assert q.get(1, None) == 10　# デフォルト値を受け入れ不可にした
             assert q.get_or(1, None) == 10
             assert q.first_or(None) == -10
 
@@ -511,9 +576,9 @@ class Test010_Finalizer:
 
             assert q.last_or(None) == 10
 
-            assert q.get(0, 1) == -10
+            # assert q.get(0, 1) == -10　# デフォルト値を受け入れ不可にした
             assert q.get_or(0, 1) == -10
-            assert q.get(1, 2) == 10
+            # assert q.get(1, 2) == 10　# デフォルト値を受け入れ不可にした
             assert q.get_or(1, 2) == 10
             assert q.first_or(3) == -10
             assert q.first_or(3) == -10
@@ -566,8 +631,7 @@ class Test020_Transform:
         with pytest.raises(TypeError, match="missing"):
             pnq([]).map()
 
-        with pytest.raises(TypeError, match="None"):
-            pnq([]).map(None)
+        assert pnq([]).map(None).to(list) == []
 
     def test_map_star(self):
         pass
@@ -1221,21 +1285,15 @@ class Test070_Sort:
 
     def test_order_by_reverse(self):
         assert pnq([]).order_by_reverse().to(list) == []
-        assert list(reversed(pnq([]))) == []
         assert pnq({}).order_by_reverse().to(list) == []
-        assert list(reversed(pnq({}))) == []
 
         assert pnq([1]).order_by_reverse().to(list) == [1]
-        assert list(reversed(pnq([1]))) == [1]
         assert pnq({1: "a"}).order_by_reverse().to(list) == [(1, "a")]
-        # pythonの標準動作はreversedはキーのみを返す
-        assert list(reversed(pnq({1: "a"}))) == [1]
 
         assert pnq([2, 1]).order_by_reverse().to(list) == [1, 2]
-        assert list(reversed(pnq([2, 1]))) == [1, 2]
+        assert list(reversed([2, 1])) == [1, 2]
         assert pnq({2: "a", 1: "a"}).order_by_reverse().to(list) == [(1, "a"), (2, "a")]
-        # pythonの標準動作はreversedはキーのみを返す
-        assert list(reversed(pnq({2: "a", 1: "a"}))) == [1, 2]
+        assert list(reversed([(2, "a"), (1, "a")])) == [(1, "a"), (2, "a")]
 
         assert pnq(([2, 1])).order_by_reverse().to(list) == [1, 2]
 
@@ -1284,45 +1342,22 @@ class Test100_Sleep:
         assert results == [1, 2, 3]
 
 
-class TestDict:
-    @staticmethod
-    def db():
-        return pnq({1: "a", 2: "b", 3: "c"})
-
-    def test_init(self):
-        obj1 = pnq({1: "a", 2: "b", 3: "c"})
-        obj2 = pnq([(1, "a"), (2, "b"), (3, "c")]).to(dict)
-        obj3 = pnq([(1, "a"), (2, "b"), (3, "c")]).to(DictEx[int, str])
-
-        cls = obj1.__class__
-
-        assert isinstance(obj1, cls)
-        assert isinstance(obj2, dict)
-        assert isinstance(obj3, cls)
-
-    def test_get(self):
-        db = self.db()
-        assert db[1] == "a"
+class Test500_Type:
+    def test_dict_get(self):
+        db = pnq({1: "a", 2: "b", 3: "c"})
         assert db.get(1) == "a"
-        assert db.get(1, 0) == "a"
+        # assert db.get(1, 0) == "a"
         assert db.get_or(1, 10) == "a"
         assert db.get_or(1, None) == "a"
-        with pytest.raises(KeyError):
+        with pytest.raises(NotFoundError):
             assert db.get(-1)
-        assert db.get(-1, None) is None
-        assert db.get(-1, 10) == 10
+        # assert db.get(-1, None) is None
+        # assert db.get(-1, 10) == 10
         assert db.get_or(-1, 10) == 10
-        assert db.get_or(-1, None) == None
+        assert db.get_or(-1, None) is None
 
-    def test_get_many(self):
-        db = self.db()
+    def test_dict_get_many(self):
+        db = pnq({1: "a", 2: "b", 3: "c"})
         assert db.get_many(1, 2).to(list) == [(1, "a"), (2, "b")]
         assert db.get_many(4).to(list) == []
-
-    def test_other(self):
-        db = self.db()
-        assert db.keys().to(list) == [1, 2, 3]
-        assert db.values().to(list) == ["a", "b", "c"]
-        assert db.items().to(list) == [(1, "a"), (2, "b"), (3, "c")]
-
         assert isinstance(db.to(dict), dict)

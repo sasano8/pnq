@@ -1,5 +1,7 @@
 from enum import Flag
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, NoReturn
+
+from . import finalizers
 
 if TYPE_CHECKING:
     # python3.7には含まれていない
@@ -40,7 +42,7 @@ def to_query(source):
 
 
 class Query:
-    """iter aiter両対応のイテラブルをラップするために使います（Queryクラスをチェインするのに使います）。"""
+    """Queryクラスをチェインするのに使うか、__iter__と__aiter__の挙動をソースに任せる場合に使います。"""
 
     iter_type = IterType.BOTH
 
@@ -79,6 +81,8 @@ class Query:
     def _impl_aiter(self):
         return self.source.__aiter__()
 
+    to = finalizers.to
+
 
 class QueryNormal(Query):
     """同期イテレータを両対応するために使います"""
@@ -86,11 +90,12 @@ class QueryNormal(Query):
     iter_type = IterType.BOTH
 
     def __init__(self, source):
-        # sourceは__iter__しか実装していないので、
-        # 自身を渡して__iter__と__aiter__を持っていると錯覚させる
-        self.run_iter_type = IterType.BOTH
-        super().__init__(self)
+        # super().__init__(self)
         self.source = source
+        self.run_iter_type = IterType.BOTH
+
+        if not hasattr(source, "__iter__"):
+            raise TypeError(f"{source} not has __iter__")
 
     def _impl_iter(self):
         return self.source.__iter__()
@@ -101,14 +106,33 @@ class QueryNormal(Query):
             yield v
 
 
+class QueryAsync(Query):
+    """非同期イテレータのみ対応のクエリ"""
+
+    iter_type = IterType.ASYNC
+
+    def __init__(self, source):
+        self.source = source
+        self.run_iter_type = IterType.ASYNC
+
+        if not hasattr(source, "__aiter__"):
+            raise TypeError(f"{source} not has __aiter__")
+
+    def _impl_iter(self):
+        raise NotImplementedError()
+
+    def _impl_aiter(self):
+        return self.source.__aiter__()
+
+
 class QuerySeq(QueryNormal):
     """リストなどをクエリ化します"""
 
     def _impl_iter(self):
         return self.source.__iter__()
 
-    def __reversed__(self):
-        return self.source.__reversed__()
+    # def __reversed__(self):
+    #     return self.source.__reversed__()
 
 
 class QueryDict(QueryNormal):
@@ -117,8 +141,12 @@ class QueryDict(QueryNormal):
     def _impl_iter(self):
         return self.source.items().__iter__()
 
-    def __reversed__(self):
-        return self.source.items().__reversed__()
+    # def __reversed__(self):
+    #     return self.source.items().__reversed__()
+
+
+class QuerySet(QueryNormal):
+    pass
 
 
 async def sync_to_async_iterator(it):
@@ -133,13 +161,9 @@ class QuerySyncToAsync(Query):
     iter_type = IterType.ASYNC
 
     def __init__(self, source):
+        # super().__init__(self)
         self.source = source
         self.run_iter_type = self.iter_type
-
-    # def __iter__(self):
-    #     if not (self.run_iter_type & IterType.NORMAL):
-    #         raise NotImplementedError(f"{self.__class__} can't __iter__()")
-    #     return self._impl_iter()
 
     def _impl_iter(self):
         raise NotImplementedError()
@@ -155,32 +179,3 @@ class QuerySyncToAsync(Query):
             return sync_to_async_iterator(it)
         else:
             return self.source.__aiter__()
-
-
-# class Map(Query):
-#     def __init__(self, source, selector):
-#         super().__init__(source)
-#         self.selector = selector
-
-#     def _impl_iter(self):
-#         selector = self.selector
-#         for x in self.source:
-#             yield selector(x)
-
-#     async def _impl_aiter(self):
-#         selector = self.selector
-#         async for x in self.source:
-#             yield selector(x)
-
-
-# class AsyncMap(Query):
-#     iter_type = IterType.ASYNC
-
-#     def __init__(self, source, func):
-#         super().__init__(source)
-#         self.func = func
-
-#     async def _impl_aiter(self):
-#         func = self.func
-#         async for x in self.source:
-#             yield await func(x)

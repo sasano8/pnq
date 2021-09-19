@@ -27,5 +27,3 @@ def test_mypy():
     result = query([]).cast(Tuple[int, str]).to(dict)
     result = query([]).cast(lambda x: (1, "")).to(dict)
     result = query([]).map(lambda x: (1, 2)).to(dict)
-
-    result = query({1, "a"}).map(lambda x: (1, 2)).to(pq.dict)
