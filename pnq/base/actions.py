@@ -18,7 +18,7 @@ from typing import (
     overload,
 )
 
-from .base.exceptions import (
+from .exceptions import (
     DuplicateElementError,
     MustError,
     MustTypeError,
@@ -48,6 +48,14 @@ class EmptyLambda:
 lambda_empty = EmptyLambda()
 # lambda_empty = lambda x: x
 # lambda_empty.__str__ = lambda: "lambda x: x"
+
+
+def name_as(name):
+    def wrapper(func):
+        func.__name__ = name
+        return func
+
+    return wrapper
 
 
 marked = []

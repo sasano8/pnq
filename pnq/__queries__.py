@@ -27,11 +27,12 @@ from typing import (
 
 from . import actions
 from .base.exceptions import NoElementError, NotFoundError, NotOneElementError
-from .core import LazyIterate as _LazyIterate
-from .core import LazyReference as _LazyReference
-from .core import piter, undefined
-from .op import TH_ASSIGN_OP
-from .requests import Response
+
+# from .core import LazyReference as _LazyReference
+# from .core import piter, undefined
+# from .core import undefined
+from .base.op import TH_ASSIGN_OP
+from .base.requests import Response
 
 if TYPE_CHECKING:
     from .base import queries
@@ -48,20 +49,13 @@ __all__ = ["Query", "PairQuery", "IndexQuery", "ListEx", "DictEx", "SetEx", "que
 
 
 
-def lazy_iterate(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        return LazyIterate(func, *args, **kwargs)
 
-    return wrapper
+# def lazy_reference(func):
+#     @wraps(func)
+#     def wrapper(*args, **kwargs):
+#         return LazyReference(func, *args, **kwargs)
 
-
-def lazy_reference(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        return LazyReference(func, *args, **kwargs)
-
-    return wrapper
+#     return wrapper
 
 
 {% for query in queries %}
@@ -241,11 +235,9 @@ class {{query.cls}}:
     def select_as_dict(self, *fields, attr: bool = False, default=NoReturn) -> "Query[Dict]":
         return queries.SelectAsDict(self, *fields, attr=attr, default=default)
 
-    @lazy_iterate
     def unpack_pos(self, selector: Callable[..., R]) -> "{{sequence.name}}[R]":
         return queries.UnpackPos(self, selector=selector)
 
-    @lazy_iterate
     def unpack_kw(self, selector: Callable[..., R]) -> "{{sequence.name}}[R]":
         return queries.UnpackKw(self, selector=selector)
 
@@ -278,15 +270,12 @@ class {{query.cls}}:
     def request_async(self, func, retry: int = None, timeout=None) -> "Query[Response]":
         return queries.RequestAsync(self, func, retry=retry, timeout=None)
 
-    @lazy_iterate
     def zip(self):
         raise NotImplementedError()
 
-    @lazy_iterate
     def filter(self, predicate: Callable[[{{query.row}}], bool]) -> "{{query.str}}":
         return queries.Filter(self, predicate)
 
-    @lazy_iterate
     def filter_type(self, *types: Type[R]) -> "{{query.str}}":
         return queries.FilterType(self, *types)
 
@@ -397,12 +386,12 @@ class Lazy:
         return len(list(self)) > 0
 
 
-class LazyIterate(Lazy, Query[T], _LazyIterate):
-    pass
+# class LazyIterate(Lazy, Query[T], _LazyIterate):
+#     pass
 
 
-class LazyReference(Lazy, IndexQuery[int, T], Query[T], _LazyReference):
-    pass
+# class LazyReference(Lazy, IndexQuery[int, T], Query[T], _LazyReference):
+#     pass
 
 
 class Instance:
@@ -443,17 +432,17 @@ class DictEx(Instance, IndexQuery[K, V], PairQuery[K, V], Dict[K, V]):
     def __piter__(self):
         return self.items().__iter__()
 
-    @lazy_reference
-    def keys(self):
-        yield from super().keys()
+    # @lazy_reference
+    # def keys(self):
+    #     yield from super().keys()
 
-    @lazy_reference
-    def values(self):
-        yield from super().values()
+    # @lazy_reference
+    # def values(self):
+    #     yield from super().values()
 
-    @lazy_reference
-    def items(self):
-        yield from super().items()
+    # @lazy_reference
+    # def items(self):
+    #     yield from super().items()
 
     # @lazy_reference
     # def reverse(self) -> "PairQuery[K, V]":

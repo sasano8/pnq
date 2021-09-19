@@ -134,6 +134,25 @@ class Test000_Init:
             pnq(src)[0]
 
 
+class Test009_Sleep:
+    def test_sync(self):
+        with pytest.raises(NotImplementedError):
+            pnq([1, 2, 3]).sleep(0).to(list) == [1, 2, 3]
+
+    def test_async(self):
+        import asyncio
+
+        results = []
+
+        async def func():
+            q = pnq([1, 2, 3]).sleep_async(0)
+            async for elm in pnq([1, 2, 3]).sleep_async(0):
+                results.append(elm)
+
+        asyncio.run(func())
+        assert results == [1, 2, 3]
+
+
 class Test010_Finalizer:
     class TestExecuting:
         @pytest.mark.parametrize(
@@ -826,7 +845,7 @@ class Test020_Transform:
     def test_request(self):
         from datetime import datetime
 
-        from pnq.requests import Response
+        from pnq.base.requests import Response
 
         result = []
 
@@ -865,7 +884,7 @@ class Test020_Transform:
         async def main():
             from datetime import datetime
 
-            from pnq.requests import Response
+            from pnq.base.requests import Response
 
             result = []
 
@@ -1321,25 +1340,6 @@ class Test070_Sort:
 
         # 100 - (100 / 6) = 84
         assert different > (84 * 0.5)  # 50%まで偏りを許容する
-
-
-class Test100_Sleep:
-    def test_sync(self):
-        with pytest.raises(NotImplementedError):
-            pnq([1, 2, 3]).sleep(0).to(list) == [1, 2, 3]
-
-    def test_async(self):
-        import asyncio
-
-        results = []
-
-        async def func():
-            q = pnq([1, 2, 3]).sleep_async(0)
-            async for elm in pnq([1, 2, 3]).sleep_async(0):
-                results.append(elm)
-
-        asyncio.run(func())
-        assert results == [1, 2, 3]
 
 
 class Test500_Type:

@@ -298,7 +298,7 @@ class Request(Query):
     def _impl_iter(self):
         func = self.func
 
-        from ..requests import Response, StopWatch
+        from .requests import Response, StopWatch
 
         for v in self.source:
 
@@ -337,7 +337,7 @@ class RequestAsync(Query):
     async def _impl_aiter(self):
         func = self.func
 
-        from ..requests import Response, StopWatch
+        from .requests import Response, StopWatch
 
         async for v in self.source:
 
