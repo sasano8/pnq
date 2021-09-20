@@ -47,13 +47,9 @@ jobs:
           path: .venv
           key: venv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
 
-      - name: select python env
-        # if: steps.cache-venv.outputs.cache-hit != 'true'
+      - name: Install Dependencies
+        if: steps.cache-venv.outputs.cache-hit != 'true'
         run: poetry env use ${{ matrix.python-version }}; poetry install
-
-      # - name: Install Dependencies
-      #   if: steps.cache-venv.outputs.cache-hit != 'true'
-      #   run: poetry install
 
       # - name: Load cached node_module
       #   id: cache-node_module
