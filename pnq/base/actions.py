@@ -1644,19 +1644,17 @@ def to(self, finalizer):
     {1: "a", 2: "b"}
     ```
     """
-    it = __iter(self)
     if False:  # is_async
         raise Exception()
     else:
-        return finalizer(it)
+        return finalizer(self)
 
 
 async def to_async(self, finalizer):
-    it = __iter(self)
-    if it.is_async:
-        return await finalizer(it)
+    if self.is_async:
+        return await finalizer(self)
     else:
-        return await finalizer(it)
+        return await finalizer(self)
 
 
 @mark
@@ -1683,7 +1681,7 @@ def lazy(self, finalizer):
     1
     ```
     """
-    return finalizer(x for x in __iter(self))
+    return finalizer(x for x in self)
 
 
 @mark
