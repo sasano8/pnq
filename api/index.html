@@ -69,7 +69,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#generating" class="md-skip">
+        <a href="#transforming" class="md-skip">
           コンテンツにスキップ
         </a>
       
@@ -225,22 +225,7 @@
   
     <li class="md-nav__item">
       <a href="../quick_start/" class="md-nav__link">
-        クイックスタート
-      </a>
-    </li>
-  
-
-    
-      
-      
-      
-
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../advanced_usage/" class="md-nav__link">
-        高度な使用方法
+        入門
       </a>
     </li>
   
@@ -283,13 +268,6 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#generating" class="md-nav__link">
-    Generating
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#transforming" class="md-nav__link">
     Transforming
   </a>
@@ -348,6 +326,13 @@
         <li class="md-nav__item">
   <a href="#finalizing-getting" class="md-nav__link">
     Finalizing - Getting
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#generating" class="md-nav__link">
+    Generating
   </a>
   
 </li>
@@ -390,6 +375,21 @@
   
 
     
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../advanced_usage/" class="md-nav__link">
+        高度な使用方法
+      </a>
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
@@ -412,13 +412,6 @@
       目次
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#generating" class="md-nav__link">
-    Generating
-  </a>
-  
-</li>
       
         <li class="md-nav__item">
   <a href="#transforming" class="md-nav__link">
@@ -483,6 +476,13 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#generating" class="md-nav__link">
+    Generating
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -498,127 +498,7 @@
                 
                   <h1>インターフェース</h1>
                 
-                <h2 id="generating">Generating</h2>
-<div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>iter</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=None</em><span class="autodoc-punctuation">)</span></div>
-<div class="autodoc-docstring"><p>イテラブルまたはマッピングからイテレータを取得します。
-マッピングの場合は、キーバリューのタプルを返すイテレータを取得します。</p>
-<p>Args:</p>
-<ul>
-<li>self: イテレータを取得するイテラブルまたはマッピング</li>
-<li>selector: 取得したイテレータから任意の要素を抽出する関数</li>
-</ul>
-<p>Returns: 取得したイテレータを内包するクエリ</p>
-<p>Usage:
-<div class="highlight"><pre><span></span><code>&gt;&gt;&gt; pnq.iter([1, 2]).to(list)
-[1, 2]
-&gt;&gt;&gt; pnq.iter([{&quot;id&quot;: 1, &quot;name&quot;: &quot;bob&quot;}]).to(list)
-[(&quot;id&quot;, 1), (&quot;name&quot;, &quot;bob&quot;)]
-&gt;&gt;&gt; pnq.iter([{&quot;id&quot;: 1, &quot;name&quot;: &quot;bob&quot;}], lambda x: x[1]).to(list)
-[1, &quot;bob&quot;]
-</code></pre></div></p></div>
-</div>
-<div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>infinite</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">func</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">*args</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">**kwargs</em><span class="autodoc-punctuation">)</span></div>
-<div class="autodoc-docstring"><p>渡した関数を無限に実行するイテレータを生成します。
-無限に繰り返されるため、<code>take</code>等で終了条件を設定するように注意してください。</p>
-<p>Args:</p>
-<ul>
-<li>func(args, kwargs): 無限に実行する関数</li>
-<li>args: 関数に渡す位置引数</li>
-<li>kwargs: 関数に渡すキーワード引数</li>
-</ul>
-<p>Returns: 取得したイテレータを内包するクエリ</p>
-<p>Usage:
-<div class="highlight"><pre><span></span><code>&gt;&gt;&gt; pnq.infinite(datetime.now).take(1).to(list)
-[datetime.datetime(2021, 9, 10, 3, 57, 54, 402467)]
-&gt;&gt;&gt; pnq.infinite(datetime, 2020, 1, day=2).take(1).to(list)
-[datetime.datetime(2010, 1, 2, 0, 0)]
-</code></pre></div></p></div>
-</div>
-<div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>repeat</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">value</em><span class="autodoc-punctuation">)</span></div>
-<div class="autodoc-docstring"><p>同じ値を繰り返す無限イテレータを生成します。</p>
-<p>Args:</p>
-<ul>
-<li>value: 繰り返す値</li>
-</ul>
-<p>Returns: 取得したイテレータを内包するクエリ</p>
-<p>Usage:
-<div class="highlight"><pre><span></span><code>&gt;&gt;&gt; pnq.repeat(5).take(3).to(list)
-[5, 5, 5]
-</code></pre></div></p></div>
-</div>
-<div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>value</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">*args</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">**kwargs</em><span class="autodoc-punctuation">)</span></div>
-<div class="autodoc-docstring"><p>１つの要素を返すイテレータを生成します。</p>
-<p>Args:</p>
-<ul>
-<li>value: 返す値</li>
-</ul>
-<p>Returns: 取得したイテレータを内包するクエリ</p>
-<p>Usage:
-<div class="highlight"><pre><span></span><code>&gt;&gt;&gt; pnq.value(1).to(list)
-[1]
-&gt;&gt;&gt; pnq.value(name=&quot;test&quot;).to(list)
-[{&quot;naem&quot;: &quot;test&quot;}]
-</code></pre></div></p></div>
-</div>
-<div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>count</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">start=0</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">step=1</em><span class="autodoc-punctuation">)</span></div>
-<div class="autodoc-docstring"><p>連続した値を無限に返すイテレータを生成します。
-無限に繰り返されるため、<code>take</code>等で終了条件を設定するように注意してください。</p>
-<p>Args:</p>
-<ul>
-<li>start: 開始値</li>
-<li>step: 増分</li>
-</ul>
-<p>Returns: 取得したイテレータを内包するクエリ</p>
-<p>Usage:
-<div class="highlight"><pre><span></span><code>&gt;&gt;&gt; pnq.count().take(3).to(list)
-[0, 1, 2]
-&gt;&gt;&gt; pnq.count(1, 2).take(3).to(list)
-[1, 3, 5]
-</code></pre></div></p></div>
-</div>
-<div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>cycle</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">iterable</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">repeat=None</em><span class="autodoc-punctuation">)</span></div>
-<div class="autodoc-docstring"><p>イテラブルが返す値を無限に繰り返すイテレータを生成します。</p>
-<p>Args:</p>
-<ul>
-<li>iterable: 繰り返すイテラブル</li>
-<li>repeat: 繰り返す回数。Noneの場合は無限に繰り返します。</li>
-</ul>
-<p>Returns: 取得したイテレータを内包するクエリ</p>
-<p>Usage:
-<div class="highlight"><pre><span></span><code>&gt;&gt;&gt; pnq.cycle([1,2,3]).take(4).to(list)
-[1, 2, 3, 1]
-&gt;&gt;&gt; pnq.cycle([1,2,3], repeat=2).to(list)
-[1, 2, 3, 1, 2, 3]
-</code></pre></div></p></div>
-</div>
-<div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>range</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">*args</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">**kwargs</em><span class="autodoc-punctuation">)</span></div>
-<div class="autodoc-docstring"><p>指定した開始数と終了数までの連続した値を返すイテレータを生成します。</p>
-<p>Args:</p>
-<ul>
-<li>stop: 終了数</li>
-</ul>
-<p>Args:</p>
-<ul>
-<li>start: 開始数</li>
-<li>stop: 終了数</li>
-<li>step: 増分</li>
-</ul>
-<p>Returns: 取得したイテレータを内包するクエリ</p>
-<p>Usage:
-<div class="highlight"><pre><span></span><code>&gt;&gt;&gt; pnq.range(5).to(list)
-[0, 1, 2, 3, 4]
-&gt;&gt;&gt; pnq.range(0, 3, 2).to(list)
-[0, 2, 4]
-</code></pre></div></p></div>
-</div>
-<h2 id="transforming">Transforming</h2>
+                <h2 id="transforming">Transforming</h2>
 <div class="autodoc">
 <div class="autodoc-signature"><code>pnq.actions.<strong>map</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector</em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>シーケンスの各要素を新しいフォームに射影します。
@@ -690,23 +570,6 @@ str関数を渡した場合、利便性のため<code>None</code>は<code>""</co
 </code></pre></div></p></div>
 </div>
 <div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>select_as_dict</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">*fields</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">attr=False</em><span class="autodoc-punctuation">)</span></div>
-<div class="autodoc-docstring"><p>シーケンスの各要素からアイテムまたは属性を選択し辞書として新しいフォームに射影します。</p>
-<p>Args:</p>
-<ul>
-<li>self: 変換対象のシーケンス</li>
-<li>fields: 選択するアイテムまたは属性</li>
-<li>attr: 属性から取得する場合はTrueとする</li>
-</ul>
-<p>Returns: 選択したアイテムを含む辞書を返すクエリ</p>
-<p>Usage:
-<div class="highlight"><pre><span></span><code>&gt;&gt;&gt; pnq.query([(1, 2)]).select_as_dict(0).to(list)
-[{0: 1}]
-&gt;&gt;&gt; pnq.query([str]).select_as_dict(&quot;<strong>name</strong>&quot;, attr=True).to(list)
-[{&quot;<strong>name</strong>&quot;: &quot;str&quot;}]
-</code></pre></div></p></div>
-</div>
-<div class="autodoc">
 <div class="autodoc-signature"><code>pnq.actions.<strong>select_as_tuple</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">*fields</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">attr=False</em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>シーケンスの各要素からアイテムまたは属性を選択し辞書として新しいフォームに射影します。
 selectと異なり選択した値が１つでも必ずタプルを返します。</p>
@@ -722,6 +585,23 @@ selectと異なり選択した値が１つでも必ずタプルを返します�
 [(1,)]
 &gt;&gt;&gt; pnq.query([str]).select_as_tuple(&quot;<strong>name</strong>&quot;, attr=True).to(list)
 [(&quot;str&quot;,)]
+</code></pre></div></p></div>
+</div>
+<div class="autodoc">
+<div class="autodoc-signature"><code>pnq.actions.<strong>select_as_dict</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">*fields</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">attr=False</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-docstring"><p>シーケンスの各要素からアイテムまたは属性を選択し辞書として新しいフォームに射影します。</p>
+<p>Args:</p>
+<ul>
+<li>self: 変換対象のシーケンス</li>
+<li>fields: 選択するアイテムまたは属性</li>
+<li>attr: 属性から取得する場合はTrueとする</li>
+</ul>
+<p>Returns: 選択したアイテムを含む辞書を返すクエリ</p>
+<p>Usage:
+<div class="highlight"><pre><span></span><code>&gt;&gt;&gt; pnq.query([(1, 2)]).select_as_dict(0).to(list)
+[{0: 1}]
+&gt;&gt;&gt; pnq.query([str]).select_as_dict(&quot;<strong>name</strong>&quot;, attr=True).to(list)
+[{&quot;<strong>name</strong>&quot;: &quot;str&quot;}]
 </code></pre></div></p></div>
 </div>
 <div class="autodoc">
@@ -756,8 +636,8 @@ selectと異なり選択した値が１つでも必ずタプルを返します�
 </ul>
 <p>Returns: 参照したシーケンスをそのまま返す</p>
 <p>Usage:
-<div class="highlight"><pre><span></span><code>&gt;&gt;&gt; pnq.query([&quot;abc&quot;]).flat().to(list)
-&gt;&gt;&gt; [&quot;a&quot;, &quot;b&quot;, &quot;c&quot;]
+<div class="highlight"><pre><span></span><code>&gt;&gt;&gt; pnq.query([&quot;abc&quot;, &quot;def&quot;]).flat().to(list)
+&gt;&gt;&gt; [&quot;a&quot;, &quot;b&quot;, &quot;c&quot;, &quot;d&quot;, &quot;e&quot;, &quot;f&quot;]
 &gt;&gt;&gt; countries = [{&quot;country&quot;: &quot;japan&quot;, &quot;state&quot;: [&quot;tokyo&quot;, &quot;osaka&quot;]}, {&quot;country&quot;: &quot;america&quot;, &quot;state&quot;: [&quot;new york&quot;, &quot;florida&quot;]}]
 &gt;&gt;&gt; pnq.query(countries).flat(lambda x: x[&quot;state&quot;]).to(list)
 &gt;&gt;&gt; [&quot;tokyo&quot;, &quot;osaka&quot;, &quot;new york&quot;, &quot;florida&quot;]
@@ -801,7 +681,7 @@ selectと異なり選択した値が１つでも必ずタプルを返します�
 </code></pre></div></p></div>
 </div>
 <div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>group_by</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7fe5381ceee0></em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-signature"><code>pnq.actions.<strong>group_by</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7f2f8fafcca0></em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>シーケンスの各要素からセレクタ関数でキーとバリューを取得し、キーでグループ化されたシーケンスを生成します。
 セレクタ関数を指定しない場合、各要素がすでにキーバリューのタプルであることを期待し、キーでグループ化します。</p>
 <p>Args:</p>
@@ -1076,7 +956,7 @@ raise DuplicateError(&quot;1&quot;)
 <li>desc: 降順で並べる場合はTrue</li>
 </ul>
 <p>Usage:
-<div class="highlight"><pre><span></span><code>&gt;&gt;&gt; pnq.query([1, 2, 3]).order_by().to(list)
+<div class="highlight"><pre><span></span><code>&gt;&gt;&gt; pnq.query([3, 2, 1]]).order_by().to(list)
 [1, 2, 3]
 &gt;&gt;&gt; pnq.query([1, 2, 3]).order_by(lambda x: -x).to(list)
 [3, 2, 1]
@@ -1156,7 +1036,7 @@ exceptと同じ意味</p></div>
 </code></pre></div></p></div>
 </div>
 <div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>each</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">func=<function \<lambda> at 0x7fe5381d4040></em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-signature"><code>pnq.actions.<strong>each</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">func=<function \<lambda> at 0x7f2f8fafadc0></em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>イテレーションを実行し、流れてくる要素を関数に送出します。
 例外はコントロールされません。
 関数を指定しない場合、単にイテレーションを実行します。</p>
@@ -1174,19 +1054,19 @@ exceptと同じ意味</p></div>
 </code></pre></div></p></div>
 </div>
 <div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>each_unpack</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">func=<function \<lambda> at 0x7fe5381d4280></em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-signature"><code>pnq.actions.<strong>each_unpack</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">func=<function \<lambda> at 0x7f2f8fafd040></em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p><code>each</code>実行時にキーワードアンパックしながら要素を送出します。
 与える要素は辞書である必要があります。
 基本的な動作は<code>each</code>を参照ください。</p>
 <p>Usage:
 <div class="highlight"><pre><span></span><code>&gt;&gt;&gt; @pnq.query([{&quot;arg1&quot;: 1, &quot;arg2&quot;: 2}]).each_unpack
 &gt;&gt;&gt; def print_values(arg1, arg2):
-&gt;&gt;&gt;   print(v1, v2)
+&gt;&gt;&gt;   print(arg1, arg2)
 &gt;&gt;&gt; 1, 2
 </code></pre></div></p></div>
 </div>
 <div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>each_async</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">func=<function async_dummy at 0x7fe5381d43a0></em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-signature"><code>pnq.actions.<strong>each_async</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">func=<function async_dummy at 0x7f2f8fafd160></em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>シーケンスから流れてくる値を非同期関数に送出します。
 例外はコントロールされません。</p>
 <p>Args:</p>
@@ -1205,7 +1085,7 @@ exceptと同じ意味</p></div>
 </code></pre></div></p></div>
 </div>
 <div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>each_async_unpack</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">func=<function async_dummy at 0x7fe5381d43a0></em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-signature"><code>pnq.actions.<strong>each_async_unpack</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">func=<function async_dummy at 0x7f2f8fafd160></em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p><code>each_async</code>実行時にキーワードアンパックしながら要素を送出します。
 与える要素は辞書である必要があります。
 基本的な動作は<code>each_async</code>を参照ください。</p>
@@ -1265,7 +1145,7 @@ True
 </code></pre></div></p></div>
 </div>
 <div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>all</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7fe5381d6670></em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-signature"><code>pnq.actions.<strong>all</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7f2f8fafa430></em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>シーケンスの全ての要素がTrueと判定できるか評価します。要素がない場合はTrueを返します。</p>
 <ul>
 <li>selector: 要素から検証する値を抽出する関数</li>
@@ -1284,7 +1164,7 @@ True
 </code></pre></div></p></div>
 </div>
 <div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>any</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7fe5381d6790></em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-signature"><code>pnq.actions.<strong>any</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7f2f8fafa550></em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>シーケンスのいずれかの要素がTrueと判定できるか評価します。要素がない場合はFalseを返します。</p>
 <ul>
 <li>selector: 要素から検証する値を抽出する関数</li>
@@ -1301,7 +1181,7 @@ True
 </code></pre></div></p></div>
 </div>
 <div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>contains</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">value</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7fe5381d65e0></em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-signature"><code>pnq.actions.<strong>contains</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">value</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7f2f8fafa3a0></em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>既定の等値比較子を使用して、指定した要素がシーケンスに含まれているか評価します。
 辞書をソースとした場合は、キーバリューのタプルを比較します。</p>
 <ul>
@@ -1323,7 +1203,7 @@ True
 </code></pre></div></p></div>
 </div>
 <div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>min</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7fe5381d69d0></em><span class="autodoc-punctuation">, </span><em class="autodoc-param">default=typing.NoReturn</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-signature"><code>pnq.actions.<strong>min</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7f2f8fafa790></em><span class="autodoc-punctuation">, </span><em class="autodoc-param">default=typing.NoReturn</em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>シーケンスの要素から最小の値を取得します。</p>
 <p>Args:</p>
 <ul>
@@ -1340,7 +1220,7 @@ ValueError: min() arg is an empty sequence
 </code></pre></div></p></div>
 </div>
 <div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>max</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7fe5381d6af0></em><span class="autodoc-punctuation">, </span><em class="autodoc-param">default=typing.NoReturn</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-signature"><code>pnq.actions.<strong>max</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7f2f8fafa8b0></em><span class="autodoc-punctuation">, </span><em class="autodoc-param">default=typing.NoReturn</em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>シーケンスの要素から最大の値を取得します。</p>
 <p>Args:</p>
 <ul>
@@ -1357,7 +1237,7 @@ ValueError: max() arg is an empty sequence
 </code></pre></div></p></div>
 </div>
 <div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>sum</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7fe5381d6c10></em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-signature"><code>pnq.actions.<strong>sum</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7f2f8fafa9d0></em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>シーケンスの要素を合計します。</p>
 <ul>
 <li>selector: 要素から計算する値を抽出する関数</li>
@@ -1370,7 +1250,7 @@ ValueError: max() arg is an empty sequence
 </code></pre></div></p></div>
 </div>
 <div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>average</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7fe5381d6940></em><span class="autodoc-punctuation">, </span><em class="autodoc-param">exp=1e-05</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">round='ROUND_HALF_UP'</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-signature"><code>pnq.actions.<strong>average</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7f2f8fafa700></em><span class="autodoc-punctuation">, </span><em class="autodoc-param">exp=1e-05</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">round='ROUND_HALF_UP'</em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>シーケンスの要素の平均を求めます。</p>
 <p>Args:</p>
 <ul>
@@ -1386,7 +1266,7 @@ ValueError: max() arg is an empty sequence
 </code></pre></div></p></div>
 </div>
 <div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>reduce</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">seed</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">op='+='</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<pnq.base.actions.EmptyLambda object at 0x7fe53828ca30></em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-signature"><code>pnq.actions.<strong>reduce</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">seed</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">op='+='</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<pnq.base.actions.EmptyLambda object at 0x7f2f8fc1f850></em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>シーケンスの要素を指定した代入演算子でシードに合成し、合成結果を返す。</p>
 <p>Args:</p>
 <ul>
@@ -1408,7 +1288,7 @@ ValueError: max() arg is an empty sequence
 </code></pre></div></p></div>
 </div>
 <div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>concat</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7fe5381d6e50></em><span class="autodoc-punctuation">, </span><em class="autodoc-param">delimiter=''</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-signature"><code>pnq.actions.<strong>concat</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7f2f8fafac10></em><span class="autodoc-punctuation">, </span><em class="autodoc-param">delimiter=''</em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>シーケンスの要素を文字列として連結します。</p>
 <p>Args:</p>
 <ul>
@@ -1582,6 +1462,108 @@ NoElementErrorが発生した時、任意の例外を発生させます。</p>
 raise Exception(&quot;No exists.&quot;)
 </code></pre></div></p></div>
 </div>
+<h2 id="generating">Generating</h2>
+<!-- ::: pnq.actions.query
+    :docstring: -->
+
+<div class="autodoc">
+<div class="autodoc-signature"><code>pnq.actions.<strong>infinite</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">func</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">*args</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">**kwargs</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-docstring"><p>渡した関数を無限に実行するイテレータを生成します。
+無限に繰り返されるため、<code>take</code>等で終了条件を設定するように注意してください。</p>
+<p>Args:</p>
+<ul>
+<li>func(args, kwargs): 無限に実行する関数</li>
+<li>args: 関数に渡す位置引数</li>
+<li>kwargs: 関数に渡すキーワード引数</li>
+</ul>
+<p>Returns: 取得したイテレータを内包するクエリ</p>
+<p>Usage:
+<div class="highlight"><pre><span></span><code>&gt;&gt;&gt; pnq.infinite(datetime.now).take(1).to(list)
+[datetime.datetime(2021, 9, 10, 3, 57, 54, 402467)]
+&gt;&gt;&gt; pnq.infinite(datetime, 2020, 1, day=2).take(1).to(list)
+[datetime.datetime(2010, 1, 2, 0, 0)]
+</code></pre></div></p></div>
+</div>
+<div class="autodoc">
+<div class="autodoc-signature"><code>pnq.actions.<strong>repeat</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">value</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-docstring"><p>同じ値を繰り返す無限イテレータを生成します。</p>
+<p>Args:</p>
+<ul>
+<li>value: 繰り返す値</li>
+</ul>
+<p>Returns: 取得したイテレータを内包するクエリ</p>
+<p>Usage:
+<div class="highlight"><pre><span></span><code>&gt;&gt;&gt; pnq.repeat(5).take(3).to(list)
+[5, 5, 5]
+</code></pre></div></p></div>
+</div>
+<div class="autodoc">
+<div class="autodoc-signature"><code>pnq.actions.<strong>value</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">*args</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">**kwargs</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-docstring"><p>１つの要素を返すイテレータを生成します。
+位置引数を与えた場合は与えた値かタプルになり、キーワード引数を与えた場合は辞書になります。</p>
+<p>Usage:
+<div class="highlight"><pre><span></span><code>&gt;&gt;&gt; pnq.value(1).to(list)
+[1]
+&gt;&gt;&gt; pnq.value(&quot;a&quot;, &quot;b&quot;).to(list)
+[(&quot;a&quot;, &quot;b&quot;)]
+&gt;&gt;&gt; pnq.value(name=&quot;test&quot;).to(list)
+[{&quot;naem&quot;: &quot;test&quot;}]
+</code></pre></div></p></div>
+</div>
+<div class="autodoc">
+<div class="autodoc-signature"><code>pnq.actions.<strong>count</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">start=0</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">step=1</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-docstring"><p>連続した値を無限に返すイテレータを生成します。
+無限に繰り返されるため、<code>take</code>等で終了条件を設定するように注意してください。</p>
+<p>Args:</p>
+<ul>
+<li>start: 開始値</li>
+<li>step: 増分</li>
+</ul>
+<p>Returns: 取得したイテレータを内包するクエリ</p>
+<p>Usage:
+<div class="highlight"><pre><span></span><code>&gt;&gt;&gt; pnq.count().take(3).to(list)
+[0, 1, 2]
+&gt;&gt;&gt; pnq.count(1, 2).take(3).to(list)
+[1, 3, 5]
+</code></pre></div></p></div>
+</div>
+<div class="autodoc">
+<div class="autodoc-signature"><code>pnq.actions.<strong>cycle</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">iterable</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">repeat=None</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-docstring"><p>イテラブルが返す値を無限に繰り返すイテレータを生成します。</p>
+<p>Args:</p>
+<ul>
+<li>iterable: 繰り返すイテラブル</li>
+<li>repeat: 繰り返す回数。Noneの場合は無限に繰り返します。</li>
+</ul>
+<p>Returns: 取得したイテレータを内包するクエリ</p>
+<p>Usage:
+<div class="highlight"><pre><span></span><code>&gt;&gt;&gt; pnq.cycle([1,2,3]).take(4).to(list)
+[1, 2, 3, 1]
+&gt;&gt;&gt; pnq.cycle([1,2,3], repeat=2).to(list)
+[1, 2, 3, 1, 2, 3]
+</code></pre></div></p></div>
+</div>
+<div class="autodoc">
+<div class="autodoc-signature"><code>pnq.actions.<strong>range</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">*args</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">**kwargs</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-docstring"><p>指定した開始数と終了数までの連続した値を返すイテレータを生成します。</p>
+<p>Args:</p>
+<ul>
+<li>stop: 終了数</li>
+</ul>
+<p>Args:</p>
+<ul>
+<li>start: 開始数</li>
+<li>stop: 終了数</li>
+<li>step: 増分</li>
+</ul>
+<p>Returns: 取得したイテレータを内包するクエリ</p>
+<p>Usage:
+<div class="highlight"><pre><span></span><code>&gt;&gt;&gt; pnq.range(5).to(list)
+[0, 1, 2, 3, 4]
+&gt;&gt;&gt; pnq.range(0, 3, 2).to(list)
+[0, 2, 4]
+</code></pre></div></p></div>
+</div>
                 
               
               
@@ -1601,7 +1583,7 @@ raise Exception(&quot;No exists.&quot;)
     <nav class="md-footer__inner md-grid" aria-label="フッター">
       
         
-        <a href="../advanced_usage/" class="md-footer__link md-footer__link--prev" aria-label="前: 高度な使用方法" rel="prev">
+        <a href="../quick_start/" class="md-footer__link md-footer__link--prev" aria-label="前: 入門" rel="prev">
           <div class="md-footer__button md-icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
           </div>
@@ -1610,7 +1592,7 @@ raise Exception(&quot;No exists.&quot;)
               <span class="md-footer__direction">
                 前
               </span>
-              高度な使用方法
+              入門
             </div>
           </div>
         </a>
