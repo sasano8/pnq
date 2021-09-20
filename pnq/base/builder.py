@@ -35,3 +35,20 @@ class Builder:
                 return cls.QUERY_ASYNC(source)
             else:
                 raise TypeError()
+
+    def infinite(func, *args, **kwargs):
+        def infinite(*args, **kwargs):
+            while True:
+                yield func(*args, **kwargs)
+
+        return query(LazyGenerator(infinite, *args, **kwargs))
+
+    def count(start=0, step=1):
+        from itertools import count
+
+        return query(LazyGenerator(count, start, step))
+
+    def cycle(iterable):
+        from itertools import cycle
+
+        return query(LazyGenerator(cycle, iterable))

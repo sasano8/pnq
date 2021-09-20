@@ -136,6 +136,43 @@ class Query(Generic[T]):
     def concat(self, selector=lambda x: x, delimiter: str = "") -> str:
         return actions.concat(self, selector, delimiter)
 
+    def test(self, expect):
+        """同期イテレータと非同期イテレータを実行し結果を比較し、
+        それぞれの比較結果(bool)をタプルとして返す。
+        実行不可な場合はNoneを返す。
+        """
+
+        # TODO: asyncを通るようにパスを切り替えるクエリを挟む必要がある
+
+        import asyncio
+
+        async def to_list():
+            return [x async for x in self]
+
+        sync_result = None
+        async_result = None
+
+        try:
+            sync_result = [x for x in self]
+        except Exception as e:
+            pass
+
+        try:
+            async_result = asyncio.run(to_list())
+        except Exception as e:
+            pass
+
+        return_sync = None
+        return_async = None
+
+        if sync_result is not None:
+            return_sync = sync_result == expect
+
+        if async_result is not None:
+            return_async = async_result == expect
+
+        return return_sync, return_async
+
     @overload
     def to(self, func: Type[Iterable[T]]) -> Iterable[T]:
         ...
@@ -430,9 +467,46 @@ class PairQuery(Generic[K, V]):
     def concat(self, selector=lambda x: x, delimiter: str = "") -> str:
         return actions.concat(self, selector, delimiter)
 
-    # @overload
-    # def to(self, func: Type[Mapping[K, V]]) -> Mapping[K, V]:
-    #     ...
+    def test(self, expect):
+        """同期イテレータと非同期イテレータを実行し結果を比較し、
+        それぞれの比較結果(bool)をタプルとして返す。
+        実行不可な場合はNoneを返す。
+        """
+
+        # TODO: asyncを通るようにパスを切り替えるクエリを挟む必要がある
+
+        import asyncio
+
+        async def to_list():
+            return [x async for x in self]
+
+        sync_result = None
+        async_result = None
+
+        try:
+            sync_result = [x for x in self]
+        except Exception as e:
+            pass
+
+        try:
+            async_result = asyncio.run(to_list())
+        except Exception as e:
+            pass
+
+        return_sync = None
+        return_async = None
+
+        if sync_result is not None:
+            return_sync = sync_result == expect
+
+        if async_result is not None:
+            return_async = async_result == expect
+
+        return return_sync, return_async
+
+    @overload
+    def to(self, func: Type[Mapping[K, V]]) -> Mapping[K, V]:
+        ...
 
     @overload
     def to(self, func: Callable[[Iterable[Tuple[K, V]]], R]) -> R:
