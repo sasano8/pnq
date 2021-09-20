@@ -29,9 +29,6 @@ class Response(NamedTuple):
             traceback.format_exception(etype=type(err), value=err, tb=err.__traceback__)
         )
 
-    def __getitem__(self, key):
-        return self.to_dict()[key]
-
     def __str__(self):
         return str(self.to_dict())
 
