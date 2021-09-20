@@ -314,13 +314,6 @@
       
         <li class="md-nav__item">
   <a href="#_1" class="md-nav__link">
-    ステートレスイテレータ
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
     非同期処理
   </a>
   
@@ -328,43 +321,29 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    実行
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#_3" class="md-nav__link">
-    非同期クエリの実行
+    実装例
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#_4" class="md-nav__link">
-    同期クエリの実行
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_5" class="md-nav__link">
-    スリープ
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_6" class="md-nav__link">
-    非同期クエリのキャンセル管理
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_7" class="md-nav__link">
     例外処理
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#_8" class="md-nav__link">
-    実装例
+  <a href="#_5" class="md-nav__link">
+    キャンセル管理
   </a>
   
 </li>
@@ -375,7 +354,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_9" class="md-nav__link">
+  <a href="#_6" class="md-nav__link">
     性能評価
   </a>
   
@@ -390,7 +369,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#_10" class="md-nav__link">
+  <a href="#_7" class="md-nav__link">
     非同期イテレータの性能
   </a>
   
@@ -434,13 +413,6 @@
       
         <li class="md-nav__item">
   <a href="#_1" class="md-nav__link">
-    ステートレスイテレータ
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
     非同期処理
   </a>
   
@@ -448,43 +420,29 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    実行
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#_3" class="md-nav__link">
-    非同期クエリの実行
+    実装例
   </a>
   
 </li>
         
           <li class="md-nav__item">
   <a href="#_4" class="md-nav__link">
-    同期クエリの実行
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_5" class="md-nav__link">
-    スリープ
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_6" class="md-nav__link">
-    非同期クエリのキャンセル管理
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_7" class="md-nav__link">
     例外処理
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#_8" class="md-nav__link">
-    実装例
+  <a href="#_5" class="md-nav__link">
+    キャンセル管理
   </a>
   
 </li>
@@ -495,7 +453,7 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_9" class="md-nav__link">
+  <a href="#_6" class="md-nav__link">
     性能評価
   </a>
   
@@ -510,7 +468,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#_10" class="md-nav__link">
+  <a href="#_7" class="md-nav__link">
     非同期イテレータの性能
   </a>
   
@@ -536,119 +494,38 @@
                 
                   <h1>高度な使用方法</h1>
                 
-                <h2 id="_1">ステートレスイテレータ</h2>
-<p><code>pnq</code>はステートレスなイテレータとして動作するように設計されています。</p>
-<p>Pythonの組込み関数にはいくつかイテレータを生成する機能がありますが、次の例を見てみましょう。</p>
-<div class="highlight"><pre><span></span><code><span class="n">it</span> <span class="o">=</span> <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
-
-<span class="n">result_1</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">it</span><span class="p">)</span>
-<span class="c1"># =&gt; [1, 2, 3]</span>
-
-<span class="n">result_2</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">it</span><span class="p">)</span>
-<span class="c1"># =&gt; []</span>
-</code></pre></div>
-<p>2回目の実行では、空のリストが返るようになりました。
-これは、<code>filter</code>関数はイテレータを返し、列挙された要素は消費されてしまうためです。</p>
-<p><code>pnq</code>では、イテレータを暴露させずイテラブルとして動作し、イテレーション要求時に毎回新たなイテレータを生成するため、常に同じ結果を返します。</p>
-<div class="highlight"><pre><span></span><code><span class="n">it</span> <span class="o">=</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="kc">True</span><span class="p">)</span>
-
-<span class="n">result_1</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">it</span><span class="p">)</span>
-<span class="c1"># =&gt; [1, 2, 3]</span>
-
-<span class="n">result_2</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">it</span><span class="p">)</span>
-<span class="c1"># =&gt; [1, 2, 3]</span>
-</code></pre></div>
-<p>ただし、ソースがイテレータの場合はソースの挙動に準拠します。</p>
-<div class="highlight"><pre><span></span><code><span class="n">it</span> <span class="o">=</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]))</span>
-
-<span class="n">result_1</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">it</span><span class="p">)</span>
-<span class="c1"># =&gt; [1, 2, 3]</span>
-
-<span class="n">result_2</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">it</span><span class="p">)</span>
-<span class="c1"># =&gt; []</span>
-</code></pre></div>
-<h2 id="_2">非同期処理</h2>
-<h3 id="_3">非同期クエリの実行</h3>
-<p>非同期関数を含むクエリを実行するには<code>request</code>を使用する必要があり、また、クエリを非同期でイテレート（<code>async for ...</code>）する必要があります。</p>
+                <h2 id="_1">非同期処理</h2>
+<h3 id="_2">実行</h3>
+<p>次の場合、クエリは非同期の文脈で実行する必要があります。</p>
+<ul>
+<li>非同期イテレータをソースとした場合</li>
+<li><code>request_async</code>でクエリをチェーンした場合</li>
+<li><code>each_async</code>を呼び出す場合</li>
+</ul>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">asyncio</span>
 
-<span class="k">async</span> <span class="k">def</span> <span class="nf">sleep</span><span class="p">(</span><span class="n">seconds</span><span class="p">):</span>
-    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">seconds</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">seconds</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">async_iterate</span><span class="p">():</span>
+    <span class="k">yield</span> <span class="mi">1</span>
+    <span class="k">yield</span> <span class="mi">2</span>
+    <span class="k">yield</span> <span class="mi">3</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">sleep</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
 <span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
-    <span class="k">async</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">pnq</span><span class="o">.</span><span class="n">infinite</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="n">sleep</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">async_iterate</span><span class="p">()):</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">request_async</span><span class="p">(</span><span class="n">sleep</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="k">await</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">each_async</span><span class="p">(</span><span class="n">sleep</span><span class="p">)</span>
 
 <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
 </code></pre></div>
-<h3 id="_4">同期クエリの実行</h3>
-<p>クエリは<code>__iter__</code>と<code>__aiter__</code>を備え、同期コードと非同期コードの互換性を最大限に保っています。<code>request</code>で実行する関数が非同期でない場合、いつも通り<code>for</code>を利用することで結果が得られます。<code>request</code>で実行する関数が非同期の場合は、同期クエリで実行できません。</p>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">time</span>
-
-<span class="k">def</span> <span class="nf">sleep</span><span class="p">(</span><span class="n">seconds</span><span class="p">):</span>
-    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">seconds</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">seconds</span>
-
-<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
-    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">pnq</span><span class="o">.</span><span class="n">infinite</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="n">sleep</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-
-<span class="n">main</span><span class="p">()</span>
-</code></pre></div>
-<h3 id="_5">スリープ</h3>
-<p><code>pnq</code>は<code>sleep</code>メソッドを提供しています。<code>sleep</code>は、実行形式（for/async for）に応じて、<code>time.sleep</code>と<code>asyncio.sleep</code>を使い分けます。
-<code>sleep</code>は、指定した秒数だけ処理を中断した後、シーケンスから受け取った値を後続のチェインに受け流します。</p>
-<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
-    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">pnq</span><span class="o">.</span><span class="n">infinite</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-
-<span class="n">main</span><span class="p">()</span>
-</code></pre></div>
-<h3 id="_6">非同期クエリのキャンセル管理</h3>
-<p><code>pnq</code>は非同期処理をキャンセル要求から保護しません。
-すなわち、システムがキャンセル要求を検知すると、処理は次回のawaitのタイミングでキャンセルされ、不完全な状態を引き起こす可能性があることに注意してください。</p>
-<p>処理がキャンセルされるのを防ぐには、<code>pnq</code>の外で何らかのキャンセル管理を行う必要があります。
-ひとつの方法として、<code>asyncio.shield</code>でコルーチンを保護します。</p>
-<p>しかし、今度は逆にキャンセルができないという新たな問題を引き起こします。
-非同期のキャンセル管理は難しく、何か非同期処理フレームワークを利用することをオススメします。</p>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">asyncio</span>
-
-<span class="k">async</span> <span class="k">def</span> <span class="nf">sleep</span><span class="p">(</span><span class="n">seconds</span><span class="p">):</span>
-    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">seconds</span><span class="p">)</span>
-    <span class="k">yield</span> <span class="n">seconds</span>
-
-<span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
-    <span class="k">async</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">pnq</span><span class="o">.</span><span class="n">infinite</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="n">sleep</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-
-<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">asyncio</span><span class="o">.</span><span class="n">shield</span><span class="p">(</span><span class="n">main</span><span class="p">()))</span>
-</code></pre></div>
-<h3 id="_7">例外処理</h3>
-<p><code>request</code>は、実行結果を<code>params</code> <code>err</code> <code>result</code> <code>detail</code>のタプルとして受け渡します。
-<code>err</code>が<code>None</code>でない場合、処理が失敗したとみなすことができ、次のようにトレースバックを取得できます。</p>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">traceback</span>
-
-<span class="k">for</span> <span class="n">params</span><span class="p">,</span> <span class="n">err</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">detail</span> <span class="ow">in</span> <span class="n">some_requests</span><span class="p">:</span>
-    <span class="k">if</span> <span class="n">err</span><span class="p">:</span>
-        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-            <span class="n">traceback</span><span class="o">.</span><span class="n">format_exception</span><span class="p">(</span><span class="n">etype</span><span class="o">=</span><span class="nb">type</span><span class="p">(</span><span class="n">err</span><span class="p">),</span> <span class="n">value</span><span class="o">=</span><span class="n">err</span><span class="p">,</span> <span class="n">tb</span><span class="o">=</span><span class="n">err</span><span class="o">.</span><span class="n">__traceback__</span><span class="p">)</span>
-        <span class="p">)</span>
-        <span class="c1"># raise Exception(&quot;err&quot;) from err</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
-</code></pre></div>
-<p>残っているリクエストを実行したくない場合は、次のようなコードを書いてもいいでしょう。</p>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">traceback</span>
-
-<span class="k">for</span> <span class="n">params</span><span class="p">,</span> <span class="n">err</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">detail</span> <span class="ow">in</span> <span class="n">some_requests</span><span class="p">:</span>
-    <span class="k">if</span> <span class="n">err</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;RequestError: </span><span class="si">{</span><span class="n">params</span><span class="si">}</span><span class="s2"> =&gt; </span><span class="si">{</span><span class="n">err</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">err</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
-</code></pre></div>
-<h3 id="_8">実装例</h3>
+<h3 id="_3">実装例</h3>
+<p>非同期なリクエストを含むクエリの実装例です。</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">asyncio</span>
 <span class="kn">import</span> <span class="nn">pnq</span>
 <span class="kn">import</span> <span class="nn">httpx</span>
@@ -679,13 +556,29 @@
 <span class="c1">#   False: [res3, res4, ...],</span>
 <span class="c1"># }</span>
 </code></pre></div>
-<h2 id="_9">性能評価</h2>
+<h3 id="_4">例外処理</h3>
+<p><code>request_async</code>は、例外を補足し実行結果を含んだオブジェクト<code>Response</code>を返します。
+<code>Response</code>オブジェクトの<code>err</code>が<code>None</code>でない場合、処理が失敗したとみなすことができ、次のようにスタックトレースを取得できます。</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">traceback</span>
+
+<span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">some_requests</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">err</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="n">traceback</span><span class="o">.</span><span class="n">format_exception</span><span class="p">(</span><span class="n">etype</span><span class="o">=</span><span class="nb">type</span><span class="p">(</span><span class="n">err</span><span class="p">),</span> <span class="n">value</span><span class="o">=</span><span class="n">err</span><span class="p">,</span> <span class="n">tb</span><span class="o">=</span><span class="n">err</span><span class="o">.</span><span class="n">__traceback__</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="c1"># raise Exception(&quot;err&quot;) from err</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="_5">キャンセル管理</h3>
+<p>方式検討中。</p>
+<h2 id="_6">性能評価</h2>
 <h3 id="pnq">pnqのイテレーション性能</h3>
-<p><code>pnq</code>は基本的にPython標準の書き方より性能が遅くなります。
-処理の汎用化を図るためのオーバーヘッドが生じているためです。</p>
-<p>例を見てみましょう。</p>
+<p>内包表記と比較すると<code>pnq</code>は1.36程度性能が落ちます。
+日常的に大量のデータを処理する場合は、ネイティブな記法に書き直すことも検討ください。</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">pnq</span>
-<span class="kn">from</span> <span class="nn">pnq.models</span> <span class="kn">import</span> <span class="n">StopWatch</span>
+<span class="kn">from</span> <span class="nn">pnq.base.requests</span> <span class="kn">import</span> <span class="n">StopWatch</span>
 <span class="kn">from</span> <span class="nn">decimal</span> <span class="kn">import</span> <span class="n">Decimal</span><span class="p">,</span> <span class="n">ROUND_HALF_UP</span>
 
 
@@ -722,16 +615,16 @@
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result_3</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;内包表記:pnq 性能差割 ：</span><span class="si">{</span><span class="n">rate</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </code></pre></div>
-<p>一般的に、内包表記が最も早くなります。
-<code>pnq</code>は性能では太刀打ちできないでしょう。</p>
-<div class="highlight"><pre><span></span><code>{&#39;name&#39;: &#39;内包表記&#39;, &#39;start&#39;: &#39;2021-09-13T14:10:04.780085+00:00&#39;, &#39;end&#39;: &#39;2021-09-13T14:10:11.907716+00:00&#39;, &#39;elapsed&#39;: 7.127631}
-{&#39;name&#39;: &#39;イテレータ&#39;, &#39;start&#39;: &#39;2021-09-13T14:10:11.907728+00:00&#39;, &#39;end&#39;: &#39;2021-09-13T14:10:19.175027+00:00&#39;, &#39;elapsed&#39;: 7.267299}
-{&#39;name&#39;: &#39;pnq&#39;, &#39;start&#39;: &#39;2021-09-13T14:10:19.175040+00:00&#39;, &#39;end&#39;: &#39;2021-09-13T14:10:30.971770+00:00&#39;, &#39;elapsed&#39;: 11.79673}
-内包表記:pnq 性能差 ：1.66
+<div class="highlight"><pre><span></span><code>{&#39;name&#39;: &#39;内包表記&#39;, &#39;start&#39;: &#39;2021-09-20T12:42:35.219151+00:00&#39;, &#39;end&#39;: &#39;2021-09-20T12:42:42.270021+00:00&#39;, &#39;elapsed&#39;: 7.05087}
+{&#39;name&#39;: &#39;イテレータ&#39;, &#39;start&#39;: &#39;2021-09-20T12:42:42.270046+00:00&#39;, &#39;end&#39;: &#39;2021-09-20T12:42:49.383548+00:00&#39;, &#39;elapsed&#39;: 7.113502}
+{&#39;name&#39;: &#39;pnq&#39;, &#39;start&#39;: &#39;2021-09-20T12:42:49.383573+00:00&#39;, &#39;end&#39;: &#39;2021-09-20T12:42:58.979269+00:00&#39;, &#39;elapsed&#39;: 9.595696}
+内包表記:pnq 性能差割 ：1.36
 </code></pre></div>
-<h3 id="_10">非同期イテレータの性能</h3>
-<p>非同期イテレータは、同期イテレータより一般的に遅いです。
-例を見てみましょう。</p>
+<h3 id="_7">非同期イテレータの性能</h3>
+<p>非同期イテレータは同期イテレータより性能が2.25倍程度遅いです。</p>
+<p>非同期イテレータは、ネットワークI/OやファイルI/Oなどの待機時間で、
+並列処理できるケースで有効です。</p>
+<p>特に理由がない場合は、同期イテレータを積極的に使うようにしてください。</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">asyncio</span>
 <span class="kn">from</span> <span class="nn">decimal</span> <span class="kn">import</span> <span class="n">Decimal</span><span class="p">,</span> <span class="n">ROUND_HALF_UP</span>
 
@@ -769,21 +662,15 @@
 
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;同期　　　　　：</span><span class="si">{</span><span class="n">result_1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;非同期　　　　：</span><span class="si">{</span><span class="n">result_2</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;同期 - 非同期 ：</span><span class="si">{</span><span class="n">difference</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;性能差割合　　：</span><span class="si">{</span><span class="n">rate</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
 
 <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
 </code></pre></div>
-<p>非同期イテレータは同期イテレータより性能が2.25倍程度遅くなりました。</p>
 <div class="highlight"><pre><span></span><code>同期　　　　　：{&#39;start&#39;: &#39;2021-09-13T10:28:55.240113+00:00&#39;, &#39;end&#39;: &#39;2021-09-13T10:28:58.890342+00:00&#39;, &#39;elapsed&#39;: 3.650229}
 非同期　　　　：{&#39;start&#39;: &#39;2021-09-13T10:28:58.890577+00:00&#39;, &#39;end&#39;: &#39;2021-09-13T10:29:07.085747+00:00&#39;, &#39;elapsed&#39;: 8.19517}
-同期 - 非同期 ：-4.544941
 性能劣化率　　：2.25
 </code></pre></div>
-<p>非同期イテレータが効力を発揮するケースは、ネットワークI/OやファイルI/Oなど待機時間が多く、
-その間に並列処理で時間を有効活用できる場合です。</p>
-<p>特に理由がない場合は、同期イテレータを積極的に使うようにしてください。</p>
                 
               
               
