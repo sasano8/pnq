@@ -637,14 +637,6 @@ str関数を渡した場合、利便性のため<code>None</code>は<code>""</co
 </code></pre></div></p></div>
 </div>
 <div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>map_flat</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector</em><span class="autodoc-punctuation">)</span></div>
-<div class="autodoc-docstring"></div>
-</div>
-<div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>map_recursive</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector</em><span class="autodoc-punctuation">)</span></div>
-<div class="autodoc-docstring"><p>nodeを再帰的に取得する</p></div>
-</div>
-<div class="autodoc">
 <div class="autodoc-signature"><code>pnq.actions.<strong>unpack_pos</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector</em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>シーケンスの各要素をアンパックし、新しいフォームに射影します。</p>
 <p>Args:</p>
@@ -733,6 +725,49 @@ selectと異なり選択した値が１つでも必ずタプルを返します�
 </code></pre></div></p></div>
 </div>
 <div class="autodoc">
+<div class="autodoc-signature"><code>pnq.actions.<strong>reflect</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">mapping</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">*</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">default=typing.NoReturn</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">attr=False</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-docstring"><p>シーケンスの各要素のフィールドを与えたマッピングに基づき辞書として新しいフォームに射影します。</p>
+<p>Args:</p>
+<ul>
+<li>self: 変換対象のシーケンス</li>
+<li>mapping: 元の要素のフィールドと射影先のフィールドの対応表</li>
+<li>default: フィールドを取得できない場合のデフォルト値</li>
+<li>attr: 属性から取得する場合はTrueとする</li>
+</ul>
+<p>Returns: 参照したシーケンスをそのまま返す</p>
+<p>Usage:
+<div class="highlight"><pre><span></span><code>&gt;&gt;&gt; person = {&quot;id&quot;:1, &quot;name&quot;: &quot;山田&quot;, &quot;kana&quot;: &quot;やまだ&quot;, &quot;note&quot;: &quot;hoge&quot;}
+&gt;&gt;&gt; pnq.query([person]).reflect({
+&gt;&gt;&gt;   &quot;id&quot;: &quot;id&quot;,
+&gt;&gt;&gt;   &quot;name&quot;: {&quot;name&quot;, &quot;searchable&quot;},
+&gt;&gt;&gt;   &quot;kana&quot;: {&quot;kana&quot;, &quot;searchable&quot;},
+&gt;&gt;&gt;   &quot;note&quot;: &quot;searchable&quot;
+&gt;&gt;&gt; }).to(list)
+&gt;&gt;&gt; [{&quot;id&quot;: 1, &quot;name&quot;: &quot;山田&quot;, &quot;kana&quot;: &quot;やまだ&quot;, &quot;searchable&quot;: [&quot;山田&quot;, &quot;やまだ&quot;, &quot;hoge&quot;]}]
+</code></pre></div></p></div>
+</div>
+<div class="autodoc">
+<div class="autodoc-signature"><code>pnq.actions.<strong>flat</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=None</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-docstring"><p>シーケンスの各要素をイテラブルに射影し、その結果を１つのシーケンスに平坦化します。</p>
+<p>Args:</p>
+<ul>
+<li>self: 変換対象のシーケンス</li>
+<li>selector: 各要素にから平坦化する要素を選択する関数</li>
+</ul>
+<p>Returns: 参照したシーケンスをそのまま返す</p>
+<p>Usage:
+<div class="highlight"><pre><span></span><code>&gt;&gt;&gt; pnq.query([&quot;abc&quot;]).flat().to(list)
+&gt;&gt;&gt; [&quot;a&quot;, &quot;b&quot;, &quot;c&quot;]
+&gt;&gt;&gt; countries = [{&quot;country&quot;: &quot;japan&quot;, &quot;state&quot;: [&quot;tokyo&quot;, &quot;osaka&quot;]}, {&quot;country&quot;: &quot;america&quot;, &quot;state&quot;: [&quot;new york&quot;, &quot;florida&quot;]}]
+&gt;&gt;&gt; pnq.query(countries).flat(lambda x: x[&quot;state&quot;]).to(list)
+&gt;&gt;&gt; [&quot;tokyo&quot;, &quot;osaka&quot;, &quot;new york&quot;, &quot;florida&quot;]
+</code></pre></div></p></div>
+</div>
+<div class="autodoc">
+<div class="autodoc-signature"><code>pnq.actions.<strong>map_recursive</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-docstring"><p>nodeを再帰的に取得する</p></div>
+</div>
+<div class="autodoc">
 <div class="autodoc-signature"><code>pnq.actions.<strong>cast</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">type</em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>シーケンスの型注釈を変更します。この関数はエディタの型解釈を助けるためだけに存在し、何も処理を行いません。</p>
 <p>実際に型を変更する場合は、<code>map</code>を使用してください。</p>
@@ -766,7 +801,7 @@ selectと異なり選択した値が１つでも必ずタプルを返します�
 </code></pre></div></p></div>
 </div>
 <div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>group_by</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7f8ba6da8f70></em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-signature"><code>pnq.actions.<strong>group_by</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7fe5381ceee0></em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>シーケンスの各要素からセレクタ関数でキーとバリューを取得し、キーでグループ化されたシーケンスを生成します。
 セレクタ関数を指定しない場合、各要素がすでにキーバリューのタプルであることを期待し、キーでグループ化します。</p>
 <p>Args:</p>
@@ -953,17 +988,19 @@ raise DuplicateError(&quot;1&quot;)
 </div>
 <h2 id="partitioning">Partitioning</h2>
 <div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>take</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">count</em><span class="autodoc-punctuation">)</span></div>
-<div class="autodoc-docstring"><p>シーケンスの先頭から、指定した要素数を返します。</p>
+<div class="autodoc-signature"><code>pnq.actions.<strong>take</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">count_or_range</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-docstring"><p>シーケンスから指定した範囲の要素を返します。</p>
 <p>Args:</p>
 <ul>
-<li>self: バイパス対象のシーケンス</li>
-<li>count: 取得する要素数</li>
+<li>self: 取得対象のシーケンス</li>
+<li>count_or_range: シーケンスの先頭から取得する要素数または取得する範囲</li>
 </ul>
 <p>Returns: 取得された要素を返すクエリ</p>
 <p>Usage:
 <div class="highlight"><pre><span></span><code>&gt;&gt;&gt; pnq.query([1, 2, 3]).take(2).to(list)
 [1, 2]
+&gt;&gt;&gt; pnq.query([1, 2, 3]).take(range(1, 2)).to(list)
+[2]
 </code></pre></div></p></div>
 </div>
 <div class="autodoc">
@@ -982,16 +1019,18 @@ raise DuplicateError(&quot;1&quot;)
 </div>
 <div class="autodoc">
 <div class="autodoc-signature"><code>pnq.actions.<strong>skip</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">count</em><span class="autodoc-punctuation">)</span></div>
-<div class="autodoc-docstring"><p>シーケンス内の指定された数の要素をバイパスし、残りの要素を返します。</p>
+<div class="autodoc-docstring"><p>シーケンスから指定した範囲の要素をバイパスします。</p>
 <p>Args:</p>
 <ul>
 <li>self: バイパス対象のシーケンス</li>
-<li>count: バイパスする要素数</li>
+<li>count_or_range: シーケンスの先頭からバイパスする要素数またはバイパスする範囲</li>
 </ul>
 <p>Returns: 取得された要素を返すクエリ</p>
 <p>Usage:
 <div class="highlight"><pre><span></span><code>&gt;&gt;&gt; pnq.query([1, 2, 3]).skip(1).to(list)
 [2, 3]
+&gt;&gt;&gt; pnq.query([1, 2, 3]).skip(range(1, 2)).to(list)
+[1, 3]
 </code></pre></div></p></div>
 </div>
 <div class="autodoc">
@@ -1006,23 +1045,6 @@ raise DuplicateError(&quot;1&quot;)
 <p>Usage:
 <div class="highlight"><pre><span></span><code>&gt;&gt;&gt; pnq.query([1, 2, 3]).enumerate().skip_while(lambda v: v[0] &lt; 1).select(1).to(list)
 [2, 3]
-</code></pre></div></p></div>
-</div>
-<div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>take_range</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">start=0</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">stop=None</em><span class="autodoc-punctuation">)</span></div>
-<div class="autodoc-docstring"><p>シーケンスから指定した範囲の要素を返します。</p>
-<p>Args:</p>
-<ul>
-<li>self: バイパス対象のシーケンス</li>
-<li>start: 開始範囲（0始まり）</li>
-<li>stop: 終了範囲（デフォルトは無限）</li>
-</ul>
-<p>Returns: 取得された要素を返すクエリ</p>
-<p>Usage:
-<div class="highlight"><pre><span></span><code>&gt;&gt;&gt; pnq.query([0, 1, 2, 3, 4, 5]).take_range(0, 3).to(list)
-[0, 1, 2]
-&gt;&gt;&gt; pnq.query([0, 1, 2, 3, 4, 5]).take_range(3).to(list)
-[3, 4, 5]
 </code></pre></div></p></div>
 </div>
 <div class="autodoc">
@@ -1134,7 +1156,7 @@ exceptと同じ意味</p></div>
 </code></pre></div></p></div>
 </div>
 <div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>each</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">func=<function \<lambda> at 0x7f8ba6bcd160></em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-signature"><code>pnq.actions.<strong>each</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">func=<function \<lambda> at 0x7fe5381d4040></em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>イテレーションを実行し、流れてくる要素を関数に送出します。
 例外はコントロールされません。
 関数を指定しない場合、単にイテレーションを実行します。</p>
@@ -1152,7 +1174,7 @@ exceptと同じ意味</p></div>
 </code></pre></div></p></div>
 </div>
 <div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>each_unpack</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">func=<function \<lambda> at 0x7f8ba6bcd3a0></em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-signature"><code>pnq.actions.<strong>each_unpack</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">func=<function \<lambda> at 0x7fe5381d4280></em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p><code>each</code>実行時にキーワードアンパックしながら要素を送出します。
 与える要素は辞書である必要があります。
 基本的な動作は<code>each</code>を参照ください。</p>
@@ -1164,7 +1186,7 @@ exceptと同じ意味</p></div>
 </code></pre></div></p></div>
 </div>
 <div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>each_async</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">func=<function async_dummy at 0x7f8ba6bcd4c0></em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-signature"><code>pnq.actions.<strong>each_async</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">func=<function async_dummy at 0x7fe5381d43a0></em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>シーケンスから流れてくる値を非同期関数に送出します。
 例外はコントロールされません。</p>
 <p>Args:</p>
@@ -1183,7 +1205,7 @@ exceptと同じ意味</p></div>
 </code></pre></div></p></div>
 </div>
 <div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>each_async_unpack</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">func=<function async_dummy at 0x7f8ba6bcd4c0></em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-signature"><code>pnq.actions.<strong>each_async_unpack</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">func=<function async_dummy at 0x7fe5381d43a0></em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p><code>each_async</code>実行時にキーワードアンパックしながら要素を送出します。
 与える要素は辞書である必要があります。
 基本的な動作は<code>each_async</code>を参照ください。</p>
@@ -1243,7 +1265,7 @@ True
 </code></pre></div></p></div>
 </div>
 <div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>all</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7f8ba6dba790></em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-signature"><code>pnq.actions.<strong>all</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7fe5381d6670></em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>シーケンスの全ての要素がTrueと判定できるか評価します。要素がない場合はTrueを返します。</p>
 <ul>
 <li>selector: 要素から検証する値を抽出する関数</li>
@@ -1262,7 +1284,7 @@ True
 </code></pre></div></p></div>
 </div>
 <div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>any</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7f8ba6dba8b0></em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-signature"><code>pnq.actions.<strong>any</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7fe5381d6790></em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>シーケンスのいずれかの要素がTrueと判定できるか評価します。要素がない場合はFalseを返します。</p>
 <ul>
 <li>selector: 要素から検証する値を抽出する関数</li>
@@ -1279,7 +1301,7 @@ True
 </code></pre></div></p></div>
 </div>
 <div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>contains</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">value</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7f8ba6dba700></em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-signature"><code>pnq.actions.<strong>contains</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">value</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7fe5381d65e0></em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>既定の等値比較子を使用して、指定した要素がシーケンスに含まれているか評価します。
 辞書をソースとした場合は、キーバリューのタプルを比較します。</p>
 <ul>
@@ -1301,7 +1323,7 @@ True
 </code></pre></div></p></div>
 </div>
 <div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>min</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7f8ba6dbaaf0></em><span class="autodoc-punctuation">, </span><em class="autodoc-param">default=typing.NoReturn</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-signature"><code>pnq.actions.<strong>min</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7fe5381d69d0></em><span class="autodoc-punctuation">, </span><em class="autodoc-param">default=typing.NoReturn</em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>シーケンスの要素から最小の値を取得します。</p>
 <p>Args:</p>
 <ul>
@@ -1318,7 +1340,7 @@ ValueError: min() arg is an empty sequence
 </code></pre></div></p></div>
 </div>
 <div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>max</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7f8ba6dbac10></em><span class="autodoc-punctuation">, </span><em class="autodoc-param">default=typing.NoReturn</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-signature"><code>pnq.actions.<strong>max</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7fe5381d6af0></em><span class="autodoc-punctuation">, </span><em class="autodoc-param">default=typing.NoReturn</em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>シーケンスの要素から最大の値を取得します。</p>
 <p>Args:</p>
 <ul>
@@ -1335,7 +1357,7 @@ ValueError: max() arg is an empty sequence
 </code></pre></div></p></div>
 </div>
 <div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>sum</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7f8ba6dbad30></em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-signature"><code>pnq.actions.<strong>sum</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7fe5381d6c10></em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>シーケンスの要素を合計します。</p>
 <ul>
 <li>selector: 要素から計算する値を抽出する関数</li>
@@ -1348,7 +1370,7 @@ ValueError: max() arg is an empty sequence
 </code></pre></div></p></div>
 </div>
 <div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>average</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7f8ba6dbaa60></em><span class="autodoc-punctuation">, </span><em class="autodoc-param">exp=1e-05</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">round='ROUND_HALF_UP'</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-signature"><code>pnq.actions.<strong>average</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7fe5381d6940></em><span class="autodoc-punctuation">, </span><em class="autodoc-param">exp=1e-05</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">round='ROUND_HALF_UP'</em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>シーケンスの要素の平均を求めます。</p>
 <p>Args:</p>
 <ul>
@@ -1364,7 +1386,7 @@ ValueError: max() arg is an empty sequence
 </code></pre></div></p></div>
 </div>
 <div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>reduce</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">seed</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">op='+='</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<pnq.base.actions.EmptyLambda object at 0x7f8ba6edea30></em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-signature"><code>pnq.actions.<strong>reduce</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">seed</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">op='+='</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<pnq.base.actions.EmptyLambda object at 0x7fe53828ca30></em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>シーケンスの要素を指定した代入演算子でシードに合成し、合成結果を返す。</p>
 <p>Args:</p>
 <ul>
@@ -1386,7 +1408,7 @@ ValueError: max() arg is an empty sequence
 </code></pre></div></p></div>
 </div>
 <div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>concat</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7f8ba6dbaf70></em><span class="autodoc-punctuation">, </span><em class="autodoc-param">delimiter=''</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-signature"><code>pnq.actions.<strong>concat</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7fe5381d6e50></em><span class="autodoc-punctuation">, </span><em class="autodoc-param">delimiter=''</em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>シーケンスの要素を文字列として連結します。</p>
 <p>Args:</p>
 <ul>
