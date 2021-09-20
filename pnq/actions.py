@@ -7,6 +7,7 @@ from .base.actions import unpack_kw as unpack_kw
 from .base.actions import unpack_pos as unpack_pos
 from .base.actions import pivot_unstack as pivot_unstack
 from .base.actions import pivot_stack as pivot_stack
+from .base.actions import reflect as reflect
 
 # filtering
 from .base.actions import filter_unique as filter_unique
@@ -14,6 +15,12 @@ from .base.actions import filter_unique as filter_unique
 # validating
 # sorting
 # partitioning
+from .base.actions import skip as skip
+from .base.actions import skip_while as skip_while
+from .base.actions import take as take
+from .base.actions import take_page as take_page
+from .base.actions import take_while as take_while
+
 # expanding
 # executing
 from .base.actions import each as each
@@ -68,7 +75,7 @@ from .base.actions import last as last
 from .base.actions import last_or as last_or
 from .base.actions import last_or_raise as last_or_raise
 from .base.actions import lazy as lazy
-from .base.actions import map_flat as map_flat
+from .base.actions import flat as flat
 from .base.actions import map_recursive as map_recursive
 from .base.actions import must as must
 from .base.actions import must_get_many as must_get_many
@@ -89,12 +96,6 @@ from .base.actions import select as select
 from .base.actions import select_as_dict as select_as_dict
 from .base.actions import select_as_tuple as select_as_tuple
 from .base.actions import select_single_node as select_single_nod
-from .base.actions import skip as skip
-from .base.actions import skip_while as skip_while
-from .base.actions import take as take
-from .base.actions import take_page as take_page
-from .base.actions import take_range as take_range
-from .base.actions import take_while as take_while
 from .base.actions import to as to
 from .base.actions import union as union
 from .base.actions import union_all as union_all

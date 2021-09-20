@@ -652,15 +652,6 @@ class Test020_Transform:
 
         assert pnq([]).map(None).to(list) == []
 
-    def test_map_star(self):
-        pass
-
-    def test_map_flat(self):
-        pass
-
-    def test_map_recursive(self):
-        pass
-
     def test_unpack_pos(self):
         assert pnq([(1, 2)]).unpack_pos(lambda k, v: k).to(list) == [1]
 
@@ -735,6 +726,22 @@ class Test020_Transform:
         assert pnq([str]).select_as_dict(
             "__name__", "__xxx__", attr=True, default=100
         ).to(list) == [{"__name__": "str", "__xxx__": 100}]
+
+    def test_map_star(self):
+        pass
+
+    def test_flat(self):
+        assert pnq([]).flat().to(list) == []
+
+        with pytest.raises(TypeError, match="object is not iterable"):
+            pnq([1]).flat().to(list)
+
+        assert pnq(["abc"]).flat().to(list) == ["a", "b", "c"]
+        assert pnq([(0, "abc")]).flat(lambda x: x[1]).to(list) == ["a", "b", "c"]
+        assert pnq([(0, [1, 2, 3])]).flat(lambda x: x[1]).to(list) == [1, 2, 3]
+
+    def test_map_recursive(self):
+        pass
 
     def test_cast(self):
         # castは型注釈を誤魔化す
@@ -1077,6 +1084,26 @@ class Test050_Partition:
         assert pnq([1, 2]).take(2).to(list) == [1, 2]
         assert pnq([1, 2]).take(3).to(list) == [1, 2]
 
+    def test_take_range(self):
+        q = pnq([1, 2, 3, 4, 5, 6])
+
+        assert q.take(range(0, -1)).to(list) == []
+        assert q.take(range(0, 0)).to(list) == []
+
+        assert q.take(range(-1, 0)).to(list) == []
+        assert q.take(range(0, 1)).to(list) == [1]
+        assert q.take(range(1, 2)).to(list) == [2]
+        assert q.take(range(2, 3)).to(list) == [3]
+
+        assert q.take(range(-2, 0)).to(list) == []
+        assert q.take(range(0, 2)).to(list) == [1, 2]
+        assert q.take(range(2, 4)).to(list) == [3, 4]
+        assert q.take(range(4, 6)).to(list) == [5, 6]
+
+        assert q.take(range(5, 6)).to(list) == [6]
+        assert q.take(range(5, 7)).to(list) == [6]
+        assert q.take(range(6, 7)).to(list) == []
+
     def test_take_while(self):
         pass
 
@@ -1090,41 +1117,11 @@ class Test050_Partition:
         assert pnq([1, 2]).skip(2).to(list) == []
         assert pnq([1, 2]).skip(3).to(list) == []
 
-    def test_skip_while(self):
+    def test_skip_range(self):
         pass
 
-    def test_take_range(self):
-        assert pnq([]).take_range().to(list) == []
-        assert pnq([]).take_range(-1).to(list) == []
-        assert pnq([]).take_range(0).to(list) == []
-        assert pnq([]).take_range(1).to(list) == []
-        assert pnq([]).take_range(0, -1).to(list) == []
-        assert pnq([]).take_range(0, 0).to(list) == []
-        assert pnq([]).take_range(0, 1).to(list) == []
-
-        assert pnq([1]).take_range(0, -1).to(list) == []
-        assert pnq([1]).take_range(0, 0).to(list) == []
-        assert pnq([1]).take_range(0, 1).to(list) == [1]
-        assert pnq([1]).take_range(0, 2).to(list) == [1]
-
-        q = pnq([1, 2, 3, 4, 5, 6])
-
-        assert q.take_range(0, -1).to(list) == []
-        assert q.take_range(0, 0).to(list) == []
-
-        assert q.take_range(-1, 0).to(list) == []
-        assert q.take_range(0, 1).to(list) == [1]
-        assert q.take_range(1, 2).to(list) == [2]
-        assert q.take_range(2, 3).to(list) == [3]
-
-        assert q.take_range(-2, 0).to(list) == []
-        assert q.take_range(0, 2).to(list) == [1, 2]
-        assert q.take_range(2, 4).to(list) == [3, 4]
-        assert q.take_range(4, 6).to(list) == [5, 6]
-
-        assert q.take_range(5, 6).to(list) == [6]
-        assert q.take_range(5, 7).to(list) == [6]
-        assert q.take_range(6, 7).to(list) == []
+    def test_skip_while(self):
+        pass
 
     def test_take_page(self):
         from pnq.actions import take_page_calc

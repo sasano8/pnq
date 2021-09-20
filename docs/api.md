@@ -26,12 +26,6 @@
 ::: pnq.actions.map
     :docstring:
 
-::: pnq.actions.map_flat
-    :docstring:
-
-::: pnq.actions.map_recursive
-    :docstring:
-
 ::: pnq.actions.unpack_pos
     :docstring:
 
@@ -45,6 +39,15 @@
     :docstring:
 
 ::: pnq.actions.select_as_tuple
+    :docstring:
+
+::: pnq.actions.reflect
+    :docstring:
+
+::: pnq.actions.flat
+    :docstring:
+
+::: pnq.actions.map_recursive
     :docstring:
 
 ::: pnq.actions.cast
@@ -105,9 +108,6 @@
     :docstring:
 
 ::: pnq.actions.skip_while
-    :docstring:
-
-::: pnq.actions.take_range
     :docstring:
 
 ::: pnq.actions.take_page

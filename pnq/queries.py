@@ -275,6 +275,9 @@ class Query(Generic[T]):
     ) -> "Query[Dict]":
         return queries.SelectAsDict(self, *fields, attr=attr, default=default)
 
+    def flat(self, selector: Callable[..., Iterable[R]] = None) -> "Query[R]":
+        return queries.Flat(self, selector)
+
     def unpack_pos(self, selector: Callable[..., R]) -> "Query[R]":
         return queries.UnpackPos(self, selector=selector)
 
@@ -349,14 +352,11 @@ class Query(Generic[T]):
     def must_unique(self, selector: Callable[[T], R] = None):
         return queries.MustUnique(self, selector=selector)
 
-    def skip(self, count: int) -> "Query[T]":
-        return queries.Skip(self, count=count)
+    def take(self, count_or_range: Union[int, range]) -> "Query[T]":
+        return queries.Take(self, count_or_range)
 
-    def take(self, count: int) -> "Query[T]":
-        return queries.Take(self, count=count)
-
-    def take_range(self, start: int = 0, stop: int = None) -> "Query[T]":
-        return queries.TakeRange(self, start=start, stop=stop)
+    def skip(self, count_or_range: Union[int, range]) -> "Query[T]":
+        return queries.Skip(self, count_or_range)
 
     def take_page(self, page: int, size: int) -> "Query[T]":
         return queries.TakePage(self, page=page, size=size)
@@ -624,6 +624,9 @@ class PairQuery(Generic[K, V]):
     ) -> "Query[Dict]":
         return queries.SelectAsDict(self, *fields, attr=attr, default=default)
 
+    def flat(self, selector: Callable[..., Iterable[R]] = None) -> "Query[R]":
+        return queries.Flat(self, selector)
+
     def unpack_pos(self, selector: Callable[..., R]) -> "Query[R]":
         return queries.UnpackPos(self, selector=selector)
 
@@ -700,14 +703,11 @@ class PairQuery(Generic[K, V]):
     def must_unique(self, selector: Callable[[T], R] = None):
         return queries.MustUnique(self, selector=selector)
 
-    def skip(self, count: int) -> "PairQuery[K,V]":
-        return queries.Skip(self, count=count)
+    def take(self, count_or_range: Union[int, range]) -> "PairQuery[K,V]":
+        return queries.Take(self, count_or_range)
 
-    def take(self, count: int) -> "PairQuery[K,V]":
-        return queries.Take(self, count=count)
-
-    def take_range(self, start: int = 0, stop: int = None) -> "PairQuery[K,V]":
-        return queries.TakeRange(self, start=start, stop=stop)
+    def skip(self, count_or_range: Union[int, range]) -> "PairQuery[K,V]":
+        return queries.Skip(self, count_or_range)
 
     def take_page(self, page: int, size: int) -> "PairQuery[K,V]":
         return queries.TakePage(self, page=page, size=size)

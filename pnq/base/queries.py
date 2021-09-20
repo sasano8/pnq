@@ -1,7 +1,7 @@
 import asyncio
 from collections import defaultdict
 from operator import attrgetter, itemgetter
-from typing import Awaitable, Callable, Mapping, NoReturn, TypeVar
+from typing import Awaitable, Callable, Mapping, NoReturn, TypeVar, Union
 
 from .core import (
     IterType,
@@ -180,6 +180,27 @@ class SelectAsDict(Map):
 
                 selector = lambda x: {k: get(x, k) for k in fields}  # noqa
         super().__init__(source, selector)
+
+
+@mark
+class Flat(Query):
+    def __init__(self, source, selector=None):
+        super().__init__(source)
+        self.selector = selector
+
+    def _impl_iter(self):
+        selector = self.selector
+        if selector is None:
+            return (_ for inner in self.source for _ in inner)
+        else:
+            return (_ for elm in self.source for _ in selector(elm))
+
+    def _impl_aiter(self):
+        selector = self.selector
+        if selector is None:
+            return (_ async for inner in self.source async for _ in inner)
+        else:
+            return (_ async for elm in self.source async for _ in selector(elm))
 
 
 @mark
@@ -654,93 +675,14 @@ class MustKeys(Query):
 
 @mark
 class Take(Query):
-    def __init__(self, source, count: int):
+    def __init__(self, source, count_or_range: Union[int, range]):
         super().__init__(source)
-        self.count = count
-
-    def _impl_iter(self):
-        count = self.count
-        current = 0
-
-        it = iter(self.source)
-
-        try:
-            while current < count:
-                yield next(it)
-                current += 1
-        except StopIteration:
-            return
-
-    async def _impl_aiter(self):
-        count = self.count
-        current = 0
-
-        it = self.source.__aiter__()
-
-        try:
-            while current < count:
-                yield await it.__anext__()
-                current += 1
-        except StopAsyncIteration:
-            return
-
-
-@mark
-class Skip(Query):
-    def __init__(self, source, count: int):
-        super().__init__(source)
-        self.count = count
-
-    def _impl_iter(self):
-        count = self.count
-        current = 0
-
-        it = iter(self.source)
-
-        try:
-            while current < count:
-                next(it)
-                current += 1
-        except StopIteration:
-            return
-
-        for elm in it:
-            yield elm
-
-    async def _impl_aiter(self):
-        count = self.count
-        current = 0
-
-        it = self.source.__aiter__()
-
-        try:
-            while current < count:
-                await it.__anext__()
-                current += 1
-        except StopAsyncIteration:
-            return
-
-        async for elm in it:
-            yield elm
-
-
-@mark
-class TakeRange(Query):
-    def __init__(self, source, start: int = 0, stop: int = None):
-        super().__init__(source)
-
-        if start < 0:
-            start = 0
-
-        if stop is None:
-            stop = float("inf")
-        elif stop < 0:
-            stop = 0
+        if isinstance(count_or_range, range):
+            r = count_or_range
         else:
-            pass
-
-        self.start = start
-        self.stop = stop
+            r = range(count_or_range)
+        self.start = r.start
+        self.stop = r.stop
 
     def _impl_iter(self):
         start = self.start
@@ -755,17 +697,74 @@ class TakeRange(Query):
                 next(it)
                 current += 1
         except StopIteration:
-            yield from ()
+            return
 
         try:
             while current < stop:
                 yield next(it)
                 current += 1
         except StopIteration:
-            pass
+            return
 
     async def _impl_aiter(self):
-        raise NotImplementedError()
+        start = self.start
+        stop = self.stop
+
+        current = 0
+
+        it = self.source.__aiter__()
+
+        try:
+            while current < start:
+                await it.__anext__()
+                current += 1
+        except StopAsyncIteration:
+            return
+
+        try:
+            while current < stop:
+                yield await it.__anext__()
+                current += 1
+        except StopAsyncIteration:
+            return
+
+
+@mark
+class Skip(Query):
+    def __init__(self, source, count_or_range: Union[int, range]):
+        super().__init__(source)
+
+        if isinstance(count_or_range, range):
+            r = count_or_range
+        else:
+            r = range(count_or_range)
+        self.start = r.start
+        self.stop = r.stop
+
+    def _impl_iter(self):
+        start = self.start
+        stop = self.stop
+
+        current = 0
+
+        it = iter(self.source)
+
+        try:
+            while current < start:
+                yield next(it)
+                current += 1
+        except StopIteration:
+            return
+
+        try:
+            while current < stop:
+                next(it)
+                current += 1
+        except StopIteration:
+            return
+
+        for x in it:
+            yield x
 
 
 def take_page_calc(page: int, size: int):
@@ -777,10 +776,10 @@ def take_page_calc(page: int, size: int):
 
 
 @mark
-class TakePage(TakeRange):
+class TakePage(Take):
     def __init__(self, source, page: int, size: int):
         start, stop = take_page_calc(page, size)
-        super().__init__(source, start=start, stop=stop)
+        super().__init__(source, range(start, stop))
 
 
 @mark

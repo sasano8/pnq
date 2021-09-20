@@ -378,13 +378,6 @@ def itertools__():
     )
 
 
-@mark
-def map_flat(self, selector):
-    pass
-
-
-select_many = map_flat
-flat_map = map_flat
 """
 # product（デカルト積）
 from itertools import product
@@ -529,6 +522,59 @@ def select_as_dict(self, *fields, attr: bool = False):
     ```
     """
     pass
+
+
+@mark
+def reflect(self, mapping, *, default=NoReturn, attr: bool = False):
+    """シーケンスの各要素のフィールドを与えたマッピングに基づき辞書として新しいフォームに射影します。
+
+    Args:
+
+    * self: 変換対象のシーケンス
+    * mapping: 元の要素のフィールドと射影先のフィールドの対応表
+    * default: フィールドを取得できない場合のデフォルト値
+    * attr: 属性から取得する場合はTrueとする
+
+    Returns: 参照したシーケンスをそのまま返す
+
+    Usage:
+    ```
+    >>> person = {"id":1, "name": "山田", "kana": "やまだ", "note": "hoge"}
+    >>> pnq.query([person]).reflect({
+    >>>   "id": "id",
+    >>>   "name": {"name", "searchable"},
+    >>>   "kana": {"kana", "searchable"},
+    >>>   "note": "searchable"
+    >>> }).to(list)
+    >>> [{"id": 1, "name": "山田", "kana": "やまだ", "searchable": ["山田", "やまだ", "hoge"]}]
+    ```
+    """
+
+
+@mark
+def flat(self, selector=None):
+    """シーケンスの各要素をイテラブルに射影し、その結果を１つのシーケンスに平坦化します。
+
+    Args:
+
+    * self: 変換対象のシーケンス
+    * selector: 各要素にから平坦化する要素を選択する関数
+
+    Returns: 参照したシーケンスをそのまま返す
+
+    Usage:
+    ```
+    >>> pnq.query(["abc"]).flat().to(list)
+    >>> ["a", "b", "c"]
+    >>> countries = [{"country": "japan", "state": ["tokyo", "osaka"]}, {"country": "america", "state": ["new york", "florida"]}]
+    >>> pnq.query(countries).flat(lambda x: x["state"]).to(list)
+    >>> ["tokyo", "osaka", "new york", "florida"]
+    ```
+    """
+
+
+select_many = flat
+flat_map = flat
 
 
 @mark
@@ -1083,13 +1129,13 @@ def must_get_many(self, *keys, typ: Literal["set", "seq", "map"]):
 
 
 @mark
-def take(self, count: int):
-    """シーケンスの先頭から、指定した要素数を返します。
+def take(self, count_or_range: int):
+    """シーケンスから指定した範囲の要素を返します。
 
     Args:
 
-    * self: バイパス対象のシーケンス
-    * count: 取得する要素数
+    * self: 取得対象のシーケンス
+    * count_or_range: シーケンスの先頭から取得する要素数または取得する範囲
 
     Returns: 取得された要素を返すクエリ
 
@@ -1097,6 +1143,8 @@ def take(self, count: int):
     ```
     >>> pnq.query([1, 2, 3]).take(2).to(list)
     [1, 2]
+    >>> pnq.query([1, 2, 3]).take(range(1, 2)).to(list)
+    [2]
     ```
     """
     pass
@@ -1124,12 +1172,12 @@ def take_while(self, predicate):
 
 @mark
 def skip(self, count: int):
-    """シーケンス内の指定された数の要素をバイパスし、残りの要素を返します。
+    """シーケンスから指定した範囲の要素をバイパスします。
 
     Args:
 
     * self: バイパス対象のシーケンス
-    * count: バイパスする要素数
+    * count_or_range: シーケンスの先頭からバイパスする要素数またはバイパスする範囲
 
     Returns: 取得された要素を返すクエリ
 
@@ -1137,6 +1185,8 @@ def skip(self, count: int):
     ```
     >>> pnq.query([1, 2, 3]).skip(1).to(list)
     [2, 3]
+    >>> pnq.query([1, 2, 3]).skip(range(1, 2)).to(list)
+    [1, 3]
     ```
     """
     pass
@@ -1160,53 +1210,6 @@ def skip_while(self, predicate):
     ```
     """
     pass
-
-
-@mark
-def take_range(self, start: int = 0, stop: int = None):
-    """シーケンスから指定した範囲の要素を返します。
-
-    Args:
-
-    * self: バイパス対象のシーケンス
-    * start: 開始範囲（0始まり）
-    * stop: 終了範囲（デフォルトは無限）
-
-    Returns: 取得された要素を返すクエリ
-
-    Usage:
-    ```
-    >>> pnq.query([0, 1, 2, 3, 4, 5]).take_range(0, 3).to(list)
-    [0, 1, 2]
-    >>> pnq.query([0, 1, 2, 3, 4, 5]).take_range(3).to(list)
-    [3, 4, 5]
-    ```
-    """
-    if start < 0:
-        start = 0
-
-    if stop is None:
-        stop = float("inf")
-    elif stop < 0:
-        stop = 0
-    else:
-        pass
-
-    current = 0
-
-    try:
-        while current < start:
-            next(self)
-            current += 1
-    except StopIteration:
-        yield from ()
-
-    try:
-        while current < stop:
-            yield next(self)
-            current += 1
-    except StopIteration:
-        pass
 
 
 @mark
