@@ -8,7 +8,6 @@ from typing import (
     Dict,
     Iterable,
     List,
-    Literal,
     Mapping,
     NoReturn,
     Sequence,
@@ -17,6 +16,11 @@ from typing import (
     Union,
     overload,
 )
+
+try:
+    from typing import Literal
+except:
+    from typing_extensions import Literal
 
 from .exceptions import (
     DuplicateElementError,
