@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pnq"
-version = "0.0.8"
+version = "0.0.9"
 description = ""
 authors = ["sasano8 <y-sasahara@ys-method.com>"]
 license = "MIT"
