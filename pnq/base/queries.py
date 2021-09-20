@@ -1,7 +1,7 @@
 import asyncio
 from collections import defaultdict
 from operator import attrgetter, itemgetter
-from typing import Callable, Mapping, NoReturn
+from typing import Awaitable, Callable, Mapping, NoReturn, TypeVar
 
 from .core import (
     IterType,
@@ -21,6 +21,8 @@ from .exceptions import (
     NotOneElementError,
 )
 
+R = TypeVar("R")
+
 exports = []
 
 
@@ -38,14 +40,14 @@ mark(QuerySet)
 
 
 @mark
-class Lazy(Query):
-    def __init__(self, source, finalizer: Callable, *args, **kwargs):
+class Lazy(Query, Awaitable[R]):
+    def __init__(self, source, finalizer: Callable[..., R], *args, **kwargs):
         super().__init__(source)
         self.finalizer = finalizer
         self.args = args
         self.kwargs = kwargs
 
-    def __call__(self):
+    def __call__(self) -> R:
         return self.finalizer(self.source, *self.args, **self.kwargs)
 
     def __await__(self):
