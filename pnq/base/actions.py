@@ -50,6 +50,14 @@ lambda_empty = EmptyLambda()
 # lambda_empty.__str__ = lambda: "lambda x: x"
 
 
+def name_as(name):
+    def wrapper(func):
+        func.__name__ = name
+        return func
+
+    return wrapper
+
+
 marked = []
 
 
@@ -332,9 +340,9 @@ def __map(self, selector):
 
 def __map_nullable(self, selector):
     if selector is None:
-        yield from self
+        return self
     else:
-        yield from map(selector, self)
+        return map(selector, self)
 
 
 def starmap(self):
@@ -1325,7 +1333,8 @@ def __len(self):
         return len(self)
 
     it = __iter(self)
-    for i in enumerate(it, 1):
+    i = 0
+    for i, v in enumerate(it, 1):
         ...
 
     return i
@@ -1860,7 +1869,7 @@ def one(self):
     raise NotOneElementError("...")
     ```
     """
-    it = __iter(self)
+    it = iter(self)
     try:
         result = next(it)
     except StopIteration:
@@ -1898,7 +1907,8 @@ def first(self):
     None
     ```
     """
-    it = __iter(self)
+    # it = __iter(self)
+    it = iter(self)
     try:
         return next(it)
     except StopIteration:
@@ -1936,7 +1946,7 @@ def last(self):
 
     undefined = object()
     last = undefined
-    for elm in __iter(self):
+    for elm in iter(self):
         last = elm
 
     if last is undefined:

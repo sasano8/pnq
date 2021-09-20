@@ -4,7 +4,7 @@ from functools import wraps
 import pytest
 
 from pnq.base.core import IterType, Query, QueryNormal, QuerySyncToAsync
-from pnq.base.queries import AsyncMap, DebugMap, Lazy, Map
+from pnq.base.queries import AsyncMap, DebugPath, Lazy, Map, Sleep
 
 
 def async_test(func):
@@ -122,7 +122,20 @@ class Test010_Async:
     async def test_map_debug(self):
         map_five = lambda x: 5  # noqa
         map_ten = lambda x: 10  # noqa
-        assert Lazy(DebugMap(Query([1, 2, 3]), map_five, map_ten), list)() == [5, 5, 5]
+        assert Lazy(DebugPath(Query([1, 2, 3]), map_five, map_ten), list)() == [5, 5, 5]
         assert await Lazy(
-            DebugMap(Query(create_aiter()), map_five, map_ten), list_async
+            DebugPath(Query(create_aiter()), map_five, map_ten), list_async
         ) == [10, 10, 10]
+
+    def test_builder(self):
+        from pnq.base.builder import Builder
+
+        assert list(Builder.query([1, 2, 3])) == [1, 2, 3]
+        assert list(Builder.query({1: "a", 2: "b"})) == [(1, "a"), (2, "b")]
+
+    @async_test
+    async def test_sleep(self):
+        with pytest.raises(NotImplementedError, match="can't __iter__"):
+            list(Sleep(Query([1, 2, 3]), 0))
+
+        assert [x async for x in Sleep(Query([1, 2, 3]), 0)] == [1, 2, 3]

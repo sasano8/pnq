@@ -26,12 +26,16 @@ from typing import (
 )
 
 from . import actions
-from .core import LazyIterate as _LazyIterate
-from .core import LazyReference as _LazyReference
-from .core import piter, undefined
-from .exceptions import NoElementError, NotFoundError, NotOneElementError
-from .op import TH_ASSIGN_OP
-from .requests import Response
+from .base.exceptions import NoElementError, NotFoundError, NotOneElementError
+
+# from .core import LazyReference as _LazyReference
+# from .core import piter, undefined
+# from .core import undefined
+from .base.op import TH_ASSIGN_OP
+from .base.requests import Response
+
+if TYPE_CHECKING:
+    from .base import queries
 
 T = TypeVar("T")
 K = TypeVar("K")
@@ -44,20 +48,14 @@ R = TypeVar("R")
 __all__ = ["Query", "PairQuery", "IndexQuery", "ListEx", "DictEx", "SetEx", "query", "undefined"]
 
 
-def lazy_iterate(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        return LazyIterate(func, *args, **kwargs)
-
-    return wrapper
 
 
-def lazy_reference(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        return LazyReference(func, *args, **kwargs)
+# def lazy_reference(func):
+#     @wraps(func)
+#     def wrapper(*args, **kwargs):
+#         return LazyReference(func, *args, **kwargs)
 
-    return wrapper
+#     return wrapper
 
 
 {% for query in queries %}
@@ -116,6 +114,43 @@ class {{query.cls}}:
 
     def concat(self, selector=lambda x: x, delimiter: str = "") -> str:
         return actions.concat(self, selector, delimiter)
+
+    def test(self, expect):
+        """同期イテレータと非同期イテレータを実行し結果を比較し、
+        それぞれの比較結果(bool)をタプルとして返す。
+        実行不可な場合はNoneを返す。
+        """
+
+        # TODO: asyncを通るようにパスを切り替えるクエリを挟む必要がある
+
+        import asyncio
+
+        async def to_list():
+            return [x async for x in self]
+
+        sync_result = None
+        async_result = None
+
+        try:
+            sync_result = [x for x in self]
+        except Exception as e:
+            pass
+
+        try:
+            async_result = asyncio.run(to_list())
+        except Exception as e:
+            pass
+
+        return_sync = None
+        return_async = None
+
+        if sync_result is not None:
+            return_sync = (sync_result == expect)
+
+        if async_result is not None:
+            return_async = (async_result == expect)
+
+        return return_sync, return_async
 
     {% if query.is_pair %}
 
@@ -190,9 +225,8 @@ class {{query.cls}}:
     def cast(self, type: Type[R]) -> "Query[R]":
         return self
 
-    @lazy_iterate
     def enumerate(self, start: int = 0, step: int = 1) -> "{{pair.name}}[int, {{query.row}}]":
-        yield from (x * step for x in enumerate(self, start))
+        return queries.Enumerate(self, start, step)
 
     @overload
     def map(self, selector: Callable[[{{query.row}}], Tuple[K2, V2]]) -> "{{pair.name}}[K2, V2]":
@@ -203,9 +237,7 @@ class {{query.cls}}:
         pass
 
     def map(self, selector):
-        if selector is None:
-            raise TypeError("selector cannot be None")
-        return LazyIterate(actions.map, self, selector)
+        return queries.Map(self, selector)
 
     {% if query.is_pair %}
 
@@ -232,62 +264,28 @@ class {{query.cls}}:
         ...
 
     def select(self, *fields, attr: bool = False) -> "Query[Any]":
-        if attr:
-            selector = attrgetter(*fields)
-        else:
-            selector = itemgetter(*fields)
-        return LazyIterate(actions.map, self, selector)
+        return queries.Select(self, *fields, attr=attr)
 
     def select_as_tuple(self, *fields, attr: bool = False) -> "Query[Tuple]":
-        if len(fields) > 1:
-            if attr:
-                selector = attrgetter(*fields)
-            else:
-                selector = itemgetter(*fields)
-        elif len(fields) == 1:
-            field = fields[0]
-            if attr:
-                selector = lambda x: (getattr(x, field),)
-            else:
-                selector = lambda x: (x[field],)
-        else:
-            selector = lambda x: ()
-        return LazyIterate(actions.map, self, selector)
+        return queries.SelectAsTuple(self, *fields, attr=attr)
 
     def select_as_dict(self, *fields, attr: bool = False, default=NoReturn) -> "Query[Dict]":
-        if attr:
-            if default is NoReturn:
-                selector = lambda x: {k: getattr(x, k) for k in fields} # noqa
-            else:
-                selector = lambda x: {k: getattr(x, k, default) for k in fields} # noqa
-        else:
-            if default is NoReturn:
-                selector = lambda x: {k: x[k] for k in fields} # noqa
-            else:
-                def get(obj, k):
-                    try:
-                        return obj[k]
-                    except Exception:
-                        return default
-                selector = lambda x: {k: get(x, k) for k in fields} # noqa
-        return LazyIterate(actions.map, self, selector)
+        return queries.SelectAsDict(self, *fields, attr=attr, default=default)
 
-    @lazy_iterate
     def unpack_pos(self, selector: Callable[..., R]) -> "{{sequence.name}}[R]":
-        return LazyIterate(actions.unpack_pos, self, selector)
+        return queries.UnpackPos(self, selector=selector)
 
-    @lazy_iterate
     def unpack_kw(self, selector: Callable[..., R]) -> "{{sequence.name}}[R]":
-        return LazyIterate(actions.unpack_kw, self, selector)
+        return queries.UnpackKw(self, selector=selector)
 
     def group_by(self, selector: Callable[[{{query.row}}], Tuple[K2, V2]] = lambda x: x) -> "{{pair.name}}[K2, List[V2]]":
-        return LazyIterate(actions.group_by, self, selector)
+        return queries.GroupBy(self, selector=selector)
 
     def pivot_unstack(self, default=None) -> "PairQuery[Any, List]":
-        return LazyIterate(actions.pivot_unstack, self, default)
+        return queries.PivotUnstack(self, default=default)
 
     def pivot_stack(self) -> "Query[Dict]":
-        return LazyIterate(actions.pivot_stack, self)
+        return queries.PivotStack(self)
 
     def join(self, right, on: Callable[[Tuple[list, list]], Callable], select):
         [].join(
@@ -304,38 +302,19 @@ class {{query.cls}}:
         pass
 
     def request(self, func, retry: int = None) -> "Query[Response]":
-        return LazyIterate(actions.request, self, func, retry)
+        return queries.Request(self, func, retry)
 
-    def request_async(self, func, retry: int = None) -> "Query[Response]":
-        return LazyIterate(actions.request_async, self, func, retry)
+    def request_async(self, func, retry: int = None, timeout=None) -> "Query[Response]":
+        return queries.RequestAsync(self, func, retry=retry, timeout=None)
 
-    @lazy_iterate
-    def distinct(self, selector: Callable[[{{query.row}}], Any], msg: str=...) -> "{{query.str}}":
-        duplicate = set()
-        for elm in self:
-            value = selector(elm)
-            if not value in duplicate:
-                duplicate.add(value)
-                yield elm
-
-    @lazy_iterate
     def zip(self):
         raise NotImplementedError()
 
-    @lazy_iterate
     def filter(self, predicate: Callable[[{{query.row}}], bool]) -> "{{query.str}}":
-        yield from filter(predicate, self)  # type: ignore
+        return queries.Filter(self, predicate)
 
-    @lazy_iterate
     def filter_type(self, *types: Type[R]) -> "{{query.str}}":
-        def normalize(type):
-            if type is None:
-                return None.__class__
-            else:
-                return type
-
-        types = tuple((normalize(x) for x in types))
-        return filter(lambda x: isinstance(x, *types), self)
+        return queries.FilterType(self, *types)
 
     @overload
     def filter_unique(self) -> "{{query.str}}":
@@ -350,108 +329,57 @@ class {{query.cls}}:
         ...
 
     def filter_unique(self, selector=None):
-        return LazyIterate(actions.filter_unique, self, selector)
+        return queries.FilterUnique(self, selector=selector)
+
+    def distinct(self, selector: Callable[[{{query.row}}], Any]) -> "{{query.str}}":
+        return queries.FilterUnique(self, selector=selector)
 
     def must(self, predicate: Callable[[{{query.row}}], bool], msg: str="") -> "{{query.str}}":
         """要素の検証に失敗した時例外を発生させる。"""
-        return LazyIterate(actions.must, self, predicate, msg)
+        return queries.Must(self, predicate, msg)
 
     def must_type(self, type, *types: Type) -> "{{query.str}}":
         """要素の検証に失敗した時例外を発生させる。"""
-        return LazyIterate(actions.must_type, self, (type, *types))
+        return queries.MustType(self, type, *types)
 
     def must_unique(self, selector: Callable[[T], R] = None):
-        return LazyIterate(actions.must_unique, self, selector)
+        return queries.MustUnique(self, selector=selector)
 
-    @lazy_iterate
     def skip(self, count: int) -> "{{query.str}}":
-        current = 0
+        return queries.Skip(self, count=count)
 
-        try:
-            while current < count:
-                next(self)
-                current += 1
-        except StopIteration:
-            return
-
-        for elm in self:
-            yield elm
-
-    @lazy_iterate
     def take(self, count: int) -> "{{query.str}}":
-        current = 0
-
-        try:
-            while current < count:
-                yield next(self)
-                current += 1
-        except StopIteration:
-            return
+        return queries.Take(self, count=count)
 
     def take_range(self, start: int = 0, stop: int = None) -> "{{query.str}}":
-        return LazyIterate(actions.take_range, self, start=start, stop=stop)
+        return queries.TakeRange(self, start=start, stop=stop)
 
     def take_page(self, page: int, size: int) -> "{{query.str}}":
-        start, stop = actions.take_page_calc(page, size)
-        return LazyIterate(actions.take_range, self, start=start, stop=stop)
+        return queries.TakePage(self, page=page, size=size)
 
     def order_by(self, *fields, desc: bool = False, attr: bool = False) -> "{{query.str}}":
-        if not len(fields):
-            selector = None
-        else:
-            if attr:
-                selector = attrgetter(*fields)
-            else:
-                selector = itemgetter(*fields)
-
-        return LazyIterate(actions.order_by, self, selector=selector, desc=desc)
+        return queries.OrderBy(self, *fields, desc=desc, attr=attr)
 
     def order_by_map(self, selector=None, *, desc: bool = False) -> "{{query.str}}":
-        return LazyIterate(actions.order_by, self, selector=selector, desc=desc)
+        return queries.OrderByMap(self, selector=selector, desc=desc)
 
     def order_by_reverse(self) -> "{{query.str}}":
-        return LazyReference(actions.order_by_reverse, self)
+        return queries.OrderByReverse(self)
 
     def order_by_shuffle(self) -> "{{query.str}}":
-        return LazyIterate(actions.order_by_shuffle, self)
+        return queries.OrderByShuffle(self)
 
     def sleep(self, seconds: float) -> "{{query.str}}":
-        return LazyIterate(actions.sleep, self, seconds=seconds)
+        return queries.Sleep(self, seconds)
 
     def sleep_async(self, seconds: float) -> "{{query.str}}":
-        return LazyIterate(actions.sleep_async, self, seconds=seconds)
-
-    class SyncAsync:
-        def __init__(self, sync_func, async_func, *args, **kwargs) -> None:
-            self.sync_func = sync_func
-            self.async_func = async_func
-            self.args = args
-            self.kwargs = kwargs
-
-        def __iter__(self):
-            return self.async_func(*self.args, **self.kwargs)
-
-        def __aiter__(self):
-            return self.async_func(*self.args, **self.kwargs)
-
-    def sleep2(self, seconds: float):
-        from asyncio import sleep as asleep
-        from time import sleep
-
-        def sleep_sync(self, seconds):
-            for elm in self:
-                yield elm
-                sleep(seconds)
-
-        async def sleep_async(self, seconds):
-            for elm in self:
-                yield elm
-                await sleep(seconds)
-
-        return sleep_sync, sleep_async, seconds
+        return queries.Sleep(self, seconds)
 
     def debug(self, breakpoint=lambda x: x, printer=print) -> "{{query.str}}":
-        return LazyIterate(actions.debug, self, breakpoint=breakpoint, printer=printer)
+        return queries.Debug(self, breakpoint=breakpoint, printer=printer)
+
+    def debug_path(self, selector_sync=lambda x: -10, selector_async=lambda x: 10) -> "{{query.str}}":
+        return queries.DebugPath(self, selector_sync, selector_async)
 
     # if index query
     {% else %}
@@ -495,12 +423,12 @@ class Lazy:
         return len(list(self)) > 0
 
 
-class LazyIterate(Lazy, Query[T], _LazyIterate):
-    pass
+# class LazyIterate(Lazy, Query[T], _LazyIterate):
+#     pass
 
 
-class LazyReference(Lazy, IndexQuery[int, T], Query[T], _LazyReference):
-    pass
+# class LazyReference(Lazy, IndexQuery[int, T], Query[T], _LazyReference):
+#     pass
 
 
 class Instance:
@@ -515,10 +443,6 @@ class ListEx(Instance, IndexQuery[int, T], Query[T], List[T]):
     def __piter__(self):
         return self.__iter__()
 
-    # @lazy_reference
-    # def reverse(self) -> "Query[T]":
-    #     yield from reversed(self)
-
     @no_type_check
     def get_many(self, *keys):
         return LazyReference(actions.get_many_for_sequence, self, *keys)
@@ -531,10 +455,6 @@ class ListEx(Instance, IndexQuery[int, T], Query[T], List[T]):
 class TupleEx(Instance, IndexQuery[int, T], Query[T], Tuple[T]):
     def __piter__(self):
         return self.__iter__()
-
-    # @lazy_reference
-    # def reverse(self) -> "Query[T]":
-    #     yield from reversed(self)
 
     @no_type_check
     def get_many(self, *keys):
@@ -549,17 +469,17 @@ class DictEx(Instance, IndexQuery[K, V], PairQuery[K, V], Dict[K, V]):
     def __piter__(self):
         return self.items().__iter__()
 
-    @lazy_reference
-    def keys(self):
-        yield from super().keys()
+    # @lazy_reference
+    # def keys(self):
+    #     yield from super().keys()
 
-    @lazy_reference
-    def values(self):
-        yield from super().values()
+    # @lazy_reference
+    # def values(self):
+    #     yield from super().values()
 
-    @lazy_reference
-    def items(self):
-        yield from super().items()
+    # @lazy_reference
+    # def items(self):
+    #     yield from super().items()
 
     # @lazy_reference
     # def reverse(self) -> "PairQuery[K, V]":
@@ -618,37 +538,149 @@ class FrozenSetEx(Instance, IndexQuery[T, T], Query[T], FrozenSet[T]):
     def must_get_many(self, *keys):
         return LazyReference(actions.must_get_many, self, *keys, typ="set")
 
+
+
+if TYPE_CHECKING:
+    from .base import queries
+
+else:
+    import types
+
+    class Queries:
+        pass
+
+    from .base import queries
+
+    classess = Queries()
+
+    for cls in queries.exports:
+        baseclasses = (cls, Query[T])
+        created = types.new_class(cls.__name__, baseclasses)
+
+        setattr(classess, cls.__name__, created)
+
+    queries = classess
+
+from .base import builder
+
+
+class QueryDict(queries.QueryDict):
+    def get_many(self, *keys):
+        return queries.FilterKeys(self, *keys)
+
+    def get(self, key):
+        try:
+            return self.source[key]
+        except KeyError:
+            raise NotFoundError(key)
+
+    def get_or(self, key, default=None):
+        try:
+            return self.get(key)
+        except NotFoundError:
+            return default
+
+    def get_or_raise(self, key, exc: Union[str, Exception]):
+        undefined = object()
+        result = self.get_or(key, undefined)
+        if result is undefined:
+            if isinstance(exc, str):
+                raise Exception(exc)
+            else:
+                raise exc
+        else:
+            return result
+
+    # @no_type_check
+    def must_get_many(self, *keys):
+        return queries.MustKeys(self, *keys, typ="map")
+
+
+class QuerySeq(queries.QuerySeq):
+    def get_many(self, *keys):
+        return queries.FilterKeys(self, *keys)
+
+    def get(self, key):
+        try:
+            return self.source[key]
+        except IndexError:
+            raise NotFoundError(key)
+
+    def get_or(self, key, default=None):
+        try:
+            return self.get(key)
+        except NotFoundError:
+            return default
+
+    def get_or_raise(self, key, exc: Union[str, Exception]):
+        undefined = object()
+        result = self.get_or(key, undefined)
+        if result is undefined:
+            if isinstance(exc, str):
+                raise Exception(exc)
+            else:
+                raise exc
+        else:
+            return result
+
+    # @no_type_check
+    def must_get_many(self, *keys):
+        return queries.MustKeys(self, *keys, typ="seq")
+
+class QuerySet(queries.QuerySet):
+    def order_by_reverse(self) -> "Query[T]":
+        raise NotImplementedError("Set has no order.")
+
+    def get_many(self, *keys):
+        return queries.FilterKeys(self, *keys)
+
+    def get(self, key):
+        if key in self.source:
+            return key
+        else:
+            raise NotFoundError(key)
+
+    def get_or(self, key, default=None):
+        try:
+            return self.get(key)
+        except NotFoundError:
+            return default
+
+    def get_or_raise(self, key, exc: Union[str, Exception]):
+        undefined = object()
+        result = self.get_or(key, undefined)
+        if result is undefined:
+            if isinstance(exc, str):
+                raise Exception(exc)
+            else:
+                raise exc
+        else:
+            return result
+
+    # @no_type_check
+    def must_get_many(self, *keys):
+        return queries.MustKeys(self, *keys, typ="set")
+
+class QueryBuilder(builder.Builder):
+    QUERY_BOTH = queries.Query
+    QUERY_ASYNC = queries.QueryAsync
+    QUERY_NORMAL = queries.QueryNormal
+    QUERY_SEQ = QuerySeq
+    QUERY_DICT = QueryDict
+    QUERY_SET = QuerySet
+
 @overload
 def query(source: Mapping[K, V]) -> DictEx[K, V]:
     ...
-
 
 @overload
 def query(source: Iterable[T]) -> ListEx[T]:
     ...
 
-
 @overload
 def query(source) -> "Query[Any]":
     ...
 
-
 def query(source):
-    if hasattr(source, "__piter__"):
-        return source
-    elif isinstance(source, dict):
-        return DictEx(source)
-    elif isinstance(source, list):
-        return ListEx(source)
-    elif isinstance(source, tuple):
-        return TupleEx(source)
-    elif isinstance(source, set):
-        return SetEx(source)
-    elif isinstance(source, frozenset):
-        return FrozenSetEx(source)
-    elif hasattr(source, "__iter__"):
-        return LazyIterate(iter, source)
-    else:
-        raise Exception()
-
+    return QueryBuilder.query(source)
 

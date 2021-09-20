@@ -1,27 +1,53 @@
 import asyncio
 from collections import defaultdict
 from operator import attrgetter, itemgetter
-from typing import Callable, NoReturn
+from typing import Awaitable, Callable, Mapping, NoReturn, TypeVar
 
-from .core import IterType, Query
+from .core import (
+    IterType,
+    Query,
+    QueryAsync,
+    QueryDict,
+    QueryNormal,
+    QuerySeq,
+    QuerySet,
+)
+from .exceptions import (
+    DuplicateElementError,
+    MustError,
+    MustTypeError,
+    NoElementError,
+    NotFoundError,
+    NotOneElementError,
+)
+
+R = TypeVar("R")
 
 exports = []
 
 
-def mark(func):
-    exports.append(func)
-    return func
+def mark(cls):
+    exports.append(cls)
+    return cls
+
+
+mark(Query)
+mark(QueryNormal)
+mark(QueryAsync)
+mark(QuerySeq)
+mark(QueryDict)
+mark(QuerySet)
 
 
 @mark
-class Lazy(Query):
-    def __init__(self, source, finalizer: Callable, *args, **kwargs):
+class Lazy(Query, Awaitable[R]):
+    def __init__(self, source, finalizer: Callable[..., R], *args, **kwargs):
         super().__init__(source)
         self.finalizer = finalizer
         self.args = args
         self.kwargs = kwargs
 
-    def __call__(self):
+    def __call__(self) -> R:
         return self.finalizer(self.source, *self.args, **self.kwargs)
 
     def __await__(self):
@@ -63,43 +89,45 @@ class Sleep(Query):
 class Map(Query):
     def __init__(self, source, selector):
         super().__init__(source)
+        if selector is str:
+            selector = lambda x: "" if x is None else str(x)
         self.selector = selector
 
     def _impl_iter(self):
         selector = self.selector
-        for x in self.source:
-            yield selector(x)
+        if selector is None:
+            return self.source.__iter__()
+        else:
+            return map(selector, self.source)
 
-    async def _impl_aiter(self):
+    def _impl_aiter(self):
         selector = self.selector
-        async for x in self.source:
-            yield selector(x)
+        if selector is None:
+            return self.source.__aiter__()
+        else:
+            return (selector(x) async for x in self.source)
 
 
 @mark
 class UnpackPos(Map):
     def _impl_iter(self):
         selector = self.selector
-        for v in self.source:
-            yield selector(*v)
+        return (selector(*v) for v in self.source)
 
-    async def _impl_aiter(self):
+    def _impl_aiter(self):
         selelctor = self.selector
-        async for v in self.source:
-            yield selelctor(*v)
+        return (selelctor(*v) async for v in self.source)
 
 
 @mark
 class UnpackKw(Map):
     def _impl_iter(self):
         selector = self.selector
-        for v in self.source:
-            yield selector(**v)
+        return (selector(**v) for v in self.source)
 
-    async def _impl_aiter(self):
+    def _impl_aiter(self):
         selector = self.selector
-        async for v in self.source:
-            yield selector(**v)
+        return (selector(**v) async for v in self.source)
 
 
 @mark
@@ -200,6 +228,14 @@ class GroupBy(Query):
             yield k, v
 
 
+@mark
+class GroupCount(Query):
+    """collections.Counter"""
+
+    pass
+
+
+@mark
 class PivotUnstack(Query):
     def __init__(self, source, default=None) -> None:
         super().__init__(source)
@@ -233,9 +269,9 @@ class PivotUnstack(Query):
 
 
 @mark
-class Pivotstack(Query):
+class PivotStack(Query):
     def _impl_iter(self):
-        data = dict(self.source)
+        data = dict(self.source.__iter__())
         columns = list(data.keys())
 
         for i in range(len(columns)):
@@ -264,7 +300,7 @@ class Request(Query):
     def _impl_iter(self):
         func = self.func
 
-        from ..requests import Response, StopWatch
+        from .requests import Response, StopWatch
 
         for v in self.source:
 
@@ -303,7 +339,7 @@ class RequestAsync(Query):
     async def _impl_aiter(self):
         func = self.func
 
-        from ..requests import Response, StopWatch
+        from .requests import Response, StopWatch
 
         async for v in self.source:
 
@@ -349,7 +385,7 @@ class Debug(Query):
 
 
 @mark
-class DebugMap(Query):
+class DebugPath(Query):
     """同期イテレータと非同期イテレータのどちらが実行されているか確認するデバッグ用のクエリです。"""
 
     def __init__(
@@ -388,9 +424,10 @@ class Filter(Query):
 
 @mark
 class Must(Query):
-    def __init__(self, source, predicate):
+    def __init__(self, source, predicate, msg: str = ""):
         super().__init__(source)
         self.predicate = predicate
+        self.msg = msg
 
     def _impl_iter(self):
         predicate = self.predicate
@@ -411,7 +448,7 @@ class Must(Query):
 class FilterType(Query):
     def __init__(self, source, *types):
         super().__init__(source)
-        self.types = types
+        self.types = tuple(None.__class__ if x is None else x for x in types)
 
     def _impl_iter(self):
         types = self.types
@@ -428,22 +465,22 @@ class FilterType(Query):
 
 @mark
 class MustType(Query):
-    def __init__(self, source, *types):
+    def __init__(self, source, type, *types):
         super().__init__(source)
-        self.types = types
+        self.types = (type, *types) if types else type
 
     def _impl_iter(self):
         types = self.types
         for elm in self.source:
             if not isinstance(elm, types):
-                raise MustTypeError(f"{elm} is not {tuple(x.__name__ for x in types)}")
+                raise MustTypeError(f"{elm} is not {types}")
             yield elm
 
     async def _impl_aiter(self):
         types = self.types
         async for elm in self.source:
             if not isinstance(elm, types):
-                raise MustTypeError(f"{elm} is not {tuple(x.__name__ for x in types)}")
+                raise MustTypeError(f"{elm} is not {types}")
             yield elm
 
 
@@ -506,6 +543,115 @@ class MustUnique(Query):
                 yield value
 
 
+def get_many_for_mapping(query_dict, keys):
+    """"""
+    undefined = object()
+    for key in keys:
+        obj = query_dict.get_or(key, undefined)
+        if obj is not undefined:
+            yield key, obj
+
+
+def get_many_for_sequence(query_seq, keys):
+    """"""
+    undefined = object()
+    for key in keys:
+        obj = query_seq.get_or(key, undefined)
+        if obj is not undefined:
+            yield obj
+
+
+def get_many_for_set(query_set, keys):
+    """"""
+    undefined = object()
+    for key in keys:
+        obj = query_set.get_or(key, undefined)
+        if obj is not undefined:
+            yield key
+
+
+def get_duplicate_keys(keys):
+    if len(keys) == len(set(keys)):
+        return None
+
+    from collections import Counter
+
+    dup = []
+    for k, count in Counter(keys).items():  # type: ignore
+        if count > 1:
+            dup.append(k)
+
+    return dup
+
+
+@mark
+class FilterKeys(Query):
+    def __init__(self, source, *keys):
+        super().__init__(source)
+        self.keys = keys
+
+        dup = get_duplicate_keys(keys)
+        if dup:
+            raise ValueError("duplicate keys: {dup}")
+
+        if isinstance(source, QueryDict):
+            self.filter = get_many_for_mapping
+        elif isinstance(source, QuerySeq):
+            self.filter = get_many_for_sequence
+        elif isinstance(source, QuerySet):
+            self.filter = get_many_for_set
+        else:
+            raise TypeError(f"{source} is not QuerySeq, QueryDict or QuerySet")
+
+    def _impl_iter(self):
+        return self.filter(self.source, self.keys)
+
+    async def _impl_aiter(self):
+        for x in self._impl_iter():
+            yield x
+
+
+@mark
+class MustKeys(Query):
+    # Literal["set", "seq", "map"]
+    def __init__(self, source, *keys, typ: str):
+        super().__init__(source)
+        self.keys = keys
+        self.type = typ
+
+        dup = get_duplicate_keys(keys)
+        if dup:
+            raise ValueError("duplicate keys: {dup}")
+
+    def _impl_iter(self):
+        source = self.source
+        not_exists = set()
+        key_values = []
+        undefined = object()
+
+        for k in self.keys:
+            val = source.get_or(k, undefined)
+            if val is undefined:
+                not_exists.add(k)
+            else:
+                key_values.append((k, val))
+
+        if not_exists:
+            raise NotFoundError(str(not_exists))
+
+        if self.type == "map":
+            for k, v in key_values:
+                yield k, v
+        elif self.type == "seq":
+            for k, v in key_values:
+                yield v
+        elif self.type == "set":
+            for k, v in key_values:
+                yield k
+        else:
+            raise TypeError(f"unknown type: {self.type}")
+
+
 @mark
 class Take(Query):
     def __init__(self, source, count: int):
@@ -526,7 +672,56 @@ class Take(Query):
             return
 
     async def _impl_aiter(self):
-        raise NotImplementedError()
+        count = self.count
+        current = 0
+
+        it = self.source.__aiter__()
+
+        try:
+            while current < count:
+                yield await it.__anext__()
+                current += 1
+        except StopAsyncIteration:
+            return
+
+
+@mark
+class Skip(Query):
+    def __init__(self, source, count: int):
+        super().__init__(source)
+        self.count = count
+
+    def _impl_iter(self):
+        count = self.count
+        current = 0
+
+        it = iter(self.source)
+
+        try:
+            while current < count:
+                next(it)
+                current += 1
+        except StopIteration:
+            return
+
+        for elm in it:
+            yield elm
+
+    async def _impl_aiter(self):
+        count = self.count
+        current = 0
+
+        it = self.source.__aiter__()
+
+        try:
+            while current < count:
+                await it.__anext__()
+                current += 1
+        except StopAsyncIteration:
+            return
+
+        async for elm in it:
+            yield elm
 
 
 @mark
@@ -589,6 +784,66 @@ class TakePage(TakeRange):
 
 
 @mark
+class TakeBox(Query):
+    """itertools.tee
+    シーケンスの要素を指定したサイズのリストに箱詰めし、それらのリストを列挙する。
+    """
+
+    def __init__(self, source, size: int) -> None:
+        super().__init__(source)
+        self.size = size
+
+        if size <= 0:
+            raise ValueError("count must be greater than 0")
+
+    def _impl_iter(self):
+        size = self.size
+        current = 0
+        running = True
+
+        it = iter(self.source)
+
+        while running:
+            current = 0
+            queue = []
+
+            while current < size:
+                current += 1
+                try:
+                    val = next(it)
+                    queue.append(val)
+                except StopIteration:
+                    running = False
+                    break
+
+            if queue:
+                yield queue
+
+    async def _impl_aiter(self):
+        size = self.size
+        current = 0
+        running = True
+
+        it = self.source.__aiter__()
+
+        while running:
+            current = 0
+            queue = []
+
+            while current < size:
+                current += 1
+                try:
+                    val = await it.__anext__()
+                    queue.append(val)
+                except StopIteration:
+                    running = False
+                    break
+
+            if queue:
+                yield queue
+
+
+@mark
 class OrderByMap(Query):
     def __init__(self, source, selector=None, desc: bool = False) -> None:
         super().__init__(source)
@@ -614,6 +869,19 @@ class OrderBy(OrderByMap):
                 selector = itemgetter(*fields)
 
         super().__init__(source, selector=selector, desc=desc)
+
+
+@mark
+class OrderByReverse(Query):
+    def _impl_iter(self):
+        source = self.source
+        if hasattr(source, "__reversed__"):
+            if isinstance(source, Mapping):
+                return ((k, source[k]) for k in reversed(source))  # type: ignore
+            else:
+                return reversed(source)
+        else:
+            return reversed(list(source))
 
 
 @mark
