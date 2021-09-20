@@ -766,6 +766,31 @@ class Skip(Query):
         for x in it:
             yield x
 
+    async def _impl_aiter(self):
+        start = self.start
+        stop = self.stop
+
+        current = 0
+
+        it = self.source.__aiter__()
+
+        try:
+            while current < start:
+                yield await it.__anext__()
+                current += 1
+        except StopAsyncIteration:
+            return
+
+        try:
+            while current < stop:
+                await it.__anext__()
+                current += 1
+        except StopAsyncIteration:
+            return
+
+        async for x in it:
+            yield x
+
 
 def take_page_calc(page: int, size: int):
     if size < 0:

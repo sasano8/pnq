@@ -1,78 +1,3 @@
-## 辞書の正規化
-
-リストと辞書の`__iter__`はそれぞれ値とキーを返すという挙動の違いがあります。
-
-``` python
-for val in [5, 6, 7]:
-  print(val)
-# => 5
-# => 6
-# => 7
-```
-
-``` python
-for val in {"a": 1, "b": 2, "c": 3}:
-  print(val)
-# => "a"
-# => "b"
-# => "c"
-```
-
-`pnq`は、リストと辞書の挙動を揃えるため次のような振る舞いをします。
-
-
-`pnq.query`でラップされた辞書は辞書のように振る舞います。
-
-``` python
-for val in pnq.query({"a": 5, "b": 6, "c": 7}):
-    print(val)
-
-# => "a"
-# => "b"
-# => "c"
-```
-
-クエリメソッドを介するとキーバリューペアを列挙するように動作します。
-
-
-``` python
-for val in pnq.query({"a": 5, "b": 6, "c": 7}).filter(lambda x: True):
-    print(val)
-
-# => ("a", 5)
-# => ("b", 6)
-# => ("c", 7)
-```
-
-例えば、次のコードは異なる結果を返します。
-
-``` python
-data = {"a": 5, "b": 6, "c": 7}
-
-result_1 =  pnq.query(data).to(list)
-# => [("a", 5), ("b", 6), ("c", 7)]
-
-result_1 =  list(pnq.query(data))
-# => ["a", "b", "c"]
-```
-
-
-クエリメソッドでチェーンされたオブジェクトは、イテレーションを要求されると内部的に`__piter__`を呼び出します。
-
-
-``` python
-for val in pnq.query({"a": 5, "b": 6, "c": 7}).__piter__():
-    print(val)
-
-# => ("a", 5)
-# => ("b", 6)
-# => ("c", 7)
-```
-
-!!! warning
-    - `pnq.query`で受け取った直後の辞書と、一度でもクエリメソッドをチェーンした場合に列挙される要素は異なることを意識する必要があります
-
-
 ## ステートレスイテレータ
 
 `pnq`はステートレスなイテレータとして動作するように設計されています。
@@ -116,7 +41,7 @@ result_2 = list(it)
 # => []
 ```
 
-## 遅延評価・即時評価・キャッシュ
+
 
 
 
@@ -241,27 +166,30 @@ import pnq
 import httpx
 
 
-
-params = pnq.query([
-    {"url": "test_url_1"},
-    {"url": "test_url_2"},
-])
-
-@params.request
-async def step_fetch(url):
+async def main():
     async with httpx.AsyncClient() as client:
-        res = await client.get("url")
-        res.raise_for_status()
-        return res
+        params = pnq.query([
+            {"url": "test_url_1"},
+            {"url": "test_url_2"},
+        ])
 
-@step_fetch.group_by
-def step_finalize(res):
-    return (not res.err, res)
+        @params.request_async
+        async def fetch_from_url(url):
+            res = await client.get(url)
+            res.raise_for_status()
+            return res
 
-result = asyncio.run(step_finalize.lazy(dict))
+        @fetch_from_url.group_by
+        def split_success_and_error(res):
+            return (not res.err, res)
 
-print(result[True])
-print(result[False])
+        return await split_success_and_error.lazy(dict)
+
+result = asyncio.run(main())
+# {
+#   True: [res1, res2, ...],
+#   False: [res3, res4, ...],
+# }
 ```
 
 

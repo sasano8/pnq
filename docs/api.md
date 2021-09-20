@@ -1,26 +1,3 @@
-## Generating
-
-::: pnq.actions.iter
-    :docstring:
-
-::: pnq.actions.infinite
-    :docstring:
-
-::: pnq.actions.repeat
-    :docstring:
-
-::: pnq.actions.value
-    :docstring:
-
-::: pnq.actions.count
-    :docstring:
-
-::: pnq.actions.cycle
-    :docstring:
-
-::: pnq.actions.range
-    :docstring:
-
 ## Transforming
 
 ::: pnq.actions.map
@@ -35,10 +12,10 @@
 ::: pnq.actions.select
     :docstring:
 
-::: pnq.actions.select_as_dict
+::: pnq.actions.select_as_tuple
     :docstring:
 
-::: pnq.actions.select_as_tuple
+::: pnq.actions.select_as_dict
     :docstring:
 
 ::: pnq.actions.reflect
@@ -242,4 +219,27 @@
     :docstring:
 
 ::: pnq.actions.last_or_raise
+    :docstring:
+
+## Generating
+
+<!-- ::: pnq.actions.query
+    :docstring: -->
+
+::: pnq.actions.infinite
+    :docstring:
+
+::: pnq.actions.repeat
+    :docstring:
+
+::: pnq.actions.value
+    :docstring:
+
+::: pnq.actions.count
+    :docstring:
+
+::: pnq.actions.cycle
+    :docstring:
+
+::: pnq.actions.range
     :docstring:

@@ -152,17 +152,14 @@ def __next(self):
 @mark
 def value(*args, **kwargs):
     """１つの要素を返すイテレータを生成します。
-
-    Args:
-
-    * value: 返す値
-
-    Returns: 取得したイテレータを内包するクエリ
+    位置引数を与えた場合は与えた値かタプルになり、キーワード引数を与えた場合は辞書になります。
 
     Usage:
     ```
     >>> pnq.value(1).to(list)
     [1]
+    >>> pnq.value("a", "b").to(list)
+    [("a", "b")]
     >>> pnq.value(name="test").to(list)
     [{"naem": "test"}]
     ```
@@ -178,9 +175,6 @@ def value(*args, **kwargs):
 
     elif len(args) == 1:
         val = args[0]
-
-    elif len(args) == 0:
-        val = None
 
     else:
         raise NotImplementedError()
@@ -564,8 +558,8 @@ def flat(self, selector=None):
 
     Usage:
     ```
-    >>> pnq.query(["abc"]).flat().to(list)
-    >>> ["a", "b", "c"]
+    >>> pnq.query(["abc", "def"]).flat().to(list)
+    >>> ["a", "b", "c", "d", "e", "f"]
     >>> countries = [{"country": "japan", "state": ["tokyo", "osaka"]}, {"country": "america", "state": ["new york", "florida"]}]
     >>> pnq.query(countries).flat(lambda x: x["state"]).to(list)
     >>> ["tokyo", "osaka", "new york", "florida"]
@@ -1260,7 +1254,7 @@ def order_by(self, selector=None, desc: bool = False):
 
     Usage:
     ```
-    >>> pnq.query([1, 2, 3]).order_by().to(list)
+    >>> pnq.query([3, 2, 1]]).order_by().to(list)
     [1, 2, 3]
     >>> pnq.query([1, 2, 3]).order_by(lambda x: -x).to(list)
     [3, 2, 1]
@@ -1298,7 +1292,7 @@ def order_by_reverse(self):
         else:
             return reversed(self)
     else:
-        return reversed(list(__iter(self)))
+        return reversed(list(self))
 
 
 @mark
@@ -1339,9 +1333,8 @@ def __len(self):
     if hasattr(self, "__len__"):
         return len(self)
 
-    it = __iter(self)
     i = 0
-    for i, v in enumerate(it, 1):
+    for i, v in enumerate(self, 1):
         ...
 
     return i
@@ -1359,8 +1352,7 @@ def exists(self):
     True
     ```
     """
-    it = __iter(self)
-    for elm in it:
+    for elm in self:
         return True
 
     return False
@@ -1387,7 +1379,7 @@ def __all(self, selector=lambda x: x):
     True
     ```
     """
-    return all(__iter(self, selector))
+    return all(map(selector, self))
 
 
 @mark
@@ -1409,7 +1401,7 @@ def __any(self, selector=lambda x: x):
     True
     ```
     """
-    return any(__iter(self, selector))
+    return any(map(selector, self))
 
 
 @mark
@@ -1436,7 +1428,7 @@ def contains(self, value, selector=lambda x: x) -> bool:
     True
     ```
     """
-    for val in __iter(self, selector):
+    for val in map(selector, self):
         if val == value:
             return True
 
@@ -1464,9 +1456,9 @@ def __min(self, selector=lambda x: x, default=NoReturn):
     ```
     """
     if default is NoReturn:
-        return min(__iter(self, selector))
+        return min(map(selector, self))
     else:
-        return min(__iter(self, selector), default=default)
+        return min(map(selector, self), default=default)
 
 
 @mark
@@ -1490,9 +1482,9 @@ def __max(self, selector=lambda x: x, default=NoReturn):
     ```
     """
     if default is NoReturn:
-        return max(__iter(self, selector))
+        return max(map(selector, self))
     else:
-        return max(__iter(self, selector), default=default)
+        return max(map(selector, self), default=default)
 
 
 @mark
@@ -1510,7 +1502,7 @@ def __sum(self, selector=lambda x: x):
     3
     ```
     """
-    return sum(__iter(self, selector))
+    return sum(map(selector, self))
 
 
 @mark
@@ -1540,8 +1532,7 @@ def average(
     i = 0
     val = 0
 
-    it = __iter(self, selector)
-    for i, val in enumerate(it, 1):
+    for i, val in enumerate(map(selector, self), 1):
         # val = selector(val)
         try:
             val = Decimal(str(val))  # type: ignore
@@ -1597,7 +1588,7 @@ def reduce(
     else:
         binary_op = MAP_ASSIGN_OP[op]
 
-    for val in __iter(self, selector):
+    for val in map(selector, self):
         seed = binary_op(seed, val)
 
     return seed
@@ -1626,7 +1617,7 @@ def concat(self, selector=lambda x: x, delimiter: str = ""):
     "a,b"
     ```
     """
-    return delimiter.join(str(x) for x in __iter(self, selector))
+    return delimiter.join(str(x) for x in map(selector, self))
 
 
 ###########################################
@@ -1739,7 +1730,7 @@ def each(self, func=lambda x: x):
     2
     ```
     """
-    for elm in __iter(self):
+    for elm in self:
         func(elm)
 
 
@@ -1753,11 +1744,11 @@ def each_unpack(self, func=lambda x: x):
     ```
     >>> @pnq.query([{"arg1": 1, "arg2": 2}]).each_unpack
     >>> def print_values(arg1, arg2):
-    >>>   print(v1, v2)
+    >>>   print(arg1, arg2)
     >>> 1, 2
     ```
     """
-    for elm in __iter(self):
+    for elm in self:
         func(**elm)
 
 
