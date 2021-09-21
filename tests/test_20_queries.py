@@ -728,6 +728,47 @@ class Test020_Transform:
             "__name__", "__xxx__", attr=True, default=100
         ).to(list) == [{"__name__": "str", "__xxx__": 100}]
 
+    def test_reflect(self):
+        # transposed = transpose(
+        #     {
+        #         "id": ["id"],
+        #         "name": {"name", "searchable"},
+        #         "kana": {"kana", "searchable"},
+        #         "note": ["searchable"],
+        #     }
+        # )
+
+        # single, multi = split_single_multi(transposed)
+
+        # assert single == {
+        #     "id": "id",
+        #     "name": "name",
+        #     "kana": "kana",
+        # }
+
+        # assert multi == {
+        #     "searchable": ["name", "kana", "note"],
+        # }
+        result = (
+            pnq([{"id": 1, "name": "山田", "kana": "yamada", "note": "hoge"}])
+            .reflect(
+                {
+                    "id": "id",
+                    "name": {"name", "searchable"},
+                    "kana": {"kana", "searchable"},
+                    "note": "searchable",
+                }
+            )
+            .to(list)
+        )
+
+        assert result[0] == {
+            "id": 1,
+            "name": "山田",
+            "kana": "yamada",
+            "searchable": ["山田", "yamada", "hoge"],
+        }
+
     def test_map_star(self):
         pass
 

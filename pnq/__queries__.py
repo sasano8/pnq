@@ -276,6 +276,9 @@ class {{query.cls}}:
     def select_as_dict(self, *fields, attr: bool = False, default=NoReturn) -> "Query[Dict]":
         return queries.SelectAsDict(self, *fields, attr=attr, default=default)
 
+    def reflect(self, mapping, attr: bool = False):
+        return queries.Reflect(self, mapping, attr=attr)
+
     def flat(self, selector: Callable[..., Iterable[R]] = None) -> "{{sequence.name}}[R]":
         return queries.Flat(self, selector)
 

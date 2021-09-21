@@ -182,6 +182,89 @@ class SelectAsDict(Map):
         super().__init__(source, selector)
 
 
+def transpose(mapping):
+
+    tmp = defaultdict(list)
+
+    for left, right in mapping.items():
+        if isinstance(right, str):
+            tmp[left].append(right)
+        elif isinstance(right, list):
+            tmp[left] = right
+        elif isinstance(right, tuple):
+            tmp[left] = right
+        elif isinstance(right, set):
+            tmp[left] = right
+        else:
+            raise TypeError(f"{v} is not a valid mapping")
+
+    # output属性 - 元の属性（複数の場合あり）
+    target = defaultdict(list)
+
+    for k, outputs in tmp.items():
+        for out in outputs:
+            target[out].append(k)
+
+    return target
+
+
+def split_single_multi(dic):
+    single = {}
+    multi = {}
+    for k, v in dic.items():
+        if len(v) > 1:
+            multi[k] = v
+        else:
+            single[k] = v[0]
+
+    return single, multi
+
+
+def build_selector(single, multi, attr: bool = False):
+    template = {}
+    for k in multi.keys():
+        template[k] = []
+
+    if attr:
+
+        def reflector(x):
+            result = {}
+            for k, v in single.items():
+                result[k] = x[v]
+
+            for k, fields in multi.items():
+                result[k] = []
+                for f in fields:
+                    result[k].append(x[f])
+
+            return result
+
+    else:
+
+        def reflector(x):
+            result = {}
+            for k, v in single.items():
+                result[k] = x[v]
+
+            for k, fields in multi.items():
+                result[k] = []
+                for f in fields:
+                    result[k].append(x[f])
+
+            return result
+
+    return reflector
+
+
+@mark
+class Reflect(Map):
+    def __init__(self, source, mapping, attr: bool = False):
+        transposed = transpose(mapping)
+        single, multi = split_single_multi(transposed)
+        selector = build_selector(single, multi, attr)
+        super().__init__(source, selector)
+
+
 @mark
 class Flat(Query):
     def __init__(self, source, selector=None):
