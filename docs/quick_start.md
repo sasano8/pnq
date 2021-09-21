@@ -13,10 +13,10 @@ $ pip install pnq
 ```python
 import pnq
 
-pnq.query([1]).map(lambda x: x * 2).to_list()
+pnq.query([1]).map(lambda x: x * 2).to(list)
 # >> [2]
 
-pnq.query({"a": 1, "b": 2}).filter(lambda x: x[0] == "a").to_list()
+pnq.query({"a": 1, "b": 2}).filter(lambda x: x[0] == "a").to(list)
 # >> [("a", 1)]
 ```
 
@@ -106,7 +106,7 @@ def add_one(x):
 
 q = pnq.query([1]).map(add_one)
 
-result = q.to_list()
+result = q.to(list)
 # => 1
 ```
 
@@ -136,14 +136,14 @@ for x in q:
 ここで、2回`print`が実行されるべきか検討が必要です。
 2回実行されるということは多くの処理が走っていることになります。
 
-何度も同じ結果を使い回す意図があるなら、`to_list`等で評価を確定させて結果をキャッシュするべきです。
+何度も同じ結果を使い回す意図があるなら、`to(list)`等で評価を確定させて結果をキャッシュするべきです。
 
 ``` python
 def add_one(x):
     print(x)
     return x + 1
 
-result = pnq.query([1]).map(add_one).to_list()
+result = pnq.query([1]).map(add_one).to(list)
 # => 1
 
 for x in result:

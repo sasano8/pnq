@@ -59,10 +59,10 @@ $ pip install pnq
 ```python
 import pnq
 
-pnq.query([1]).map(lambda x: x * 2).to_list()
+pnq.query([1]).map(lambda x: x * 2).to(list)
 # >> [2]
 
-pnq.query({"a": 1, "b": 2}).filter(lambda x: x[0] == "a").to_list()
+pnq.query({"a": 1, "b": 2}).filter(lambda x: x[0] == "a").to(list)
 # >> [("a", 1)]
 
 ```
