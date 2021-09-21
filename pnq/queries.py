@@ -31,10 +31,6 @@ except:
 
 from . import actions
 from .base.exceptions import NoElementError, NotFoundError, NotOneElementError
-
-# from .core import LazyReference as _LazyReference
-# from .core import piter, undefined
-# from .core import undefined
 from .base.op import TH_ASSIGN_OP
 from .base.requests import Response
 
@@ -49,24 +45,7 @@ V2 = TypeVar("V2")
 R = TypeVar("R")
 
 
-__all__ = [
-    "Query",
-    "PairQuery",
-    "IndexQuery",
-    "ListEx",
-    "DictEx",
-    "SetEx",
-    "query",
-    "undefined",
-]
-
-
-# def lazy_reference(func):
-#     @wraps(func)
-#     def wrapper(*args, **kwargs):
-#         return LazyReference(func, *args, **kwargs)
-
-#     return wrapper
+__all__ = ["Query", "PairQuery", "IndexQuery", "ListEx", "DictEx", "SetEx", "query"]
 
 
 class Query(Generic[T]):
@@ -275,7 +254,7 @@ class Query(Generic[T]):
     ) -> "Query[Dict]":
         return queries.SelectAsDict(self, *fields, attr=attr, default=default)
 
-    def reflect(self, mapping, attr: bool = False):
+    def reflect(self, mapping, default=NoReturn, attr: bool = False):
         return queries.Reflect(self, mapping, attr=attr)
 
     def flat(self, selector: Callable[..., Iterable[R]] = None) -> "Query[R]":
@@ -627,7 +606,7 @@ class PairQuery(Generic[K, V]):
     ) -> "Query[Dict]":
         return queries.SelectAsDict(self, *fields, attr=attr, default=default)
 
-    def reflect(self, mapping, attr: bool = False):
+    def reflect(self, mapping, default=NoReturn, attr: bool = False):
         return queries.Reflect(self, mapping, attr=attr)
 
     def flat(self, selector: Callable[..., Iterable[R]] = None) -> "Query[R]":
@@ -776,13 +755,12 @@ class IndexQuery(Generic[K, V]):
 
 # 継承時は右側に基底クラスを指定し、左へ上書きしていくイメージ
 
+# class Lazy:
+#     def len(self) -> int:
+#         return len(list(self))
 
-class Lazy:
-    def len(self) -> int:
-        return len(list(self))
-
-    def exists(self) -> bool:
-        return len(list(self)) > 0
+#     def exists(self) -> bool:
+#         return len(list(self)) > 0
 
 
 # class LazyIterate(Lazy, Query[T], _LazyIterate):
