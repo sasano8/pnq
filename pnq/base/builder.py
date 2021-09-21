@@ -1,4 +1,9 @@
+from typing import Any, Callable, Coroutine, TypeVar
+
 from .core import Query, QueryAsync, QueryDict, QueryNormal, QuerySeq, QuerySet
+from .requests import CancelToken
+
+R = TypeVar("R")
 
 
 class Builder:
@@ -52,3 +57,49 @@ class Builder:
         from itertools import cycle
 
         return query(LazyGenerator(cycle, iterable))
+
+    @classmethod
+    def run(
+        cls,
+        func: Callable[..., Coroutine[Any, Any, R]],
+        handle_signals={"SIGINT", "SIGTERM"},
+    ) -> R:
+        import asyncio
+        import inspect
+        import signal
+        from functools import partial
+
+        def handle_cancel(signame, task, token=None):
+            if token is None:
+                print(
+                    f"Cancel requested by {signame}. The task will be forcibly canceled."  # noqa
+                )
+                task.cancel()
+            else:
+                print(
+                    f"Cancel requested by {signame}. The task will be safely shut down."
+                )
+                token.cancel()
+
+        signature = inspect.signature(func)
+
+        if len(signature.parameters) == 1:
+            args = [CancelToken()]
+        else:
+            args = []
+
+        loop = asyncio.new_event_loop()
+        future = asyncio.shield(func(*args), loop=loop)
+
+        for sig_name in handle_signals:
+            sig = getattr(signal, sig_name)
+            loop.add_signal_handler(
+                sig, partial(handle_cancel, sig_name, future, *args)
+            )
+
+        try:
+            loop.run_until_complete(future)
+        finally:
+            loop.close()
+
+        return future.result()

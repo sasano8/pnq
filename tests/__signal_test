@@ -1,0 +1,40 @@
+# ファイル名が.pyだとpytestにスキャンされ失敗するため、拡張子をつけない
+
+import sys
+from pnq.base.builder import Builder
+import asyncio
+
+self_path = sys.argv[0]
+mode = int(sys.argv[1])
+
+
+if mode == 0:
+
+    def main():
+        async def wait():
+            await asyncio.sleep(0.5)
+            return True
+
+        return Builder.run(wait)
+
+
+elif mode == 1:
+
+    def main():
+        async def wait(token):
+            await asyncio.sleep(0.5)
+            return True
+
+        return Builder.run(wait)
+
+
+else:
+    raise Exception()
+
+
+result = main()
+
+if result:
+    exit(0)
+else:
+    exit(-1)

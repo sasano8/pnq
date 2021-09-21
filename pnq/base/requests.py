@@ -3,6 +3,17 @@ from datetime import datetime, timezone
 from typing import Any, Dict, NamedTuple, Tuple, Union
 
 
+class CancelToken:
+    def __init__(self):
+        self.is_cancelled = False
+
+    def is_running(self, *args):
+        return not self.is_cancelled
+
+    def cancel(self):
+        self.is_cancelled = True
+
+
 class Request:
     args: Tuple
     kwargs: Dict

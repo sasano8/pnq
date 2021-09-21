@@ -70,6 +70,72 @@ result = asyncio.run(main())
 # }
 ```
 
+### キャンセル管理
+
+`pnq`は簡単なキャンセル機構を提供し、これを利用できます。
+
+`pnq.run`に、非同期関数を渡すと、その関数を起動し、第一引数にキャンセルトークンを渡します。
+第一引数を受け入れ可能な場合、その関数はキャンセルをコントロールする意思があるとみなされます。
+
+次のコードは、10秒間待機している間キャンセル（SIGTERMとSIGINT）を受け入れません。
+
+``` python
+import asyncio
+import pnq
+
+
+async def main(token):
+    await asyncio.sleep(10)
+    print("Hello, world!")
+
+
+pnq.run(main)
+```
+
+キャンセルを検知すると`token.is_running()`は`False`を返すようになります。
+`token.is_running()`を監視することで、任意のタイミングで処理を中断できます。
+
+次のコードは、`token.is_running()`が`False`と評価されるまで、要素を流し続けます。
+
+``` python
+import asyncio
+import pnq
+
+
+async def main(token):
+    async def infinity():
+        while True:
+            yield 1
+            await asyncio.sleep(1)
+
+    async for x in pnq.query(infinity()).take_while(token.is_running):
+        print(x)
+
+
+pnq.run(main)
+```
+
+関数が第一引数を受け入れ可能でない場合、実行は即時にキャンセルされます。
+
+``` python
+import asyncio
+import pnq
+
+
+async def main():
+    async def infinity():
+        while True:
+            yield 1
+            await asyncio.sleep(1)
+
+    async for x in pnq.query(infinity()):
+        print(x)
+
+
+pnq.run(main)
+```
+
+
 ### 例外処理
 
 `request_async`は、例外を補足し実行結果を含んだオブジェクト`Response`を返します。
@@ -90,9 +156,6 @@ for res in some_requests:
 ```
 
 
-### キャンセル管理
-
-方式検討中。
 
 
 ## 性能評価

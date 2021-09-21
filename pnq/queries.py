@@ -337,6 +337,9 @@ class Query(Generic[T]):
     def take(self, count_or_range: Union[int, range]) -> "Query[T]":
         return queries.Take(self, count_or_range)
 
+    def take_while(self, predicate) -> "Query[T]":
+        return queries.TakeWhile(self, predicate)
+
     def skip(self, count_or_range: Union[int, range]) -> "Query[T]":
         return queries.Skip(self, count_or_range)
 
@@ -691,6 +694,9 @@ class PairQuery(Generic[K, V]):
     def take(self, count_or_range: Union[int, range]) -> "PairQuery[K,V]":
         return queries.Take(self, count_or_range)
 
+    def take_while(self, predicate) -> "PairQuery[K,V]":
+        return queries.TakeWhile(self, predicate)
+
     def skip(self, count_or_range: Union[int, range]) -> "PairQuery[K,V]":
         return queries.Skip(self, count_or_range)
 
@@ -1028,3 +1034,6 @@ def query(source) -> "Query[Any]":
 
 def query(source):
     return QueryBuilder.query(source)
+
+
+run = QueryBuilder.run

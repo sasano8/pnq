@@ -127,15 +127,91 @@ class Test010_Async:
             DebugPath(Query(create_aiter()), map_five, map_ten), list_async
         ) == [10, 10, 10]
 
-    def test_builder(self):
-        from pnq.base.builder import Builder
-
-        assert list(Builder.query([1, 2, 3])) == [1, 2, 3]
-        assert list(Builder.query({1: "a", 2: "b"})) == [(1, "a"), (2, "b")]
-
     @async_test
     async def test_sleep(self):
         with pytest.raises(NotImplementedError, match="can't __iter__"):
             list(Sleep(Query([1, 2, 3]), 0))
 
         assert [x async for x in Sleep(Query([1, 2, 3]), 0)] == [1, 2, 3]
+
+    def test_builder(self):
+        from pnq.base.builder import Builder
+
+        assert list(Builder.query([1, 2, 3])) == [1, 2, 3]
+        assert list(Builder.query({1: "a", 2: "b"})) == [(1, "a"), (2, "b")]
+
+    def test_builder_run(self):
+        import tempfile
+
+        from pnq.base.builder import Builder
+        from pnq.base.requests import CancelToken
+
+        async def func_1():
+            return 100
+
+        assert Builder.run(func_1) == 100
+
+        with tempfile.TemporaryFile() as f:
+            # 引数なしで関数が実行できること
+            async def write_1():
+                f.write(b"test1")
+                f.flush()
+
+            Builder.run(write_1)
+            f.seek(0)
+            assert f.read() == b"test1"
+
+        with tempfile.TemporaryFile() as f:
+            # tokenを受け取ってファイルを書き込めること
+            async def write_2(token):
+                f.write(b"test2")
+                f.flush()
+                assert isinstance(token, CancelToken)
+                assert token.is_running()
+
+            Builder.run(write_2)
+            f.seek(0)
+            assert f.read() == b"test2"
+
+    @pytest.mark.slow
+    def test_builder_run_signal(self):
+        import signal
+        import subprocess
+        import time
+        from functools import partial
+
+        popen = partial(
+            subprocess.Popen, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
+
+        p = popen(["python", "tests/__signal_test", "0"])
+        outs, errs = p.communicate()
+        assert b"" in outs
+        assert b"" in outs
+        assert p.returncode == 0
+
+        p = popen(["python", "tests/__signal_test", "1"])
+        outs, errs = p.communicate()
+        assert b"" in outs
+        assert b"" in outs
+        assert p.returncode == 0
+
+        # SIGINTを送信した時、強制キャンセルされることを確認
+        p = popen(["python", "tests/__signal_test", "0"])
+        time.sleep(0.1)
+        p.send_signal(signal.SIGINT)
+        outs, errs = p.communicate()
+        assert b"SIGINT" in outs
+        assert b"forcibly" in outs
+        assert b"Task was destroyed" in errs
+        assert p.returncode == 1
+
+        # SIGINTを送信した時、強制キャンセルされないことを確認
+        p = popen(["python", "tests/__signal_test", "1"])
+        time.sleep(0.1)
+        p.send_signal(signal.SIGINT)
+        outs, errs = p.communicate()
+        assert b"SIGINT" in outs
+        assert b"safely shut down" in outs
+        assert b"" in errs
+        assert p.returncode == 0

@@ -813,6 +813,29 @@ class Take(Query):
 
 
 @mark
+class TakeWhile(Query):
+    def __init__(self, source, predicate):
+        super().__init__(source)
+        self.predicate = predicate
+
+    def _impl_iter(self):
+        predicate = self.predicate
+        for v in self.source:
+            if predicate(v):
+                yield v
+            else:
+                break
+
+    async def _impl_aiter(self):
+        predicate = self.predicate
+        async for v in self.source:
+            if predicate(v):
+                yield v
+            else:
+                break
+
+
+@mark
 class Skip(Query):
     def __init__(self, source, count_or_range: Union[int, range]):
         super().__init__(source)

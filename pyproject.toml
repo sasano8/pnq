@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pnq"
-version = "0.0.9"
+version = "0.0.10"
 description = ""
 authors = ["sasano8 <y-sasahara@ys-method.com>"]
 license = "MIT"
@@ -36,3 +36,11 @@ extend-exclude = '''
 ^/pnq/__queries__.py|
 ^/pnq/actions.py
 '''
+
+[tool.pytest.ini_options]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+]
+testpaths = [
+    "tests",
+]

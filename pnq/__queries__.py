@@ -346,6 +346,9 @@ class {{query.cls}}:
     def take(self, count_or_range: Union[int, range]) -> "{{query.str}}":
         return queries.Take(self, count_or_range)
 
+    def take_while(self, predicate) -> "{{query.str}}":
+        return queries.TakeWhile(self, predicate)
+
     def skip(self, count_or_range: Union[int, range]) -> "{{query.str}}":
         return queries.Skip(self, count_or_range)
 
@@ -622,6 +625,7 @@ class QuerySeq(queries.QuerySeq):
     def must_get_many(self, *keys):
         return queries.MustKeys(self, *keys, typ="seq")
 
+
 class QuerySet(queries.QuerySet):
     def order_by_reverse(self) -> "Query[T]":
         raise NotImplementedError("Set has no order.")
@@ -656,6 +660,7 @@ class QuerySet(queries.QuerySet):
     def must_get_many(self, *keys):
         return queries.MustKeys(self, *keys, typ="set")
 
+
 class QueryBuilder(builder.Builder):
     QUERY_BOTH = queries.Query
     QUERY_ASYNC = queries.QueryAsync
@@ -663,6 +668,7 @@ class QueryBuilder(builder.Builder):
     QUERY_SEQ = QuerySeq
     QUERY_DICT = QueryDict
     QUERY_SET = QuerySet
+
 
 @overload
 def query(source: Mapping[K, V]) -> DictEx[K, V]:
@@ -679,3 +685,4 @@ def query(source) -> "Query[Any]":
 def query(source):
     return QueryBuilder.query(source)
 
+run = QueryBuilder.run
