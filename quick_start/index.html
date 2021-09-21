@@ -490,10 +490,10 @@
 <p>次のスクリプトを実行し、動作確認します。</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">pnq</span>
 
-<span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+<span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
 <span class="c1"># &gt;&gt; [2]</span>
 
-<span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">})</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;a&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+<span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">})</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;a&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
 <span class="c1"># &gt;&gt; [(&quot;a&quot;, 1)]</span>
 </code></pre></div>
 <h2 id="_3">クエリオブジェクト</h2>
@@ -555,7 +555,7 @@
 
 <span class="n">q</span> <span class="o">=</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">add_one</span><span class="p">)</span>
 
-<span class="n">result</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
 <span class="c1"># =&gt; 1</span>
 </code></pre></div>
 <p><code>add_one</code>に定義された<code>print</code>の結果は<code>to_list</code>のタイミングで表示され、
@@ -578,12 +578,12 @@
 <p>2回の<code>for</code>のタイミングで<code>print</code>が実行されています。</p>
 <p>ここで、2回<code>print</code>が実行されるべきか検討が必要です。
 2回実行されるということは多くの処理が走っていることになります。</p>
-<p>何度も同じ結果を使い回す意図があるなら、<code>to_list</code>等で評価を確定させて結果をキャッシュするべきです。</p>
+<p>何度も同じ結果を使い回す意図があるなら、<code>to(list)</code>等で評価を確定させて結果をキャッシュするべきです。</p>
 <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">add_one</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">1</span>
 
-<span class="n">result</span> <span class="o">=</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">add_one</span><span class="p">)</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">add_one</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
 <span class="c1"># =&gt; 1</span>
 
 <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
