@@ -64,7 +64,7 @@ jobs:
       #   run: npm install
 
       - name: Run Tests
-        run: make full-test
+        run: make test-full
 
       - name: Check code style with Black
         run: poetry run black --check --diff .
