@@ -405,7 +405,7 @@ def unpack_pos(self, selector):
     Args:
 
     * self: 変換対象のシーケンス
-    * selector(*args): 各要素に対する変換関数
+    * selector: 各要素に対する変換関数
 
     Returns: 変換関数で得られた要素を返すクエリ
 
@@ -464,8 +464,8 @@ def select(self, field, *fields, attr: bool = False):
     [1]
     >>> pnq.query([{"id": 1, "name": "a"}]).select("id", "name").to(list)
     [(1, "a")]
-    >>> pnq.query([str]).select("__name__", attr=True).to(list)
-    ["str"]
+    >>> pnq.query([user]).select("id", "name", attr=True).to(list)
+    [(1, "a")]
     ```
     """
     pass
@@ -474,7 +474,7 @@ def select(self, field, *fields, attr: bool = False):
 @mark
 def select_as_tuple(self, *fields, attr: bool = False):
     """シーケンスの各要素からアイテムまたは属性を選択し辞書として新しいフォームに射影します。
-    selectと異なり選択した値が１つでも必ずタプルを返します。
+    selectと似ていますが、選択した値が１つでも必ずタプルを返します。
 
     Args:
 
@@ -488,8 +488,8 @@ def select_as_tuple(self, *fields, attr: bool = False):
     ```
     >>> pnq.query([(1, 2)]).select_as_tuple(0).to(list)
     [(1,)]
-    >>> pnq.query([str]).select_as_tuple("__name__", attr=True).to(list)
-    [("str",)]
+    >>> pnq.query([user]).select_as_tuple("id", "name", attr=True).to(list)
+    [("1", "a")]
     ```
     """
     pass
@@ -511,8 +511,8 @@ def select_as_dict(self, *fields, attr: bool = False):
     ```
     >>> pnq.query([(1, 2)]).select_as_dict(0).to(list)
     [{0: 1}]
-    >>> pnq.query([str]).select_as_dict("__name__", attr=True).to(list)
-    [{"__name__": "str"}]
+    >>> pnq.query([user]).select_as_dict("id", "name", attr=True).to(list)
+    [{"id": 1, "name": "b"}]
     ```
     """
     pass
@@ -1165,7 +1165,7 @@ def take_while(self, predicate):
 
 
 @mark
-def skip(self, count: int):
+def skip(self, count_or_range: int):
     """シーケンスから指定した範囲の要素をバイパスします。
 
     Args:
@@ -1597,6 +1597,7 @@ def reduce(
 @mark
 def concat(self, selector=lambda x: x, delimiter: str = ""):
     """シーケンスの要素を文字列として連結します。
+    Noneは空文字として扱われます。
 
     Args:
 
@@ -1612,12 +1613,13 @@ def concat(self, selector=lambda x: x, delimiter: str = ""):
     >>> pnq.query(["a", "b"]).concat()
     "ab"
     >>> pnq.query(["a", None]).concat()
-    "aNone"
+    "a"
     >>> pnq.query(["a", "b"]).concat(delimiter=",")
     "a,b"
     ```
     """
-    return delimiter.join(str(x) for x in map(selector, self))
+    to_str = lambda x: "" if x is None else str(x)
+    return delimiter.join(to_str(x) for x in map(selector, self))
 
 
 ###########################################

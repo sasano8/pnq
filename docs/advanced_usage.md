@@ -10,6 +10,7 @@
 
 ``` python
 import asyncio
+import pnq
 
 async def async_iterate():
     yield 1
@@ -24,7 +25,7 @@ async def main():
     async for x in pnq.query(async_iterate()):
         print(x)
 
-    async for x in pnq.query([1, 2, 3]).request_async(sleep):
+    async for x in pnq.query([dict(x=1), dict(x=2), dict(x=3)]).request_async(sleep):
         print(x)
 
     await pnq.query([1, 2, 3]).each_async(sleep)

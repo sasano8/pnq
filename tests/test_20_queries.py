@@ -466,6 +466,7 @@ class Test010_Finalizer:
                 (set([1]), "1"),
                 (frozenset([1]), "1"),
                 (["a", "b", "c"], "abc"),
+                ([None], ""),
             ],
         )
         def test_concat(self, src, expect):
