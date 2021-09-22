@@ -270,6 +270,9 @@ class {{query.cls}}:
     def flat(self, selector: Callable[..., Iterable[R]] = None) -> "{{sequence.name}}[R]":
         return queries.Flat(self, selector)
 
+    def flat_recursive(self, selector: Callable[[{{query.row}}], Iterable[{{query.row}}]]) -> "{{sequence.name}}[{{query.row}}]":
+        return queries.FlatRecursive(self, selector)
+
     def unpack_pos(self, selector: Callable[..., R]) -> "{{sequence.name}}[R]":
         return queries.UnpackPos(self, selector=selector)
 

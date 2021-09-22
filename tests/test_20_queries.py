@@ -782,8 +782,28 @@ class Test020_Transform:
         assert pnq([(0, "abc")]).flat(lambda x: x[1]).to(list) == ["a", "b", "c"]
         assert pnq([(0, [1, 2, 3])]).flat(lambda x: x[1]).to(list) == [1, 2, 3]
 
-    def test_map_recursive(self):
-        pass
+    def test_flat_recursive(self):
+        data = [
+            {
+                "name": "root1",
+                "nodes": [
+                    {
+                        "name": "n1",
+                        "nodes": [
+                            {"name": "n2", "nodes": []},
+                            {"name": "n3", "nodes": [{"name": "n4", "nodes": []}]},
+                        ],
+                    }
+                ],
+            },
+            {
+                "name": "root2",
+                "nodes": [{"name": "n5", "nodes": []}],
+            },
+        ]
+        assert pnq(data).flat_recursive(lambda x: x["nodes"]).select("name").to(
+            list
+        ) == ["root1", "n1", "n2", "n3", "n4", "root2", "n5"]
 
     def test_cast(self):
         # castは型注釈を誤魔化す

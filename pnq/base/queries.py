@@ -287,6 +287,38 @@ class Flat(Query):
 
 
 @mark
+class FlatRecursive(Query):
+    def __init__(self, source, selector):
+        super().__init__(source)
+
+        def scan(parent, selector):
+            nodes = selector(parent)
+            if nodes is None:
+                return
+            for node in nodes:
+                yield node
+                yield from scan(node, selector)
+
+        self.scan = scan
+        self.selector = selector
+
+    def _impl_iter(self):
+        scan = self.scan
+        selector = self.selector
+        for node in self.source:
+            yield node
+            yield from scan(node, selector)
+
+    async def _impl_aiter(self):
+        scan = self.scan
+        selector = self.selector
+        async for node in self.source:
+            yield node
+            for c in scan(node, selector):
+                yield c
+
+
+@mark
 class Enumerate(Query):
     def __init__(self, source, start: int = 0, step: int = 1):
         super().__init__(source)

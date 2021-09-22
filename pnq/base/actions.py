@@ -393,12 +393,6 @@ def select_single_node(
 
 
 @mark
-def map_recursive(self, selector):
-    "nodeを再帰的に取得する"
-    pass
-
-
-@mark
 def unpack_pos(self, selector):
     """シーケンスの各要素をアンパックし、新しいフォームに射影します。
 
@@ -552,7 +546,7 @@ def flat(self, selector=None):
     Args:
 
     * self: 変換対象のシーケンス
-    * selector: 各要素にから平坦化する要素を選択する関数
+    * selector: 各要素から平坦化する要素を選択する関数
 
     Returns: 参照したシーケンスをそのまま返す
 
@@ -569,6 +563,103 @@ def flat(self, selector=None):
 
 select_many = flat
 flat_map = flat
+
+
+@mark
+def flat_recursive(self, selector):
+    """シーケンスの各要素から再帰的に複数ノードを選択し、選択されたノードを１つのシーケンスに平坦化します。
+    各ルート要素から浅い順に列挙されます。
+
+    Args:
+
+    * self: 変換対象のシーケンス
+    * selector: 各要素から平坦化する要素を再帰的に選択する関数（戻り値はリスト等に含めて返す必要があります）
+
+    Returns: 参照したシーケンスをそのまま返す
+
+    Usage:
+    ```
+    >>> pnq.query(
+    >>>     {"name": "a", "nodes": [{"name": "b", nodes: [{"name": c, "nodes": []}, {"name": "d", "nodes": []}}}]}]}
+    >>> ).flat_recursive(lambdax x: x["nodes"]).select("name").to(list)
+    >>> ["a", "b", "c", "d"]
+    ```
+    """
+
+
+def pivot_unstack(self, default=None):
+    """行方向に並んでいるデータを列方向に入れ替える
+
+    Args:
+
+    * self: 変換対象のシーケンス
+    * selector: 各要素から平坦化する要素を再帰的に選択する関数（戻り値はリスト等に含めて返す必要があります）
+
+    Returns: 参照したシーケンスをそのまま返す
+
+    Usage:
+    ```
+    data = [
+        {"name": "test1", "age": 20},
+        {"name": "test2", "age": 25},
+        {"name": "test3", "age": 30, "sex": "male"},
+    ]
+    {'name': ['test1', 'test2', 'test3'], 'age': [20, 25, 30], 'sex': [None, None, 'male']}
+    ```
+    """
+    from collections import defaultdict
+
+    dataframe = {}
+    data = []
+
+    # 全てのカラムを取得
+    for i, dic in enumerate(self):
+        data.append(dic)
+        for k in dic.keys():
+            dataframe[k] = None
+
+    # カラム分の領域を初期化
+    for k in dataframe:
+        dataframe[k] = []
+
+    # データをデータフレームに収める
+    for dic in data:
+        for k in dataframe.keys():
+            v = dic.get(k, default)
+            dataframe[k].append(v)
+
+    yield from dataframe.items()
+
+
+def pivot_stack(self):
+    """列方向に並んでいるデータを行方向に入れ替える
+
+    Args:
+
+    * self: 変換対象のシーケンス
+    * selector: 各要素から平坦化する要素を再帰的に選択する関数（戻り値はリスト等に含めて返す必要があります）
+
+    Returns: 参照したシーケンスをそのまま返す
+
+    Usage:
+    ```
+    {'name': ['test1', 'test2', 'test3'], 'age': [20, 25, 30], 'sex': [None, None, 'male']}
+    data = [
+        {"name": "test1", "age": 20, "sex": None},
+        {"name": "test2", "age": 25, "sex": None},
+        {"name": "test3", "age": 30, "sex": "male"},
+    ]
+    ```
+    """
+    data = dict(self)
+    columns = list(data.keys())
+
+    for i in range(len(columns)):
+        row = {}
+        for c in columns:
+            row[c] = data[c][i]
+
+        yield row
 
 
 @mark
@@ -660,59 +751,6 @@ def join(self, right, on, select):
 @mark
 def group_join(self, right, on, select):
     pass
-
-
-def pivot_unstack(self, default=None):
-    """行方向に並んでいるデータを列方向に入れ替える
-    data = [
-        {"name": "test1", "age": 20},
-        {"name": "test2", "age": 25},
-        {"name": "test3", "age": 30, "sex": "male"},
-    ]
-    {'name': ['test1', 'test2', 'test3'], 'age': [20, 25, 30], 'sex': [None, None, 'male']}
-    """
-    from collections import defaultdict
-
-    dataframe = {}
-    data = []
-
-    # 全てのカラムを取得
-    for i, dic in enumerate(self):
-        data.append(dic)
-        for k in dic.keys():
-            dataframe[k] = None
-
-    # カラム分の領域を初期化
-    for k in dataframe:
-        dataframe[k] = []
-
-    # データをデータフレームに収める
-    for dic in data:
-        for k in dataframe.keys():
-            v = dic.get(k, default)
-            dataframe[k].append(v)
-
-    yield from dataframe.items()
-
-
-def pivot_stack(self):
-    """列方向に並んでいるデータを行方向に入れ替える
-    {'name': ['test1', 'test2', 'test3'], 'age': [20, 25, 30], 'sex': [None, None, 'male']}
-    data = [
-        {"name": "test1", "age": 20, "sex": None},
-        {"name": "test2", "age": 25, "sex": None},
-        {"name": "test3", "age": 30, "sex": "male"},
-    ]
-    """
-    data = dict(self)
-    columns = list(data.keys())
-
-    for i in range(len(columns)):
-        row = {}
-        for c in columns:
-            row[c] = data[c][i]
-
-        yield row
 
 
 @mark

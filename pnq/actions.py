@@ -5,6 +5,8 @@
 from .base.actions import debug as debug
 from .base.actions import unpack_kw as unpack_kw
 from .base.actions import unpack_pos as unpack_pos
+from .base.actions import flat as flat
+from .base.actions import flat_recursive as flat_recursive
 from .base.actions import pivot_unstack as pivot_unstack
 from .base.actions import pivot_stack as pivot_stack
 from .base.actions import reflect as reflect
@@ -75,8 +77,7 @@ from .base.actions import last as last
 from .base.actions import last_or as last_or
 from .base.actions import last_or_raise as last_or_raise
 from .base.actions import lazy as lazy
-from .base.actions import flat as flat
-from .base.actions import map_recursive as map_recursive
+
 from .base.actions import must as must
 from .base.actions import must_get_many as must_get_many
 from .base.actions import must_type as must_type

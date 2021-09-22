@@ -260,6 +260,9 @@ class Query(Generic[T]):
     def flat(self, selector: Callable[..., Iterable[R]] = None) -> "Query[R]":
         return queries.Flat(self, selector)
 
+    def flat_recursive(self, selector: Callable[[T], Iterable[T]]) -> "Query[T]":
+        return queries.FlatRecursive(self, selector)
+
     def unpack_pos(self, selector: Callable[..., R]) -> "Query[R]":
         return queries.UnpackPos(self, selector=selector)
 
@@ -614,6 +617,11 @@ class PairQuery(Generic[K, V]):
 
     def flat(self, selector: Callable[..., Iterable[R]] = None) -> "Query[R]":
         return queries.Flat(self, selector)
+
+    def flat_recursive(
+        self, selector: Callable[[Tuple[K, V]], Iterable[Tuple[K, V]]]
+    ) -> "Query[Tuple[K,V]]":
+        return queries.FlatRecursive(self, selector)
 
     def unpack_pos(self, selector: Callable[..., R]) -> "Query[R]":
         return queries.UnpackPos(self, selector=selector)

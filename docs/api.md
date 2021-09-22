@@ -24,7 +24,13 @@
 ::: pnq.actions.flat
     :docstring:
 
-::: pnq.actions.map_recursive
+::: pnq.actions.flat_recursive
+    :docstring:
+
+::: pnq.actions.pivot_unstack
+    :docstring:
+
+::: pnq.actions.pivot_stack
     :docstring:
 
 ::: pnq.actions.cast
