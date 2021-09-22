@@ -1,46 +1,31 @@
-<h1 align="center" style="font-size: 3rem; margin: -15px 0">
-PNQ
-</h1>
+# PNQ
 
----
-
-<div align="center">
-<p>
-<a href="https://github.com/sasano8/pnq/actions">
-    <img src="https://github.com/sasano8/pnq/actions/workflows/test.yml/badge.svg" alt="Test Suite">
-</a>
-<a href="https://pypi.org/project/pnq/">
-    <img src="https://badge.fury.io/py/pnq.svg" alt="Package version">
-</a>
-</p>
-
-<em>User-friendly collection manipulation library.</em>
-</div>
+[![CI](https://github.com/sasano8/pnq/actions/workflows/test.yml/badge.svg)](https://github.com/sasano8/pnq/actions)
+[![pypi](https://img.shields.io/pypi/v/pnq.svg)](https://pypi.python.org/pypi/pnq)
+[![downloads](https://pepy.tech/badge/pydantic/month)](https://pepy.tech/project/pydantic)
 
 PNQ is a Python implementation like Language Integrated Query (LINQ).
-
-https://pypi.org/project/pnq/
 
 !!! danger
     PNQはベータ版です。
 
     - 現在、ドキュメントとAPIが一致していません。
-    - PNQは鋭意開発中でAPIが頻繁に変更される恐れがあるため、本番環境では利用しないでください。
+    - ライブラリが十分な品質に到達するまで、頻繁に内部実装やAPIが更新される恐れがあります。
+    - 本番環境では利用しないでください。
 
 ---
-
 
 
 ## Features
 
 - コレクション操作に関する多彩な操作
-- アクセシブルなインターフェース
+- アクセシブルなインタフェース
 - 型ヒントの活用
 - 非同期ストリームに対応
 
 ## Documentation
 
-
+- See [documentation](https://sasano8.github.io/pnq/) for more details.
 
 ## Dependencies
 
