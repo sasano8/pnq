@@ -31,6 +31,11 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://github.com/sasano8/pnq/performance/</loc>
+         <lastmod>2021-09-22</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://github.com/sasano8/pnq/quick_start/</loc>
          <lastmod>2021-09-22</lastmod>
          <changefreq>daily</changefreq>

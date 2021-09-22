@@ -329,48 +329,21 @@
         
           <li class="md-nav__item">
   <a href="#_3" class="md-nav__link">
-    実装例
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_4" class="md-nav__link">
     キャンセル管理
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#_5" class="md-nav__link">
+  <a href="#_4" class="md-nav__link">
     例外処理
   </a>
   
 </li>
         
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#_6" class="md-nav__link">
-    性能評価
-  </a>
-  
-    <nav class="md-nav" aria-label="性能評価">
-      <ul class="md-nav__list">
-        
           <li class="md-nav__item">
-  <a href="#pnq" class="md-nav__link">
-    pnqのイテレーション性能
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_7" class="md-nav__link">
-    非同期イテレータの性能
+  <a href="#_5" class="md-nav__link">
+    実装例
   </a>
   
 </li>
@@ -384,6 +357,21 @@
   
 </nav>
       
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../performance/" class="md-nav__link">
+        性能
+      </a>
     </li>
   
 
@@ -428,48 +416,21 @@
         
           <li class="md-nav__item">
   <a href="#_3" class="md-nav__link">
-    実装例
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_4" class="md-nav__link">
     キャンセル管理
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#_5" class="md-nav__link">
+  <a href="#_4" class="md-nav__link">
     例外処理
   </a>
   
 </li>
         
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#_6" class="md-nav__link">
-    性能評価
-  </a>
-  
-    <nav class="md-nav" aria-label="性能評価">
-      <ul class="md-nav__list">
-        
           <li class="md-nav__item">
-  <a href="#pnq" class="md-nav__link">
-    pnqのイテレーション性能
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_7" class="md-nav__link">
-    非同期イテレータの性能
+  <a href="#_5" class="md-nav__link">
+    実装例
   </a>
   
 </li>
@@ -499,7 +460,7 @@
 <p>次の場合、クエリは非同期の文脈で実行する必要があります。</p>
 <ul>
 <li>非同期イテレータをソースとした場合</li>
-<li><code>request_async</code>でクエリをチェーンした場合</li>
+<li><code>request_async</code>でクエリをチェインした場合</li>
 <li><code>each_async</code>を呼び出す場合</li>
 </ul>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">asyncio</span>
@@ -525,7 +486,84 @@
 
 <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
 </code></pre></div>
-<h3 id="_3">実装例</h3>
+<h3 id="_3">キャンセル管理</h3>
+<p><code>pnq</code>は簡単なキャンセル機構を提供し、これを利用できます。</p>
+<p><code>pnq.run</code>に、非同期関数を渡すと、その関数を起動し、第一引数にキャンセルトークンを渡します。
+第一引数を受け入れ可能な場合、その関数はキャンセルコントロールの意思があるとみなされます。</p>
+<p>次のコードは、10秒間待機している間キャンセル（SIGTERMとSIGINT）を受け入れません。</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">import</span> <span class="nn">pnq</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">token</span><span class="p">):</span>
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Hello, world!&quot;</span><span class="p">)</span>
+
+
+<span class="n">pnq</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">)</span>
+</code></pre></div>
+<p>キャンセルを検知すると<code>token.is_running</code>は<code>False</code>を返すようになります。
+<code>token.is_running</code>を監視することで、任意のタイミングで処理を中断できます。</p>
+<p>次のコードは、<code>token.is_running</code>が<code>False</code>と評価されるまで、要素を流し続けます。</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">import</span> <span class="nn">pnq</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">token</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">infinity</span><span class="p">(</span><span class="n">token</span><span class="p">):</span>
+        <span class="k">while</span> <span class="n">token</span><span class="o">.</span><span class="n">is_running</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="mi">1</span>
+            <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">infinity</span><span class="p">(</span><span class="n">token</span><span class="p">)):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+
+<span class="n">pnq</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">)</span>
+</code></pre></div>
+<p>関数が第一引数を受け入れ可能でない場合、その関数はキャンセルコントロールの意思がないとみなされます。</p>
+<p>次のコードは、キャンセルを検知すると実行は即時キャンセルされます。</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">import</span> <span class="nn">pnq</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">infinity</span><span class="p">():</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="mi">1</span>
+            <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">infinity</span><span class="p">()):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+
+<span class="n">pnq</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="_4">例外処理</h3>
+<p><code>pnq</code>は基本的に例外をキャッチしませんが、次のクエリのみ関数実行時の例外をキャッチします。</p>
+<ul>
+<li><code>request</code></li>
+<li><code>request_async</code></li>
+</ul>
+<p>これらのクエリは、実行結果を含んだオブジェクト<code>Response</code>を返し、
+<code>Response</code>の<code>err</code>が<code>None</code>でない場合、処理は失敗したとみなせます。</p>
+<p>処理が成功した場合、結果は<code>result</code>に格納されます。</p>
+<p>スタックトレースは次のように取得できます。</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">traceback</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">raise_error</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+
+<span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}]</span><span class="o">.</span><span class="n">request_async</span><span class="p">(</span><span class="n">raise_error</span><span class="p">)):</span>
+    <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">err</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="n">traceback</span><span class="o">.</span><span class="n">format_exception</span><span class="p">(</span><span class="n">etype</span><span class="o">=</span><span class="nb">type</span><span class="p">(</span><span class="n">err</span><span class="p">),</span> <span class="n">value</span><span class="o">=</span><span class="n">err</span><span class="p">,</span> <span class="n">tb</span><span class="o">=</span><span class="n">err</span><span class="o">.</span><span class="n">__traceback__</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">result</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="_5">実装例</h3>
 <p>非同期なリクエストを含むクエリの実装例です。</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">asyncio</span>
 <span class="kn">import</span> <span class="nn">pnq</span>
@@ -556,171 +594,6 @@
 <span class="c1">#   True: [res1, res2, ...],</span>
 <span class="c1">#   False: [res3, res4, ...],</span>
 <span class="c1"># }</span>
-</code></pre></div>
-<h3 id="_4">キャンセル管理</h3>
-<p><code>pnq</code>は簡単なキャンセル機構を提供し、これを利用できます。</p>
-<p><code>pnq.run</code>に、非同期関数を渡すと、その関数を起動し、第一引数にキャンセルトークンを渡します。
-第一引数を受け入れ可能な場合、その関数はキャンセルをコントロールする意思があるとみなされます。</p>
-<p>次のコードは、10秒間待機している間キャンセル（SIGTERMとSIGINT）を受け入れません。</p>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">asyncio</span>
-<span class="kn">import</span> <span class="nn">pnq</span>
-
-
-<span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">token</span><span class="p">):</span>
-    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Hello, world!&quot;</span><span class="p">)</span>
-
-
-<span class="n">pnq</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">)</span>
-</code></pre></div>
-<p>キャンセルを検知すると<code>token.is_running()</code>は<code>False</code>を返すようになります。
-<code>token.is_running()</code>を監視することで、任意のタイミングで処理を中断できます。</p>
-<p>次のコードは、<code>token.is_running()</code>が<code>False</code>と評価されるまで、要素を流し続けます。</p>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">asyncio</span>
-<span class="kn">import</span> <span class="nn">pnq</span>
-
-
-<span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">token</span><span class="p">):</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">infinity</span><span class="p">():</span>
-        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-            <span class="k">yield</span> <span class="mi">1</span>
-            <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-
-    <span class="k">async</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">infinity</span><span class="p">())</span><span class="o">.</span><span class="n">take_while</span><span class="p">(</span><span class="n">token</span><span class="o">.</span><span class="n">is_running</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-
-
-<span class="n">pnq</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">)</span>
-</code></pre></div>
-<p>関数が第一引数を受け入れ可能でない場合、実行は即時にキャンセルされます。</p>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">asyncio</span>
-<span class="kn">import</span> <span class="nn">pnq</span>
-
-
-<span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">infinity</span><span class="p">():</span>
-        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-            <span class="k">yield</span> <span class="mi">1</span>
-            <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-
-    <span class="k">async</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">infinity</span><span class="p">()):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-
-
-<span class="n">pnq</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">)</span>
-</code></pre></div>
-<h3 id="_5">例外処理</h3>
-<p><code>request_async</code>は、例外を補足し実行結果を含んだオブジェクト<code>Response</code>を返します。
-<code>Response</code>オブジェクトの<code>err</code>が<code>None</code>でない場合、処理が失敗したとみなすことができ、次のようにスタックトレースを取得できます。</p>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">traceback</span>
-
-<span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">some_requests</span><span class="p">:</span>
-    <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">err</span><span class="p">:</span>
-        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
-            <span class="n">traceback</span><span class="o">.</span><span class="n">format_exception</span><span class="p">(</span><span class="n">etype</span><span class="o">=</span><span class="nb">type</span><span class="p">(</span><span class="n">err</span><span class="p">),</span> <span class="n">value</span><span class="o">=</span><span class="n">err</span><span class="p">,</span> <span class="n">tb</span><span class="o">=</span><span class="n">err</span><span class="o">.</span><span class="n">__traceback__</span><span class="p">)</span>
-        <span class="p">)</span>
-        <span class="c1"># raise Exception(&quot;err&quot;) from err</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
-</code></pre></div>
-<h2 id="_6">性能評価</h2>
-<h3 id="pnq">pnqのイテレーション性能</h3>
-<p>内包表記と比較すると<code>pnq</code>は1.36程度性能が落ちます。
-日常的に大量のデータを処理する場合は、ネイティブな記法に書き直すことも検討ください。</p>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">pnq</span>
-<span class="kn">from</span> <span class="nn">pnq.base.requests</span> <span class="kn">import</span> <span class="n">StopWatch</span>
-<span class="kn">from</span> <span class="nn">decimal</span> <span class="kn">import</span> <span class="n">Decimal</span><span class="p">,</span> <span class="n">ROUND_HALF_UP</span>
-
-
-<span class="n">RANGE</span> <span class="o">=</span> <span class="mi">100000000</span>
-
-
-<span class="k">def</span> <span class="nf">dummy</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">x</span>
-
-
-<span class="k">with</span> <span class="n">StopWatch</span><span class="p">(</span><span class="s2">&quot;内包表記&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">result_1</span><span class="p">:</span>
-    <span class="nb">list</span><span class="p">(</span><span class="n">dummy</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">RANGE</span><span class="p">)</span> <span class="k">if</span> <span class="n">x</span> <span class="o">%</span> <span class="mi">2</span><span class="p">)</span>
-
-
-<span class="k">with</span> <span class="n">StopWatch</span><span class="p">(</span><span class="s2">&quot;イテレータ&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">result_2</span><span class="p">:</span>
-
-    <span class="k">def</span> <span class="nf">iterate</span><span class="p">():</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">RANGE</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">2</span><span class="p">:</span>
-                <span class="k">yield</span> <span class="n">dummy</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-
-    <span class="nb">list</span><span class="p">(</span><span class="n">iterate</span><span class="p">())</span>
-
-
-<span class="k">with</span> <span class="n">StopWatch</span><span class="p">(</span><span class="s2">&quot;pnq&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">result_3</span><span class="p">:</span>
-    <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">RANGE</span><span class="p">))</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">%</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">dummy</span><span class="p">)</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
-
-<span class="n">difference</span> <span class="o">=</span> <span class="n">Decimal</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result_1</span><span class="o">.</span><span class="n">elapsed</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="o">-</span> <span class="n">Decimal</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result_3</span><span class="o">.</span><span class="n">elapsed</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="n">rate</span> <span class="o">=</span> <span class="n">Decimal</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result_3</span><span class="o">.</span><span class="n">elapsed</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="n">Decimal</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result_1</span><span class="o">.</span><span class="n">elapsed</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="n">rate</span> <span class="o">=</span> <span class="n">rate</span><span class="o">.</span><span class="n">quantize</span><span class="p">(</span><span class="n">Decimal</span><span class="p">(</span><span class="s2">&quot;0.01&quot;</span><span class="p">),</span> <span class="n">rounding</span><span class="o">=</span><span class="n">ROUND_HALF_UP</span><span class="p">)</span>
-
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result_1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result_2</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result_3</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;内包表記:pnq 性能差割 ：</span><span class="si">{</span><span class="n">rate</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-</code></pre></div>
-<div class="highlight"><pre><span></span><code>{&#39;name&#39;: &#39;内包表記&#39;, &#39;start&#39;: &#39;2021-09-20T12:42:35.219151+00:00&#39;, &#39;end&#39;: &#39;2021-09-20T12:42:42.270021+00:00&#39;, &#39;elapsed&#39;: 7.05087}
-{&#39;name&#39;: &#39;イテレータ&#39;, &#39;start&#39;: &#39;2021-09-20T12:42:42.270046+00:00&#39;, &#39;end&#39;: &#39;2021-09-20T12:42:49.383548+00:00&#39;, &#39;elapsed&#39;: 7.113502}
-{&#39;name&#39;: &#39;pnq&#39;, &#39;start&#39;: &#39;2021-09-20T12:42:49.383573+00:00&#39;, &#39;end&#39;: &#39;2021-09-20T12:42:58.979269+00:00&#39;, &#39;elapsed&#39;: 9.595696}
-内包表記:pnq 性能差割 ：1.36
-</code></pre></div>
-<h3 id="_7">非同期イテレータの性能</h3>
-<p>非同期イテレータは同期イテレータより性能が2.25倍程度遅いです。</p>
-<p>非同期イテレータは、ネットワークI/OやファイルI/Oなどの待機時間で、
-並列処理できるケースで有効です。</p>
-<p>特に理由がない場合は、同期イテレータを積極的に使うようにしてください。</p>
-<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">asyncio</span>
-<span class="kn">from</span> <span class="nn">decimal</span> <span class="kn">import</span> <span class="n">Decimal</span><span class="p">,</span> <span class="n">ROUND_HALF_UP</span>
-
-<span class="kn">from</span> <span class="nn">pnq.models</span> <span class="kn">import</span> <span class="n">StopWatch</span>
-
-
-<span class="k">class</span> <span class="nc">Range</span><span class="p">:</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">count</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">=</span> <span class="n">count</span>
-
-    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">count</span><span class="p">):</span>
-            <span class="k">yield</span> <span class="n">i</span>
-
-    <span class="k">async</span> <span class="k">def</span> <span class="fm">__aiter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">count</span><span class="p">):</span>
-            <span class="k">yield</span> <span class="n">i</span>
-
-
-<span class="n">calculator</span> <span class="o">=</span> <span class="n">Range</span><span class="p">(</span><span class="mi">100000000</span><span class="p">)</span>
-
-
-<span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
-    <span class="k">with</span> <span class="n">StopWatch</span><span class="p">()</span> <span class="k">as</span> <span class="n">result_1</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">calculator</span><span class="p">:</span>
-            <span class="k">pass</span>
-
-    <span class="k">with</span> <span class="n">StopWatch</span><span class="p">()</span> <span class="k">as</span> <span class="n">result_2</span><span class="p">:</span>
-        <span class="k">async</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">calculator</span><span class="p">:</span>
-            <span class="k">pass</span>
-
-    <span class="n">difference</span> <span class="o">=</span> <span class="n">Decimal</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result_1</span><span class="o">.</span><span class="n">elapsed</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="o">-</span> <span class="n">Decimal</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result_2</span><span class="o">.</span><span class="n">elapsed</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="n">rate</span> <span class="o">=</span> <span class="n">Decimal</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result_2</span><span class="o">.</span><span class="n">elapsed</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="n">Decimal</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result_1</span><span class="o">.</span><span class="n">elapsed</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="n">rate</span> <span class="o">=</span> <span class="n">rate</span><span class="o">.</span><span class="n">quantize</span><span class="p">(</span><span class="n">Decimal</span><span class="p">(</span><span class="s2">&quot;0.01&quot;</span><span class="p">),</span> <span class="n">rounding</span><span class="o">=</span><span class="n">ROUND_HALF_UP</span><span class="p">)</span>
-
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;同期　　　　　：</span><span class="si">{</span><span class="n">result_1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;非同期　　　　：</span><span class="si">{</span><span class="n">result_2</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;性能差割合　　：</span><span class="si">{</span><span class="n">rate</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-
-<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
-</code></pre></div>
-<div class="highlight"><pre><span></span><code>同期　　　　　：{&#39;start&#39;: &#39;2021-09-13T10:28:55.240113+00:00&#39;, &#39;end&#39;: &#39;2021-09-13T10:28:58.890342+00:00&#39;, &#39;elapsed&#39;: 3.650229}
-非同期　　　　：{&#39;start&#39;: &#39;2021-09-13T10:28:58.890577+00:00&#39;, &#39;end&#39;: &#39;2021-09-13T10:29:07.085747+00:00&#39;, &#39;elapsed&#39;: 8.19517}
-性能劣化率　　：2.25
 </code></pre></div>
                 
               
@@ -755,6 +628,21 @@
           </div>
         </a>
       
+      
+        
+        <a href="../performance/" class="md-footer__link md-footer__link--next" aria-label="次: 性能" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                次
+              </span>
+              性能
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
       
     </nav>
   

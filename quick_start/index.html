@@ -382,6 +382,21 @@
   
 
     
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../performance/" class="md-nav__link">
+        性能
+      </a>
+    </li>
+  
+
+    
   </ul>
 </nav>
                   </div>
@@ -558,7 +573,7 @@
 <span class="n">result</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
 <span class="c1"># =&gt; 1</span>
 </code></pre></div>
-<p><code>add_one</code>に定義された<code>print</code>の結果は<code>to_list</code>のタイミングで表示され、
+<p><code>add_one</code>に定義された<code>print</code>の結果は<code>to(list)</code>のタイミングで表示され、
 <code>map(add_one)</code>を定義した時点では実行されないことが分かります。</p>
 <p>次の例も見てみます。</p>
 <div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">add_one</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
