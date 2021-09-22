@@ -59,10 +59,10 @@
 ::: pnq.actions.filter_type
     :docstring:
 
-::: pnq.actions.filter_unique
+::: pnq.actions.filter_keys
     :docstring:
 
-::: pnq.actions.get_many
+::: pnq.actions.filter_unique
     :docstring:
 
 ## Validating
@@ -73,10 +73,11 @@
 ::: pnq.actions.must_type
     :docstring:
 
-::: pnq.actions.must_unique
+::: pnq.actions.must_keys
     :docstring:
 
-::: pnq.actions.must_get_many
+
+::: pnq.actions.must_unique
     :docstring:
 
 ## Partitioning

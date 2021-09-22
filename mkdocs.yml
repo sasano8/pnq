@@ -17,6 +17,7 @@ nav:
   - クラス: "class.md"
   - 例外クラス: "exceptions.md"
   - 高度な使用方法: "advanced_usage.md"
+  - 性能: "performance.md"
 markdown_extensions:
   - admonition
   - codehilite:

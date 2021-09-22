@@ -365,13 +365,6 @@ class GroupBy(Query):
 
 
 @mark
-class GroupCount(Query):
-    """collections.Counter"""
-
-    pass
-
-
-@mark
 class PivotUnstack(Query):
     def __init__(self, source, default=None) -> None:
         super().__init__(source)

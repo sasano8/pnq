@@ -593,7 +593,7 @@ def pivot_unstack(self, default=None):
     Args:
 
     * self: 変換対象のシーケンス
-    * selector: 各要素から平坦化する要素を再帰的に選択する関数（戻り値はリスト等に含めて返す必要があります）
+    * default: フィールドが存在しない場合のデフォルト値
 
     Returns: 参照したシーケンスをそのまま返す
 
@@ -637,7 +637,6 @@ def pivot_stack(self):
     Args:
 
     * self: 変換対象のシーケンス
-    * selector: 各要素から平坦化する要素を再帰的に選択する関数（戻り値はリスト等に含めて返す必要があります）
 
     Returns: 参照したシーケンスをそのまま返す
 
@@ -730,7 +729,7 @@ def group_by(self, selector=lambda x: x):
     >>> ]
     >>> pnq.query(data).group_by(lambda x: x["color"], x["name"]).to(list)
     [("yellow", ["banana"]), ("red", ["apple", "strawberry"])]
-    >>> pnq.query(data).select("color", "count").group_by().to_dict()
+    >>> pnq.query(data).select("color", "count").group_by().to(dict)
     {"yellow": [3], "red": [2, 5]}
     ```
     """
@@ -776,9 +775,9 @@ def request(self, func, retry: int = None):
     >>>
     >>> for res in pnq.query([{"id": 1, "val": True}, {"id": 2, "val": False}]).request(do_something):
     >>>   if res.err:
-    >>>     print(f"ERROR: {res.to_dict()}")
+    >>>     print(f"ERROR: {res.to(dict)}")
     >>>   else:
-    >>>     print(f"SUCCESS: {res.to_dict()}")
+    >>>     print(f"SUCCESS: {res.to(dict)}")
     ```
     """
     from .requests import Response, StopWatch
@@ -826,9 +825,9 @@ async def request_async(self, func, timeout: float = None, retry: int = None):
     >>> params = pnq.query([{"id": 1, "val": True}, {"id": 2, "val": False}])
     >>> async for res in params.request_async(do_something):
     >>>   if res.err:
-    >>>     print(f"ERROR: {res.to_dict()}")
+    >>>     print(f"ERROR: {res.to(dict)}")
     >>>   else:
-    >>>     print(f"SUCCESS: {res.to_dict()}")
+    >>>     print(f"SUCCESS: {res.to(dict)}")
     ```
     """
     from .requests import Response, StopWatch
@@ -1012,6 +1011,101 @@ def must_type(self, types):
 
 
 @mark
+def filter_keys(self, *keys):
+    """シーケンスの要素から指定したキーの要素のみフィルタ処理します。
+    このメソッドは、`list` `dict` `set`などをクエリ化した直後のみ利用できます。
+
+    list、tupleの場合インデックスでフィルタされ、値を返します。
+    dictの場合キーでフィルタされ、キーと要素を返します。
+    setの場合は、キーでフィルタされ、キーを返します。
+
+    Args:
+
+    * self: フィルタ対象のシーケンス
+    * keys: フィルタするキー
+
+    Returns: 指定したキーの要素のみ返すクエリ
+
+    Usage:
+    ```
+    >>> pnq.query([1, 2]).must_type(str, int).to(list)
+    raise ValueError("1 is not str")
+    ```
+    """
+    # undefined = object()
+    # raise_if_not_unique_keys(keys)
+    # for id in keys:
+    #     obj = get_or(self, id, undefined)
+    #     if obj is not undefined:
+    #         yield id, obj
+    ...
+
+
+# def get_many_for_mapping(self, *keys):
+#     """"""
+#     undefined = object()
+#     raise_if_not_unique_keys(keys)
+#     for id in keys:
+#         obj = get_or(self, id, undefined)
+#         if obj is not undefined:
+#             yield id, obj
+
+
+# def get_many_for_sequence(self, *keys):
+#     """"""
+#     undefined = object()
+#     raise_if_not_unique_keys(keys)
+#     for id in keys:
+#         obj = get_or(self, id, undefined)
+#         if obj is not undefined:
+#             yield obj
+
+
+# def get_many_for_set(self, *keys):
+#     """"""
+#     undefined = object()
+#     raise_if_not_unique_keys(keys)
+#     for id in keys:
+#         obj = get_or(self, id, undefined)
+#         if obj is not undefined:
+#             yield id
+
+
+@mark
+def must_keys(self, *keys, typ: Literal["set", "seq", "map"]):
+    """`filter_keys`を実行し、全てのキーを取得できなかった場合例外を発生させます。
+    検証が完了するまで、ストリームは保留されます。
+    """
+
+    not_exists = set()
+    key_values = []
+    raise_if_not_unique_keys(keys)
+    undefined = object()
+
+    for k in keys:
+        val = get(self, k, undefined)
+        if val is undefined:
+            not_exists.add(k)
+        else:
+            key_values.append((k, val))
+
+    if not_exists:
+        raise NotFoundError(str(not_exists))
+
+    if typ == "map":
+        for k, v in key_values:
+            yield k, v
+    elif typ == "seq":
+        for k, v in key_values:
+            yield v
+    elif typ == "set":
+        for k, v in key_values:
+            yield k
+    else:
+        raise TypeError(f"unknown type: {typ}")
+
+
+@mark
 def filter_unique(self, selector=None):
     """シーケンスの要素から重複する要素を除去する。
     セレクタによって選択された値に対して重複が検証され、その値を返す。
@@ -1080,81 +1174,6 @@ def raise_if_not_unique_keys(keys):
         raise TypeError(f"can't accept duplicate keys: {keys}")
 
 
-@mark
-def get_many(self, *keys):
-    # undefined = object()
-    # raise_if_not_unique_keys(keys)
-    # for id in keys:
-    #     obj = get_or(self, id, undefined)
-    #     if obj is not undefined:
-    #         yield id, obj
-    ...
-
-
-def get_many_for_mapping(self, *keys):
-    """"""
-    undefined = object()
-    raise_if_not_unique_keys(keys)
-    for id in keys:
-        obj = get_or(self, id, undefined)
-        if obj is not undefined:
-            yield id, obj
-
-
-def get_many_for_sequence(self, *keys):
-    """"""
-    undefined = object()
-    raise_if_not_unique_keys(keys)
-    for id in keys:
-        obj = get_or(self, id, undefined)
-        if obj is not undefined:
-            yield obj
-
-
-def get_many_for_set(self, *keys):
-    """"""
-    undefined = object()
-    raise_if_not_unique_keys(keys)
-    for id in keys:
-        obj = get_or(self, id, undefined)
-        if obj is not undefined:
-            yield id
-
-
-@mark
-def must_get_many(self, *keys, typ: Literal["set", "seq", "map"]):
-    """`get_many`を実行し、全てのキーを取得できなかった場合例外を発生させます。
-    検証が完了するまで、ストリームは保留されます。
-    """
-
-    not_exists = set()
-    key_values = []
-    raise_if_not_unique_keys(keys)
-    undefined = object()
-
-    for k in keys:
-        val = get(self, k, undefined)
-        if val is undefined:
-            not_exists.add(k)
-        else:
-            key_values.append((k, val))
-
-    if not_exists:
-        raise NotFoundError(str(not_exists))
-
-    if typ == "map":
-        for k, v in key_values:
-            yield k, v
-    elif typ == "seq":
-        for k, v in key_values:
-            yield v
-    elif typ == "set":
-        for k, v in key_values:
-            yield k
-    else:
-        raise TypeError(f"unknown type: {typ}")
-
-
 ###########################################
 # partitioning
 ###########################################
@@ -1185,6 +1204,7 @@ def take(self, count_or_range: int):
 @mark
 def take_while(self, predicate):
     """シーケンスの先頭から、条件の検証に失敗するまでの要素を返します。
+    検証に失敗した要素は破棄されるため、注意が必要です。
 
     Args:
 

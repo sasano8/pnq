@@ -1008,22 +1008,22 @@ class Test030_Filter:
         # pythonの仕様でboolはintを継承しているのでヒットしてしまう
         assert pnq([True]).filter_type(int).to(list) == [True]
 
-    def test_get_many(self):
-        assert pnq([0, 10, 20]).get_many(2).to(list) == [20]
-        assert pnq([0, 10, 20]).get_many(0, 1).to(list) == [0, 10]
+    def test_filter_keys(self):
+        assert pnq([0, 10, 20]).filter_keys(2).to(list) == [20]
+        assert pnq([0, 10, 20]).filter_keys(0, 1).to(list) == [0, 10]
 
         db = pnq({1: "a", 2: "b", 3: "c"})
-        assert db.get_many(1, 2).to(list) == [(1, "a"), (2, "b")]
-        assert db.get_many(4).to(list) == []
+        assert db.filter_keys(1, 2).to(list) == [(1, "a"), (2, "b")]
+        assert db.filter_keys(4).to(list) == []
 
-        assert pnq((0, 10, 20)).get_many(2).to(list) == [20]
-        assert pnq((0, 10, 20)).get_many(1, 0).to(list) == [10, 0]
+        assert pnq((0, 10, 20)).filter_keys(2).to(list) == [20]
+        assert pnq((0, 10, 20)).filter_keys(1, 0).to(list) == [10, 0]
 
-        assert pnq(set((0, 10, 20))).get_many(20).to(list) == [20]
-        assert pnq(set((0, 10, 20))).get_many(10, 20).to(list) == [10, 20]
+        assert pnq(set((0, 10, 20))).filter_keys(20).to(list) == [20]
+        assert pnq(set((0, 10, 20))).filter_keys(10, 20).to(list) == [10, 20]
 
-        assert pnq(frozenset((0, 10, 20))).get_many(20).to(list) == [20]
-        assert pnq(frozenset((0, 10, 20))).get_many(10, 20).to(list) == [10, 20]
+        assert pnq(frozenset((0, 10, 20))).filter_keys(20).to(list) == [20]
+        assert pnq(frozenset((0, 10, 20))).filter_keys(10, 20).to(list) == [10, 20]
 
     def test_unique(self):
         assert pnq([(0, 0), (0, 1), (0, 0)]).filter_unique(lambda x: (x[0], x[1])).to(
@@ -1081,58 +1081,58 @@ class Test040_Must:
         with pytest.raises(DuplicateElementError):
             pnq([(0, 1, 1), (0, 1, 2)]).must_unique(lambda x: (x[0], x[1])).to(list)
 
-    def test_must_get_many(self):
+    def test_must_keys(self):
         # list
-        assert pnq([]).must_get_many().to(list) == []
+        assert pnq([]).must_keys().to(list) == []
 
         with pytest.raises(NotFoundError, match="0"):
-            pnq([]).must_get_many(0).to(list)
+            pnq([]).must_keys(0).to(list)
 
-        assert pnq([10]).must_get_many(0).to(list) == [10]
+        assert pnq([10]).must_keys(0).to(list) == [10]
 
         with pytest.raises(NotFoundError, match="1"):
-            pnq([10]).must_get_many(1).to(list)
+            pnq([10]).must_keys(1).to(list)
 
-        assert pnq([10, 20]).must_get_many(0, 1).to(list) == [10, 20]
+        assert pnq([10, 20]).must_keys(0, 1).to(list) == [10, 20]
 
         with pytest.raises(NotFoundError, match="2"):
-            pnq([10, 20]).must_get_many(1, 2).to(list)
+            pnq([10, 20]).must_keys(1, 2).to(list)
 
         # dict
-        assert pnq({"a": 1, "b": 2, "c": 3}).must_get_many("b", "c").to(list) == [
+        assert pnq({"a": 1, "b": 2, "c": 3}).must_keys("b", "c").to(list) == [
             ("b", 2),
             ("c", 3),
         ]
 
         with pytest.raises(NotFoundError, match="d"):
-            pnq({"a": 1, "b": 2, "c": 3}).must_get_many("d").to(list)
+            pnq({"a": 1, "b": 2, "c": 3}).must_keys("d").to(list)
 
         # tuple
-        assert pnq((1, 2, 3)).must_get_many(1, 2).to(list) == [
+        assert pnq((1, 2, 3)).must_keys(1, 2).to(list) == [
             2,
             3,
         ]
 
         with pytest.raises(NotFoundError, match="3"):
-            pnq((1, 2, 3)).must_get_many(3).to(list)
+            pnq((1, 2, 3)).must_keys(3).to(list)
 
         # set
-        assert pnq(set((1, 2, 3))).must_get_many(2, 3).to(list) == [
+        assert pnq(set((1, 2, 3))).must_keys(2, 3).to(list) == [
             2,
             3,
         ]
 
         with pytest.raises(NotFoundError, match="4"):
-            pnq(set((1, 2, 3))).must_get_many(4).to(list)
+            pnq(set((1, 2, 3))).must_keys(4).to(list)
 
         # frozen set
-        assert pnq(frozenset((1, 2, 3))).must_get_many(2, 3).to(list) == [
+        assert pnq(frozenset((1, 2, 3))).must_keys(2, 3).to(list) == [
             2,
             3,
         ]
 
         with pytest.raises(NotFoundError, match="4"):
-            pnq(frozenset((1, 2, 3))).must_get_many(4).to(list)
+            pnq(frozenset((1, 2, 3))).must_keys(4).to(list)
 
 
 class Test050_Partition:
@@ -1415,8 +1415,8 @@ class Test500_Type:
         assert db.get_or(-1, 10) == 10
         assert db.get_or(-1, None) is None
 
-    def test_dict_get_many(self):
+    def test_dict_filter_keys(self):
         db = pnq({1: "a", 2: "b", 3: "c"})
-        assert db.get_many(1, 2).to(list) == [(1, "a"), (2, "b")]
-        assert db.get_many(4).to(list) == []
+        assert db.filter_keys(1, 2).to(list) == [(1, "a"), (2, "b")]
+        assert db.filter_keys(4).to(list) == []
         assert isinstance(db.to(dict), dict)

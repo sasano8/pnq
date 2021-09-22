@@ -110,7 +110,7 @@ result = q.to(list)
 # => 1
 ```
 
-`add_one`に定義された`print`の結果は`to_list`のタイミングで表示され、
+`add_one`に定義された`print`の結果は`to(list)`のタイミングで表示され、
 `map(add_one)`を定義した時点では実行されないことが分かります。
 
 次の例も見てみます。

@@ -13,6 +13,7 @@ from .base.actions import reflect as reflect
 
 # filtering
 from .base.actions import filter_unique as filter_unique
+from .base.actions import filter_keys as filter_keys
 
 # validating
 # sorting
@@ -64,10 +65,6 @@ from .base.actions import first_or as first_or
 from .base.actions import first_or_raise as first_or_raise
 from .base.actions import get as get
 from .base.actions import get_or as get_or
-from .base.actions import get_many as get_many
-from .base.actions import get_many_for_mapping as get_many_for_mapping
-from .base.actions import get_many_for_sequence as get_many_for_sequence
-from .base.actions import get_many_for_set as get_many_for_set
 from .base.actions import get_or_raise as get_or_raise
 from .base.actions import group_by as group_by
 from .base.actions import group_join as group_join
@@ -79,7 +76,8 @@ from .base.actions import last_or_raise as last_or_raise
 from .base.actions import lazy as lazy
 
 from .base.actions import must as must
-from .base.actions import must_get_many as must_get_many
+from .base.actions import must_keys as must_keys
+
 from .base.actions import must_type as must_type
 from .base.actions import must_unique as must_unique
 from .base.actions import one as one

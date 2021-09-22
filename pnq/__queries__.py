@@ -386,10 +386,10 @@ class {{query.cls}}:
     {% else %}
 class {{query.cls}}:
 
-    def get_many(self, *keys) -> "{{query.str}}":
+    def filter_keys(self, *keys) -> "{{query.str}}":
         raise NotImplementedError()
 
-    def must_get_many(self, *keys) -> "{{query.str}}":
+    def must_keys(self, *keys) -> "{{query.str}}":
         raise NotImplementedError()
 
     @overload
@@ -566,8 +566,12 @@ from .base import builder
 
 
 class QueryDict(queries.QueryDict):
-    def get_many(self, *keys):
+    def filter_keys(self, *keys):
         return queries.FilterKeys(self, *keys)
+
+    # @no_type_check
+    def must_keys(self, *keys):
+        return queries.MustKeys(self, *keys, typ="map")
 
     def get(self, key):
         try:
@@ -592,14 +596,17 @@ class QueryDict(queries.QueryDict):
         else:
             return result
 
-    # @no_type_check
-    def must_get_many(self, *keys):
-        return queries.MustKeys(self, *keys, typ="map")
+
 
 
 class QuerySeq(queries.QuerySeq):
-    def get_many(self, *keys):
+    def filter_keys(self, *keys):
         return queries.FilterKeys(self, *keys)
+
+    # @no_type_check
+    def must_keys(self, *keys):
+        return queries.MustKeys(self, *keys, typ="seq")
+
 
     def get(self, key):
         try:
@@ -624,17 +631,18 @@ class QuerySeq(queries.QuerySeq):
         else:
             return result
 
-    # @no_type_check
-    def must_get_many(self, *keys):
-        return queries.MustKeys(self, *keys, typ="seq")
 
 
 class QuerySet(queries.QuerySet):
     def order_by_reverse(self) -> "Query[T]":
         raise NotImplementedError("Set has no order.")
 
-    def get_many(self, *keys):
+    def filter_keys(self, *keys):
         return queries.FilterKeys(self, *keys)
+
+    # @no_type_check
+    def must_keys(self, *keys):
+        return queries.MustKeys(self, *keys, typ="set")
 
     def get(self, key):
         if key in self.source:
@@ -659,9 +667,7 @@ class QuerySet(queries.QuerySet):
         else:
             return result
 
-    # @no_type_check
-    def must_get_many(self, *keys):
-        return queries.MustKeys(self, *keys, typ="set")
+
 
 
 class QueryBuilder(builder.Builder):
