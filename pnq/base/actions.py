@@ -1015,9 +1015,9 @@ def filter_keys(self, *keys):
     """シーケンスの要素から指定したキーの要素のみフィルタ処理します。
     このメソッドは、`list` `dict` `set`などをクエリ化した直後のみ利用できます。
 
-    list、tupleの場合インデックスでフィルタされ、値を返します。
-    dictの場合キーでフィルタされ、キーと要素を返します。
-    setの場合は、キーでフィルタされ、キーを返します。
+    `list`、`tuple`の場合インデックスでフィルタされ、値を返します。
+    `dict`の場合キーでフィルタされ、キーと要素を返します。
+    `set`の場合は、キーでフィルタされ、キーを返します。
 
     Args:
 
@@ -1028,51 +1028,18 @@ def filter_keys(self, *keys):
 
     Usage:
     ```
-    >>> pnq.query([1, 2]).must_type(str, int).to(list)
-    raise ValueError("1 is not str")
+    >>> pnq.query([1, 2]).filter_keys(1).to(list)
+    [2]
+    >>> pnq.query({"a": 1, "b": 2}).filter_keys("b").to(list)
+    [("b", 2)]
+    >>> pnq.query({"a", "b"}).filter_keys("b").to(list)
+    ["b"]
     ```
     """
-    # undefined = object()
-    # raise_if_not_unique_keys(keys)
-    # for id in keys:
-    #     obj = get_or(self, id, undefined)
-    #     if obj is not undefined:
-    #         yield id, obj
-    ...
-
-
-# def get_many_for_mapping(self, *keys):
-#     """"""
-#     undefined = object()
-#     raise_if_not_unique_keys(keys)
-#     for id in keys:
-#         obj = get_or(self, id, undefined)
-#         if obj is not undefined:
-#             yield id, obj
-
-
-# def get_many_for_sequence(self, *keys):
-#     """"""
-#     undefined = object()
-#     raise_if_not_unique_keys(keys)
-#     for id in keys:
-#         obj = get_or(self, id, undefined)
-#         if obj is not undefined:
-#             yield obj
-
-
-# def get_many_for_set(self, *keys):
-#     """"""
-#     undefined = object()
-#     raise_if_not_unique_keys(keys)
-#     for id in keys:
-#         obj = get_or(self, id, undefined)
-#         if obj is not undefined:
-#             yield id
 
 
 @mark
-def must_keys(self, *keys, typ: Literal["set", "seq", "map"]):
+def must_keys(self, *keys):
     """`filter_keys`を実行し、全てのキーを取得できなかった場合例外を発生させます。
     検証が完了するまで、ストリームは保留されます。
     """
