@@ -308,8 +308,11 @@ class {{query.cls}}:
     def request_async(self, func, retry: int = None, timeout=None) -> "Query[Response]":
         return queries.RequestAsync(self, func, retry=retry, timeout=None)
 
-    def zip(self):
-        raise NotImplementedError()
+    def debug(self, breakpoint=lambda x: x, printer=print) -> "{{query.str}}":
+        return queries.Debug(self, breakpoint=breakpoint, printer=printer)
+
+    def debug_path(self, selector_sync=lambda x: -10, selector_async=lambda x: 10) -> "{{query.str}}":
+        return queries.DebugPath(self, selector_sync, selector_async)
 
     def filter(self, predicate: Callable[[{{query.row}}], bool]) -> "{{query.str}}":
         return queries.Filter(self, predicate)
@@ -376,11 +379,11 @@ class {{query.cls}}:
     def sleep_async(self, seconds: float) -> "{{query.str}}":
         return queries.Sleep(self, seconds)
 
-    def debug(self, breakpoint=lambda x: x, printer=print) -> "{{query.str}}":
-        return queries.Debug(self, breakpoint=breakpoint, printer=printer)
+    def zip(self):
+        raise NotImplementedError()
 
-    def debug_path(self, selector_sync=lambda x: -10, selector_async=lambda x: 10) -> "{{query.str}}":
-        return queries.DebugPath(self, selector_sync, selector_async)
+    def product(self, *iterables):
+        return queries.Product(self, iterables)
 
     # if index query
     {% else %}

@@ -1038,6 +1038,9 @@ class OrderByReverse(Query):
         else:
             return reversed(list(source))
 
+    def _impl_aiter(self):
+        raise NotImplementedError()
+
 
 @mark
 class OrderByShuffle(OrderByMap):
@@ -1045,3 +1048,21 @@ class OrderByShuffle(OrderByMap):
         import random
 
         yield from sorted(self.source, key=lambda k: random.random())
+
+    def _impl_aiter(self):
+        raise NotImplementedError()
+
+
+@mark
+class Product(Query):
+    def __init__(self, source, *iterables):
+        super().__init__(source)
+        self.iterables = iterables
+
+    def _impl_iter(self):
+        import itertools
+
+        return itertools.product(self.source, *self.iterables)
+
+    def _impl_aiter(self):
+        raise NotImplementedError()

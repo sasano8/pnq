@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/sasano8/pnq/actions/workflows/test.yml/badge.svg)](https://github.com/sasano8/pnq/actions)
 [![pypi](https://img.shields.io/pypi/v/pnq.svg)](https://pypi.python.org/pypi/pnq)
-[![downloads](https://pepy.tech/badge/pydantic/month)](https://pepy.tech/project/pydantic)
+[![Downloads](https://pepy.tech/badge/pnq/month)](https://pepy.tech/project/pnq)
 
 PNQ is a Python implementation like Language Integrated Query (LINQ).
 

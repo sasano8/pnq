@@ -1243,7 +1243,7 @@ class Test050_Partition:
         assert q.take_page(3, 2).to(list) == [5, 6]
 
 
-class Test070_Sort:
+class Test060_Sort:
     def test_order_by_map(self):
         assert pnq([]).order_by_map().to(list) == []
         assert pnq([]).order_by_map(lambda x: x).to(list) == []
@@ -1399,6 +1399,11 @@ class Test070_Sort:
 
         # 100 - (100 / 6) = 84
         assert different > (84 * 0.5)  # 50%まで偏りを許容する
+
+
+class Test070_Scaling:
+    def test_product(self):
+        ...
 
 
 class Test500_Type:

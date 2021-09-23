@@ -343,14 +343,6 @@ def __map_nullable(self, selector):
         return map(selector, self)
 
 
-def starmap(self):
-    from itertools import starmap
-
-    # starmap(pow, [(2,5), (3,2), (10,3)]) --> 32 9 1000
-    for args in self:
-        yield function(*args)
-
-
 def itertools__():
     from itertools import (
         chain,
@@ -412,7 +404,10 @@ def unpack_pos(self, selector):
     ```
     """
     for elm in self:
-        yield selector(*elm)  # type: ignore
+        yield selector(*elm)
+
+
+starmap = unpack_pos
 
 
 @mark
@@ -900,6 +895,8 @@ def union_minus(self):
 
 # difference
 # symmetric_difference
+
+# < <= > >= inclusion
 
 
 @mark
