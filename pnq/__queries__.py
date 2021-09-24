@@ -367,6 +367,10 @@ class {{query.cls}}:
     def take_page(self, page: int, size: int) -> "{{query.str}}":
         return queries.TakePage(self, page=page, size=size)
 
+    # TODO: actionsに記載する
+    def take_box(self, size: int) -> "{{query.str}}":
+        return queries.TakeBox(self, size=size)
+
     def order_by(self, *fields, desc: bool = False, attr: bool = False) -> "{{query.str}}":
         return queries.OrderBy(self, *fields, desc=desc, attr=attr)
 
