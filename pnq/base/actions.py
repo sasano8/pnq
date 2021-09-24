@@ -364,17 +364,6 @@ def itertools__():
     )
 
 
-"""
-# product（デカルト積）
-from itertools import product
-mark=['♠', '♥', '♦', '♣']
-suu = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
-tramp = [m for m in product(mark,suu)]
-print(tramp)
-# [('♠', 'A'), ('♠', '2'), ...]
-"""
-
-
 @mark
 def select_single_node(
     self,
@@ -903,6 +892,27 @@ def union_minus(self):
 @name_as("zip")
 def __zip(self, *iterables):
     raise NotImplementedError()
+
+
+@mark
+def cartesian(self, *iterables):
+    """複数のシーケンスのデカルト積を返します。
+
+    Args:
+
+    * self, iterables: デカルト積を求める複数のシーケンス
+    """
+
+
+"""
+# product（デカルト積）
+from itertools import product
+mark=['♠', '♥', '♦', '♣']
+suu = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
+tramp = [m for m in product(mark,suu)]
+print(tramp)
+# [('♠', 'A'), ('♠', '2'), ...]
+"""
 
 
 ###########################################

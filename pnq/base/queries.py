@@ -1038,7 +1038,7 @@ class OrderByShuffle(OrderByMap):
 
 
 @mark
-class Product(Query):
+class Cartesian(Query):
     def __init__(self, source, *iterables):
         super().__init__(source)
         self.iterables = iterables

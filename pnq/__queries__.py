@@ -392,8 +392,8 @@ class {{query.cls}}:
     def zip(self):
         raise NotImplementedError()
 
-    def product(self, *iterables):
-        return queries.Product(self, iterables)
+    def cartesian(self, *iterables):
+        return queries.Cartesian(self, *iterables)
 
     # if index query
     {% else %}

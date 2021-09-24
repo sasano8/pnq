@@ -1406,8 +1406,29 @@ class Test060_Sort:
 
 
 class Test070_Scaling:
-    def test_product(self):
-        ...
+    def test_cartesian(self):
+        assert pnq([1, 2, 3]).cartesian().to(list) == [(1,), (2,), (3,)]
+        assert pnq([1, 2, 3]).cartesian([4, 5, 6]).to(list) == [
+            (1, 4),
+            (1, 5),
+            (1, 6),
+            (2, 4),
+            (2, 5),
+            (2, 6),
+            (3, 4),
+            (3, 5),
+            (3, 6),
+        ]
+        assert pnq([1, 2]).cartesian([3, 4], [5, 6]).to(list) == [
+            (1, 3, 5),
+            (1, 3, 6),
+            (1, 4, 5),
+            (1, 4, 6),
+            (2, 3, 5),
+            (2, 3, 6),
+            (2, 4, 5),
+            (2, 4, 6),
+        ]
 
 
 class Test500_Type:

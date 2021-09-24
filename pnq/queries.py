@@ -361,6 +361,10 @@ class Query(Generic[T]):
     def take_page(self, page: int, size: int) -> "Query[T]":
         return queries.TakePage(self, page=page, size=size)
 
+    # TODO: actionsに記載する
+    def take_box(self, size: int) -> "Query[T]":
+        return queries.TakeBox(self, size=size)
+
     def order_by(self, *fields, desc: bool = False, attr: bool = False) -> "Query[T]":
         return queries.OrderBy(self, *fields, desc=desc, attr=attr)
 
@@ -382,8 +386,8 @@ class Query(Generic[T]):
     def zip(self):
         raise NotImplementedError()
 
-    def product(self, *iterables):
-        return queries.Product(self, iterables)
+    def cartesian(self, *iterables):
+        return queries.Cartesian(self, *iterables)
 
     # if index query
 
@@ -734,6 +738,10 @@ class PairQuery(Generic[K, V]):
     def take_page(self, page: int, size: int) -> "PairQuery[K,V]":
         return queries.TakePage(self, page=page, size=size)
 
+    # TODO: actionsに記載する
+    def take_box(self, size: int) -> "PairQuery[K,V]":
+        return queries.TakeBox(self, size=size)
+
     def order_by(
         self, *fields, desc: bool = False, attr: bool = False
     ) -> "PairQuery[K,V]":
@@ -757,8 +765,8 @@ class PairQuery(Generic[K, V]):
     def zip(self):
         raise NotImplementedError()
 
-    def product(self, *iterables):
-        return queries.Product(self, iterables)
+    def cartesian(self, *iterables):
+        return queries.Cartesian(self, *iterables)
 
     # if index query
 
