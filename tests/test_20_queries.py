@@ -11,9 +11,7 @@ from pnq.base.exceptions import (
     NotFoundError,
     NotOneElementError,
 )
-
-# from pnq.exceptions import NoElementError, NotFoundError, NotOneElementError
-from pnq.queries import DictEx, IndexQuery, ListEx, PairQuery, Query, SetEx, query
+from pnq.queries import query
 
 pnq = query
 
@@ -1375,11 +1373,17 @@ class Test060_Sort:
 
         assert pnq(([2, 1])).order_by_reverse().to(list) == [1, 2]
 
-        with pytest.raises(NotImplementedError, match="Set has no order"):
-            assert pnq(set([2, 1])).order_by_reverse().to(list) == [1, 2]
+        # セットは順序を保持しないので要素が含まれているかのみ確認
+        q = pnq(set([2, 1])).order_by_reverse().to(list)
+        assert len(q) == 2
+        for v in [1, 2]:
+            assert v in q
 
-        with pytest.raises(NotImplementedError, match="Set has no order"):
-            assert pnq(frozenset([2, 1])).order_by_reverse().to(list) == [1, 2]
+        # セットは順序を保持しないので要素が含まれているかのみ確認
+        q = pnq(frozenset([2, 1])).order_by_reverse().to(list)
+        assert len(q) == 2
+        for v in [1, 2]:
+            assert v in q
 
         assert pnq((x for x in range(3))).order_by_reverse().to(list) == [2, 1, 0]
 

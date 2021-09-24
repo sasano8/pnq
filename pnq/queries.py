@@ -5,6 +5,7 @@ from operator import attrgetter, itemgetter
 from typing import (
     TYPE_CHECKING,
     Any,
+    AsyncIterator,
     Callable,
     Dict,
     FrozenSet,
@@ -30,12 +31,10 @@ except:
     from typing_extensions import Literal
 
 from . import actions
+from .base import builder, core, queries
 from .base.exceptions import NoElementError, NotFoundError, NotOneElementError
 from .base.op import TH_ASSIGN_OP
 from .base.requests import Response
-
-if TYPE_CHECKING:
-    from .base import queries
 
 T = TypeVar("T")
 K = TypeVar("K")
@@ -45,10 +44,18 @@ V2 = TypeVar("V2")
 R = TypeVar("R")
 
 
-__all__ = ["Query", "PairQuery", "IndexQuery", "ListEx", "DictEx", "SetEx", "query"]
+__all__ = ["Query", "PairQuery", "query"]
 
 
 class Query(Generic[T]):
+    if TYPE_CHECKING:
+
+        def __iter__(self) -> Iterator[T]:
+            ...
+
+        def __aiter__(self) -> AsyncIterator[T]:
+            ...
+
     def len(self) -> int:
         return actions.len(self)
 
@@ -297,8 +304,13 @@ class Query(Generic[T]):
     def request_async(self, func, retry: int = None, timeout=None) -> "Query[Response]":
         return queries.RequestAsync(self, func, retry=retry, timeout=None)
 
-    def zip(self):
-        raise NotImplementedError()
+    def debug(self, breakpoint=lambda x: x, printer=print) -> "Query[T]":
+        return queries.Debug(self, breakpoint=breakpoint, printer=printer)
+
+    def debug_path(
+        self, selector_sync=lambda x: -10, selector_async=lambda x: 10
+    ) -> "Query[T]":
+        return queries.DebugPath(self, selector_sync, selector_async)
 
     def filter(self, predicate: Callable[[T], bool]) -> "Query[T]":
         return queries.Filter(self, predicate)
@@ -367,18 +379,24 @@ class Query(Generic[T]):
     def sleep_async(self, seconds: float) -> "Query[T]":
         return queries.Sleep(self, seconds)
 
-    def debug(self, breakpoint=lambda x: x, printer=print) -> "Query[T]":
-        return queries.Debug(self, breakpoint=breakpoint, printer=printer)
+    def zip(self):
+        raise NotImplementedError()
 
-    def debug_path(
-        self, selector_sync=lambda x: -10, selector_async=lambda x: 10
-    ) -> "Query[T]":
-        return queries.DebugPath(self, selector_sync, selector_async)
+    def product(self, *iterables):
+        return queries.Product(self, iterables)
 
     # if index query
 
 
 class PairQuery(Generic[K, V]):
+    if TYPE_CHECKING:
+
+        def __iter__(self) -> Iterator[Tuple[K, V]]:
+            ...
+
+        def __aiter__(self) -> AsyncIterator[Tuple[K, V]]:
+            ...
+
     def len(self) -> int:
         return actions.len(self)
 
@@ -657,8 +675,13 @@ class PairQuery(Generic[K, V]):
     def request_async(self, func, retry: int = None, timeout=None) -> "Query[Response]":
         return queries.RequestAsync(self, func, retry=retry, timeout=None)
 
-    def zip(self):
-        raise NotImplementedError()
+    def debug(self, breakpoint=lambda x: x, printer=print) -> "PairQuery[K,V]":
+        return queries.Debug(self, breakpoint=breakpoint, printer=printer)
+
+    def debug_path(
+        self, selector_sync=lambda x: -10, selector_async=lambda x: 10
+    ) -> "PairQuery[K,V]":
+        return queries.DebugPath(self, selector_sync, selector_async)
 
     def filter(self, predicate: Callable[[Tuple[K, V]], bool]) -> "PairQuery[K,V]":
         return queries.Filter(self, predicate)
@@ -731,13 +754,11 @@ class PairQuery(Generic[K, V]):
     def sleep_async(self, seconds: float) -> "PairQuery[K,V]":
         return queries.Sleep(self, seconds)
 
-    def debug(self, breakpoint=lambda x: x, printer=print) -> "PairQuery[K,V]":
-        return queries.Debug(self, breakpoint=breakpoint, printer=printer)
+    def zip(self):
+        raise NotImplementedError()
 
-    def debug_path(
-        self, selector_sync=lambda x: -10, selector_async=lambda x: 10
-    ) -> "PairQuery[K,V]":
-        return queries.DebugPath(self, selector_sync, selector_async)
+    def product(self, *iterables):
+        return queries.Product(self, iterables)
 
     # if index query
 
@@ -767,136 +788,7 @@ class IndexQuery(Generic[K, V]):
         return actions.get_or_raise(self, key, exc)
 
 
-# 継承時は右側に基底クラスを指定し、左へ上書きしていくイメージ
-
-# class Lazy:
-#     def len(self) -> int:
-#         return len(list(self))
-
-#     def exists(self) -> bool:
-#         return len(list(self)) > 0
-
-
-# class LazyIterate(Lazy, Query[T], _LazyIterate):
-#     pass
-
-
-# class LazyReference(Lazy, IndexQuery[int, T], Query[T], _LazyReference):
-#     pass
-
-
-class Instance:
-    def len(self) -> int:
-        return len(self)
-
-    def exists(self) -> bool:
-        return len(self) > 0
-
-
-class ListEx(Instance, IndexQuery[int, T], Query[T], List[T]):
-    def __piter__(self):
-        return self.__iter__()
-
-    @no_type_check
-    def get_many(self, *keys):
-        return LazyReference(actions.get_many_for_sequence, self, *keys)
-
-    @no_type_check
-    def must_get_many(self, *keys):
-        return LazyReference(actions.must_get_many, self, *keys, typ="seq")
-
-
-class TupleEx(Instance, IndexQuery[int, T], Query[T], Tuple[T]):
-    def __piter__(self):
-        return self.__iter__()
-
-    @no_type_check
-    def get_many(self, *keys):
-        return LazyReference(actions.get_many_for_sequence, self, *keys)
-
-    @no_type_check
-    def must_get_many(self, *keys):
-        return LazyReference(actions.must_get_many, self, *keys, typ="seq")
-
-
-class DictEx(Instance, IndexQuery[K, V], PairQuery[K, V], Dict[K, V]):
-    def __piter__(self):
-        return self.items().__iter__()
-
-    # @lazy_reference
-    # def keys(self):
-    #     yield from super().keys()
-
-    # @lazy_reference
-    # def values(self):
-    #     yield from super().values()
-
-    # @lazy_reference
-    # def items(self):
-    #     yield from super().items()
-
-    # @lazy_reference
-    # def reverse(self) -> "PairQuery[K, V]":
-    #     for key in reversed(self):
-    #         yield key, self[key]
-
-    @no_type_check
-    def get_many(self, *keys):
-        return LazyReference(actions.get_many_for_mapping, self, *keys)
-
-    @no_type_check
-    def must_get_many(self, *keys):
-        return LazyReference(actions.must_get_many, self, *keys, typ="map")
-
-
-class SetEx(Instance, IndexQuery[T, T], Query[T], Set[T]):
-    def __piter__(self):
-        return self.__iter__()
-
-    def __getitem__(self, key: T):
-        if key in self:
-            return key
-        else:
-            raise NotFoundError(key)
-
-    def order_by_reverse(self) -> "Query[T]":
-        raise NotImplementedError("Set has no order.")
-
-    @no_type_check
-    def get_many(self, *keys):
-        return LazyReference(actions.get_many_for_set, self, *keys)
-
-    @no_type_check
-    def must_get_many(self, *keys):
-        return LazyReference(actions.must_get_many, self, *keys, typ="set")
-
-
-class FrozenSetEx(Instance, IndexQuery[T, T], Query[T], FrozenSet[T]):
-    def __piter__(self):
-        return self.__iter__()
-
-    def __getitem__(self, key: T):
-        if key in self:
-            return key
-        else:
-            raise NotFoundError(key)
-
-    def order_by_reverse(self) -> "Query[T]":
-        raise NotImplementedError("Set has no order.")
-
-    @no_type_check
-    def get_many(self, *keys):
-        return LazyReference(actions.get_many_for_set, self, *keys)
-
-    @no_type_check
-    def must_get_many(self, *keys):
-        return LazyReference(actions.must_get_many, self, *keys, typ="set")
-
-
-if TYPE_CHECKING:
-    from .base import queries
-
-else:
+if not TYPE_CHECKING:
     import types
 
     class Queries:
@@ -914,30 +806,40 @@ else:
 
     queries = classess
 
-from .base import builder
+
+class QueryBase(Query[T], core.Query[T]):
+    pass
 
 
-class QueryDict(queries.QueryDict):
-    def filter_keys(self, *keys):
+class QueryAsync(Query[T], core.QueryAsync[T]):
+    pass
+
+
+class QueryNormal(Query[T], core.QueryNormal[T]):
+    pass
+
+
+class QueryDict(PairQuery[K, V], core.QueryDict[K, V]):
+    def filter_keys(self, *keys) -> "PairQuery[K, V]":
         return queries.FilterKeys(self, *keys)
 
     # @no_type_check
-    def must_keys(self, *keys):
+    def must_keys(self, *keys) -> "PairQuery[K, V]":
         return queries.MustKeys(self, *keys, typ="map")
 
-    def get(self, key):
+    def get(self, key) -> V:
         try:
             return self.source[key]
         except KeyError:
             raise NotFoundError(key)
 
-    def get_or(self, key, default=None):
+    def get_or(self, key, default: R = None) -> Union[V, R]:
         try:
             return self.get(key)
         except NotFoundError:
             return default
 
-    def get_or_raise(self, key, exc: Union[str, Exception]):
+    def get_or_raise(self, key, exc: Union[str, Exception]) -> V:
         undefined = object()
         result = self.get_or(key, undefined)
         if result is undefined:
@@ -949,27 +851,27 @@ class QueryDict(queries.QueryDict):
             return result
 
 
-class QuerySeq(queries.QuerySeq):
-    def filter_keys(self, *keys):
+class QuerySeq(Query[T], core.QuerySeq[T]):
+    def filter_keys(self, *keys) -> "Query[T]":
         return queries.FilterKeys(self, *keys)
 
     # @no_type_check
-    def must_keys(self, *keys):
+    def must_keys(self, *keys) -> "Query[T]":
         return queries.MustKeys(self, *keys, typ="seq")
 
-    def get(self, key):
+    def get(self, key) -> T:
         try:
             return self.source[key]
         except IndexError:
             raise NotFoundError(key)
 
-    def get_or(self, key, default=None):
+    def get_or(self, key, default: R = None) -> Union[T, R]:
         try:
             return self.get(key)
         except NotFoundError:
             return default
 
-    def get_or_raise(self, key, exc: Union[str, Exception]):
+    def get_or_raise(self, key, exc: Union[str, Exception]) -> T:
         undefined = object()
         result = self.get_or(key, undefined)
         if result is undefined:
@@ -981,30 +883,27 @@ class QuerySeq(queries.QuerySeq):
             return result
 
 
-class QuerySet(queries.QuerySet):
-    def order_by_reverse(self) -> "Query[T]":
-        raise NotImplementedError("Set has no order.")
-
-    def filter_keys(self, *keys):
+class QuerySet(Query[T], core.QuerySet[T]):
+    def filter_keys(self, *keys) -> "Query[T]":
         return queries.FilterKeys(self, *keys)
 
     # @no_type_check
-    def must_keys(self, *keys):
+    def must_keys(self, *keys) -> "Query[T]":
         return queries.MustKeys(self, *keys, typ="set")
 
-    def get(self, key):
+    def get(self, key) -> T:
         if key in self.source:
             return key
         else:
             raise NotFoundError(key)
 
-    def get_or(self, key, default=None):
+    def get_or(self, key, default: R = None) -> Union[T, R]:
         try:
             return self.get(key)
         except NotFoundError:
             return default
 
-    def get_or_raise(self, key, exc: Union[str, Exception]):
+    def get_or_raise(self, key, exc: Union[str, Exception]) -> T:
         undefined = object()
         result = self.get_or(key, undefined)
         if result is undefined:
@@ -1017,21 +916,26 @@ class QuerySet(queries.QuerySet):
 
 
 class QueryBuilder(builder.Builder):
-    QUERY_BOTH = queries.Query
-    QUERY_ASYNC = queries.QueryAsync
-    QUERY_NORMAL = queries.QueryNormal
+    QUERY_BOTH = QueryBase
+    QUERY_ASYNC = QueryAsync
+    QUERY_NORMAL = QueryNormal
     QUERY_SEQ = QuerySeq
     QUERY_DICT = QueryDict
     QUERY_SET = QuerySet
 
 
 @overload
-def query(source: Mapping[K, V]) -> DictEx[K, V]:
+def query(source: Mapping[K, V]) -> QueryDict[K, V]:
     ...
 
 
 @overload
-def query(source: Iterable[T]) -> ListEx[T]:
+def query(source: Set[T]) -> QuerySet[T]:
+    ...
+
+
+@overload
+def query(source: Iterable[T]) -> QuerySeq[T]:
     ...
 
 

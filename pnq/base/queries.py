@@ -3,15 +3,7 @@ from collections import defaultdict
 from operator import attrgetter, itemgetter
 from typing import Awaitable, Callable, Mapping, NoReturn, TypeVar, Union
 
-from .core import (
-    IterType,
-    Query,
-    QueryAsync,
-    QueryDict,
-    QueryNormal,
-    QuerySeq,
-    QuerySet,
-)
+from .core import IterType, Query, QueryDict, QuerySeq, QuerySet
 from .exceptions import (
     DuplicateElementError,
     MustError,
@@ -29,14 +21,6 @@ exports = []
 def mark(cls):
     exports.append(cls)
     return cls
-
-
-mark(Query)
-mark(QueryNormal)
-mark(QueryAsync)
-mark(QuerySeq)
-mark(QueryDict)
-mark(QuerySet)
 
 
 @mark
