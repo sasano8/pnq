@@ -727,6 +727,20 @@ def group_by(self, selector=lambda x: x):
 
 
 @mark
+def chunked(self, size: int):
+    """
+    シーケンスを指定したサイズ毎に分割する。
+    """
+
+
+@mark
+def tee(self, size: int):
+    """
+    ひとつのイテレータから独立したN個のイテレータを返す
+    """
+
+
+@mark
 def join(self, right, on, select):
     pass
 

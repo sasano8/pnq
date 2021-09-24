@@ -11,6 +11,10 @@ from .base.actions import pivot_unstack as pivot_unstack
 from .base.actions import pivot_stack as pivot_stack
 from .base.actions import reflect as reflect
 
+from .base.actions import chunked as chunked
+from .base.actions import tee as tee
+
+
 # filtering
 from .base.actions import filter_unique as filter_unique
 from .base.actions import filter_keys as filter_keys

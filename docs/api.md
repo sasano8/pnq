@@ -39,16 +39,19 @@
 ::: pnq.actions.enumerate
     :docstring:
 
-::: pnq.actions.group_by
-    :docstring:
-
-::: pnq.actions.join
-    :docstring:
-
 ::: pnq.actions.request
     :docstring:
 
 ::: pnq.actions.request_async
+    :docstring:
+
+::: pnq.actions.group_by
+    :docstring:
+
+::: pnq.actions.chunked
+    :docstring:
+
+::: pnq.actions.join
     :docstring:
 
 ## Filtering

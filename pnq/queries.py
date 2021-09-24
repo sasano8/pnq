@@ -42,6 +42,7 @@ V = TypeVar("V")
 K2 = TypeVar("K2")
 V2 = TypeVar("V2")
 R = TypeVar("R")
+MAPPING = TypeVar("MAPPING", bound=Mapping)
 
 
 __all__ = ["Query", "PairQuery", "query"]
@@ -164,11 +165,11 @@ class Query(Generic[T]):
         return return_sync, return_async
 
     @overload
-    def to(self, func: Type[Iterable[T]]) -> Iterable[T]:
+    def to(self: Iterable[T], func: Type[Iterable[T]]) -> Iterable[T]:
         ...
 
     @overload
-    def to(self, func: Callable[[Iterable[T]], R]) -> R:
+    def to(self: Iterable[T], func: Callable[[Iterable[T]], R]) -> R:
         ...
 
     def to(self, func: Callable[[Iterable[T]], R]) -> R:
@@ -276,16 +277,22 @@ class Query(Generic[T]):
     def unpack_kw(self, selector: Callable[..., R]) -> "Query[R]":
         return queries.UnpackKw(self, selector=selector)
 
-    def group_by(
-        self, selector: Callable[[T], Tuple[K2, V2]] = lambda x: x
-    ) -> "PairQuery[K2, List[V2]]":
-        return queries.GroupBy(self, selector=selector)
-
     def pivot_unstack(self, default=None) -> "PairQuery[Any, List]":
         return queries.PivotUnstack(self, default=default)
 
     def pivot_stack(self) -> "Query[Dict]":
         return queries.PivotStack(self)
+
+    def group_by(
+        self, selector: Callable[[T], Tuple[K2, V2]] = lambda x: x
+    ) -> "PairQuery[K2, List[V2]]":
+        return queries.GroupBy(self, selector=selector)
+
+    def chunked(self, size: int) -> "Query[List[T]]":
+        return queries.Chunked(self, size=size)
+
+    def tee(self, size: int):
+        return queries.Tee(self, size=size)
 
     def join(self, right, on: Callable[[Tuple[list, list]], Callable], select):
         [].join(
@@ -361,10 +368,6 @@ class Query(Generic[T]):
     def take_page(self, page: int, size: int) -> "Query[T]":
         return queries.TakePage(self, page=page, size=size)
 
-    # TODO: actionsに記載する
-    def take_box(self, size: int) -> "Query[T]":
-        return queries.TakeBox(self, size=size)
-
     def order_by(self, *fields, desc: bool = False, attr: bool = False) -> "Query[T]":
         return queries.OrderBy(self, *fields, desc=desc, attr=attr)
 
@@ -386,7 +389,7 @@ class Query(Generic[T]):
     def zip(self):
         raise NotImplementedError()
 
-    def cartesian(self, *iterables):
+    def cartesian(self, *iterables) -> "Query[Tuple]":
         return queries.Cartesian(self, *iterables)
 
     # if index query
@@ -519,19 +522,21 @@ class PairQuery(Generic[K, V]):
         return return_sync, return_async
 
     @overload
-    def to(self, func: Type[Mapping[K, V]]) -> Mapping[K, V]:
+    def to(self: Iterable[Tuple[K, V]], func: Type[Mapping[K, V]]) -> Mapping[K, V]:
         ...
 
     @overload
-    def to(self, func: Callable[[Iterable[Tuple[K, V]]], R]) -> R:
+    def to(
+        self: Iterable[Tuple[K, V]], func: Callable[[Iterable[Tuple[K, V]]], R]
+    ) -> R:
         ...
 
     @overload
-    def to(self, func: Type[Iterable[T]]) -> Iterable[T]:
+    def to(self: Iterable[T], func: Type[Iterable[T]]) -> Iterable[T]:
         ...
 
     @overload
-    def to(self, func: Callable[[Iterable[T]], R]) -> R:
+    def to(self: Iterable[T], func: Callable[[Iterable[T]], R]) -> R:
         ...
 
     def to(self, func: Callable[[Iterable[T]], R]) -> R:
@@ -651,16 +656,22 @@ class PairQuery(Generic[K, V]):
     def unpack_kw(self, selector: Callable[..., R]) -> "Query[R]":
         return queries.UnpackKw(self, selector=selector)
 
-    def group_by(
-        self, selector: Callable[[Tuple[K, V]], Tuple[K2, V2]] = lambda x: x
-    ) -> "PairQuery[K2, List[V2]]":
-        return queries.GroupBy(self, selector=selector)
-
     def pivot_unstack(self, default=None) -> "PairQuery[Any, List]":
         return queries.PivotUnstack(self, default=default)
 
     def pivot_stack(self) -> "Query[Dict]":
         return queries.PivotStack(self)
+
+    def group_by(
+        self, selector: Callable[[Tuple[K, V]], Tuple[K2, V2]] = lambda x: x
+    ) -> "PairQuery[K2, List[V2]]":
+        return queries.GroupBy(self, selector=selector)
+
+    def chunked(self, size: int) -> "Query[List[Tuple[K,V]]]":
+        return queries.Chunked(self, size=size)
+
+    def tee(self, size: int):
+        return queries.Tee(self, size=size)
 
     def join(self, right, on: Callable[[Tuple[list, list]], Callable], select):
         [].join(
@@ -738,10 +749,6 @@ class PairQuery(Generic[K, V]):
     def take_page(self, page: int, size: int) -> "PairQuery[K,V]":
         return queries.TakePage(self, page=page, size=size)
 
-    # TODO: actionsに記載する
-    def take_box(self, size: int) -> "PairQuery[K,V]":
-        return queries.TakeBox(self, size=size)
-
     def order_by(
         self, *fields, desc: bool = False, attr: bool = False
     ) -> "PairQuery[K,V]":
@@ -765,35 +772,36 @@ class PairQuery(Generic[K, V]):
     def zip(self):
         raise NotImplementedError()
 
-    def cartesian(self, *iterables):
+    def cartesian(self, *iterables) -> "Query[Tuple]":
         return queries.Cartesian(self, *iterables)
 
     # if index query
 
 
-class IndexQuery(Generic[K, V]):
-    def filter_keys(self, *keys) -> "IndexQuery[K,V]":
-        raise NotImplementedError()
+# class IndexQuery(Generic[K,V]):
 
-    def must_keys(self, *keys) -> "IndexQuery[K,V]":
-        raise NotImplementedError()
+#     def filter_keys(self, *keys) -> "IndexQuery[K,V]":
+#         raise NotImplementedError()
 
-    @overload
-    def get(self, key: K) -> V:
-        ...
+#     def must_keys(self, *keys) -> "IndexQuery[K,V]":
+#         raise NotImplementedError()
 
-    @overload
-    def get(self, key: K, default: R = NoReturn) -> Union[V, R]:
-        ...
+#     @overload
+#     def get(self, key: K) -> V:
+#         ...
 
-    def get(self, key: K, default=NoReturn) -> Any:
-        return actions.get(self, key, default)
+#     @overload
+#     def get(self, key: K, default: R = NoReturn) -> Union[V, R]:
+#         ...
 
-    def get_or(self, key: K, default: R) -> Union[V, R]:
-        return actions.get_or(self, key, default)
+#     def get(self, key: K, default=NoReturn) -> Any:
+#         return actions.get(self, key, default)
 
-    def get_or_raise(self, key: K, exc: Union[str, Exception]) -> V:
-        return actions.get_or_raise(self, key, exc)
+#     def get_or(self, key: K, default: R) -> Union[V, R]:
+#         return actions.get_or(self, key, default)
+
+#     def get_or_raise(self, key: K, exc: Union[str, Exception]) -> V:
+#         return actions.get_or_raise(self, key, exc)
 
 
 if not TYPE_CHECKING:

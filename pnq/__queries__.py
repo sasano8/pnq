@@ -153,21 +153,21 @@ class {{query.cls}}:
     {% if query.is_pair %}
 
     @overload
-    def to(self, func: Type[Mapping[K, V]]) -> Mapping[K, V]:
+    def to(self: Iterable[Tuple[K, V]], func: Type[Mapping[K, V]]) -> Mapping[K, V]:
         ...
 
     @overload
-    def to(self, func: Callable[[Iterable[Tuple[K, V]]], R]) -> R:
+    def to(self: Iterable[Tuple[K, V]], func: Callable[[Iterable[Tuple[K, V]]], R]) -> R:
         ...
 
     {% endif %}
 
     @overload
-    def to(self, func: Type[Iterable[T]]) -> Iterable[T]:
+    def to(self: Iterable[T], func: Type[Iterable[T]]) -> Iterable[T]:
         ...
 
     @overload
-    def to(self, func: Callable[[Iterable[T]], R]) -> R:
+    def to(self: Iterable[T], func: Callable[[Iterable[T]], R]) -> R:
         ...
 
     def to(self, func: Callable[[Iterable[T]], R]) -> R:
@@ -285,14 +285,20 @@ class {{query.cls}}:
     def unpack_kw(self, selector: Callable[..., R]) -> "{{sequence.name}}[R]":
         return queries.UnpackKw(self, selector=selector)
 
-    def group_by(self, selector: Callable[[{{query.row}}], Tuple[K2, V2]] = lambda x: x) -> "{{pair.name}}[K2, List[V2]]":
-        return queries.GroupBy(self, selector=selector)
-
     def pivot_unstack(self, default=None) -> "PairQuery[Any, List]":
         return queries.PivotUnstack(self, default=default)
 
     def pivot_stack(self) -> "Query[Dict]":
         return queries.PivotStack(self)
+
+    def group_by(self, selector: Callable[[{{query.row}}], Tuple[K2, V2]] = lambda x: x) -> "{{pair.name}}[K2, List[V2]]":
+        return queries.GroupBy(self, selector=selector)
+
+    def chunked(self, size: int) -> "Query[List[{{query.row}}]]":
+        return queries.Chunked(self, size=size)
+
+    def tee(self, size: int):
+        return queries.Tee(self, size=size)
 
     def join(self, right, on: Callable[[Tuple[list, list]], Callable], select):
         [].join(
@@ -367,10 +373,6 @@ class {{query.cls}}:
     def take_page(self, page: int, size: int) -> "{{query.str}}":
         return queries.TakePage(self, page=page, size=size)
 
-    # TODO: actionsに記載する
-    def take_box(self, size: int) -> "{{query.str}}":
-        return queries.TakeBox(self, size=size)
-
     def order_by(self, *fields, desc: bool = False, attr: bool = False) -> "{{query.str}}":
         return queries.OrderBy(self, *fields, desc=desc, attr=attr)
 
@@ -392,35 +394,35 @@ class {{query.cls}}:
     def zip(self):
         raise NotImplementedError()
 
-    def cartesian(self, *iterables):
+    def cartesian(self, *iterables) -> "Query[Tuple]":
         return queries.Cartesian(self, *iterables)
 
     # if index query
     {% else %}
-class {{query.cls}}:
+# class {{query.cls}}:
 
-    def filter_keys(self, *keys) -> "{{query.str}}":
-        raise NotImplementedError()
+#     def filter_keys(self, *keys) -> "{{query.str}}":
+#         raise NotImplementedError()
 
-    def must_keys(self, *keys) -> "{{query.str}}":
-        raise NotImplementedError()
+#     def must_keys(self, *keys) -> "{{query.str}}":
+#         raise NotImplementedError()
 
-    @overload
-    def get(self, key: {{query.K}}) -> {{query.V}}:
-        ...
+#     @overload
+#     def get(self, key: {{query.K}}) -> {{query.V}}:
+#         ...
 
-    @overload
-    def get(self, key: {{query.K}}, default: R = NoReturn) -> Union[{{query.V}}, R]:
-        ...
+#     @overload
+#     def get(self, key: {{query.K}}, default: R = NoReturn) -> Union[{{query.V}}, R]:
+#         ...
 
-    def get(self, key: {{query.K}}, default=NoReturn) -> Any:
-        return actions.get(self, key, default)
+#     def get(self, key: {{query.K}}, default=NoReturn) -> Any:
+#         return actions.get(self, key, default)
 
-    def get_or(self, key: {{query.K}}, default: R) -> Union[{{query.V}}, R]:
-        return actions.get_or(self, key, default)
+#     def get_or(self, key: {{query.K}}, default: R) -> Union[{{query.V}}, R]:
+#         return actions.get_or(self, key, default)
 
-    def get_or_raise(self, key: {{query.K}}, exc: Union[str, Exception]) -> {{query.V}}:
-        return actions.get_or_raise(self, key, exc)
+#     def get_or_raise(self, key: {{query.K}}, exc: Union[str, Exception]) -> {{query.V}}:
+#         return actions.get_or_raise(self, key, exc)
 
     {% endif %}
 {% endfor %}

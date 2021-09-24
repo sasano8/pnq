@@ -831,6 +831,14 @@ class Test020_Transform:
             ("red", [2, 5]),
         ]
 
+    def test_chunked(self):
+        assert pnq([]).chunked(1).to(list) == []
+        assert pnq([1, 2, 3]).chunked(1).to(list) == [[1], [2], [3]]
+        assert pnq([1, 2, 3, 4, 5]).chunked(2).to(list) == [[1, 2], [3, 4], [5]]
+
+    def test_tee(self):
+        pass
+
     def test_join(self):
         pass
 

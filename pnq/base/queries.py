@@ -322,33 +322,6 @@ class Enumerate(Query):
 
 
 @mark
-class GroupBy(Query):
-    def __init__(self, source, selector):
-        super().__init__(source)
-        self.selector = selector
-
-    def _impl_iter(self):
-        selector = self.selector
-        results = defaultdict(list)
-        for elm in self.source:
-            k, v = selector(elm)
-            results[k].append(v)
-
-        for k, v in results.items():
-            yield k, v
-
-    async def _impl_aiter(self):
-        selector = self.selector
-        results = defaultdict(list)
-        async for elm in self.source:
-            k, v = selector(elm)
-            results[k].append(v)
-
-        for k, v in results.items():
-            yield k, v
-
-
-@mark
 class PivotUnstack(Query):
     def __init__(self, source, default=None) -> None:
         super().__init__(source)
@@ -517,6 +490,101 @@ class DebugPath(Query):
         selector_async = self.selector_async
         async for v in self.source:
             yield selector_async(v)
+
+
+@mark
+class GroupBy(Query):
+    def __init__(self, source, selector):
+        super().__init__(source)
+        self.selector = selector
+
+    def _impl_iter(self):
+        selector = self.selector
+        results = defaultdict(list)
+        for elm in self.source:
+            k, v = selector(elm)
+            results[k].append(v)
+
+        for k, v in results.items():
+            yield k, v
+
+    async def _impl_aiter(self):
+        selector = self.selector
+        results = defaultdict(list)
+        async for elm in self.source:
+            k, v = selector(elm)
+            results[k].append(v)
+
+        for k, v in results.items():
+            yield k, v
+
+
+@mark
+class Chunked(Query):
+    def __init__(self, source, size: int) -> None:
+        super().__init__(source)
+        self.size = size
+
+        if size <= 0:
+            raise ValueError("count must be greater than 0")
+
+    def _impl_iter(self):
+        size = self.size
+        current = 0
+        running = True
+
+        it = iter(self.source)
+
+        while running:
+            current = 0
+            queue = []
+
+            while current < size:
+                current += 1
+                try:
+                    val = next(it)
+                    queue.append(val)
+                except StopIteration:
+                    running = False
+                    break
+
+            if queue:
+                yield queue
+
+    async def _impl_aiter(self):
+        size = self.size
+        current = 0
+        running = True
+
+        it = self.source.__aiter__()
+
+        while running:
+            current = 0
+            queue = []
+
+            while current < size:
+                current += 1
+                try:
+                    val = await it.__anext__()
+                    queue.append(val)
+                except StopIteration:
+                    running = False
+                    break
+
+            if queue:
+                yield queue
+
+
+@mark
+class Tee(Query):
+    def __init__(self, source, size: int = 2) -> None:
+        super().__init__(source)
+        self.size = size
+
+    def _impl_iter(self):
+        import itertools
+
+        return iter(itertools.tee(self.source, self.size))
 
 
 @mark
@@ -920,66 +988,6 @@ class TakePage(Take):
     def __init__(self, source, page: int, size: int):
         start, stop = take_page_calc(page, size)
         super().__init__(source, range(start, stop))
-
-
-@mark
-class TakeBox(Query):
-    """itertools.tee
-    シーケンスの要素を指定したサイズのリストに箱詰めし、それらのリストを列挙する。
-    """
-
-    def __init__(self, source, size: int) -> None:
-        super().__init__(source)
-        self.size = size
-
-        if size <= 0:
-            raise ValueError("count must be greater than 0")
-
-    def _impl_iter(self):
-        size = self.size
-        current = 0
-        running = True
-
-        it = iter(self.source)
-
-        while running:
-            current = 0
-            queue = []
-
-            while current < size:
-                current += 1
-                try:
-                    val = next(it)
-                    queue.append(val)
-                except StopIteration:
-                    running = False
-                    break
-
-            if queue:
-                yield queue
-
-    async def _impl_aiter(self):
-        size = self.size
-        current = 0
-        running = True
-
-        it = self.source.__aiter__()
-
-        while running:
-            current = 0
-            queue = []
-
-            while current < size:
-                current += 1
-                try:
-                    val = await it.__anext__()
-                    queue.append(val)
-                except StopIteration:
-                    running = False
-                    break
-
-            if queue:
-                yield queue
 
 
 @mark
