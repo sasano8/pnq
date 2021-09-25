@@ -51,12 +51,12 @@ __all__ = ["Query", "PairQuery", "query"]
 
 {% for query in queries %}
 
-class {{query.cls}}:
+class {{query.CLS}}:
     if TYPE_CHECKING:
-        def __iter__(self) -> Iterator[{{query.row}}]:
+        def __iter__(self) -> Iterator[{{query.T}}]:
             ...
 
-        def __aiter__(self) -> AsyncIterator[{{query.row}}]:
+        def __aiter__(self) -> AsyncIterator[{{query.T}}]:
             ...
 
     def len(self) -> int:
@@ -65,42 +65,42 @@ class {{query.cls}}:
     def exists(self) -> bool:
         return actions.exists(self)
 
-    def all(self, selector: Callable[[{{query.row}}], Any]=lambda x: x) -> bool:
+    def all(self, selector: Callable[[{{query.T}}], Any]=lambda x: x) -> bool:
         return actions.all(self, selector)
 
-    def any(self, selector: Callable[[{{query.row}}], Any]=lambda x: x) -> bool:
+    def any(self, selector: Callable[[{{query.T}}], Any]=lambda x: x) -> bool:
         return actions.any(self, selector)
 
-    def contains(self, value, selector: Callable[[{{query.row}}], Any]=lambda x: x) -> bool:
+    def contains(self, value, selector: Callable[[{{query.T}}], Any]=lambda x: x) -> bool:
         return actions.contains(self, value, selector)
 
     @overload
-    def min(self, *, default=NoReturn) -> Union[{{query.row}}, NoReturn]: ...
+    def min(self, *, default=NoReturn) -> Union[{{query.T}}, NoReturn]: ...
 
     @overload
-    def min(self, selector: Callable[[{{query.row}}], R]=lambda x: x, default=NoReturn) -> R: ...
-    def min(self, selector: Callable[[{{query.row}}], R]=lambda x: x, default=NoReturn) -> R:
+    def min(self, selector: Callable[[{{query.T}}], R]=lambda x: x, default=NoReturn) -> R: ...
+    def min(self, selector: Callable[[{{query.T}}], R]=lambda x: x, default=NoReturn) -> R:
         return actions.min(self, selector, default)
 
     @overload
-    def max(self, *, default=NoReturn) -> Union[{{query.row}}, NoReturn]: ...
+    def max(self, *, default=NoReturn) -> Union[{{query.T}}, NoReturn]: ...
     @overload
-    def max(self, selector: Callable[[{{query.row}}], R]=lambda x: x, default=NoReturn) -> R: ...
-    def max(self, selector: Callable[[{{query.row}}], R]=lambda x: x, default=NoReturn) -> R:
+    def max(self, selector: Callable[[{{query.T}}], R]=lambda x: x, default=NoReturn) -> R: ...
+    def max(self, selector: Callable[[{{query.T}}], R]=lambda x: x, default=NoReturn) -> R:
         return actions.max(self, selector, default)
 
     @overload
-    def sum(self) -> {{query.row}}: ...
+    def sum(self) -> {{query.T}}: ...
     @overload
-    def sum(self, selector: Callable[[{{query.row}}], R]=lambda x: x) -> R: ...
-    def sum(self, selector: Callable[[{{query.row}}], R]=lambda x: x) -> R:
+    def sum(self, selector: Callable[[{{query.T}}], R]=lambda x: x) -> R: ...
+    def sum(self, selector: Callable[[{{query.T}}], R]=lambda x: x) -> R:
         return actions.sum(self, selector)
 
     @overload
-    def average(self) -> {{query.row}}: ...
+    def average(self) -> {{query.T}}: ...
     @overload
-    def average(self, selector: Callable[[{{query.row}}], R]=lambda x: x) -> R: ...
-    def average(self, selector: Callable[[{{query.row}}], R]=lambda x: x) -> R:
+    def average(self, selector: Callable[[{{query.T}}], R]=lambda x: x) -> R: ...
+    def average(self, selector: Callable[[{{query.T}}], R]=lambda x: x) -> R:
         return actions.average(self, selector)
 
     def reduce(self, seed: T, op: Union[TH_ASSIGN_OP, Callable[[Any, Any], Any]] = "+=", selector=lambda x: x) -> T:
@@ -184,35 +184,35 @@ class {{query.cls}}:
     async def each_async_unpack(self, func: Callable = lambda x: x):
         return await actions.each_async_unpack(self, func)
 
-    def one(self) -> {{query.row}}:
+    def one(self) -> {{query.T}}:
         return actions.one(self)
 
-    def one_or(self, default: R) -> Union[{{query.row}}, R]:
+    def one_or(self, default: R) -> Union[{{query.T}}, R]:
         return actions.one_or(self, default)
 
-    def one_or_raise(self, exc: Union[str, Exception]) -> {{query.row}}:
+    def one_or_raise(self, exc: Union[str, Exception]) -> {{query.T}}:
         return actions.one_or_raise(self, exc)
 
-    def first(self) -> {{query.row}}:
+    def first(self) -> {{query.T}}:
         return actions.first(self)
 
-    def first_or(self, default: R) -> Union[{{query.row}}, R]:
+    def first_or(self, default: R) -> Union[{{query.T}}, R]:
         return actions.first_or(self, default)
 
-    def first_or_raise(self, exc: Union[str, Exception]) -> {{query.row}}:
+    def first_or_raise(self, exc: Union[str, Exception]) -> {{query.T}}:
         return actions.first_or_raise(self, exc)
 
-    def last(self) -> {{query.row}}:
+    def last(self) -> {{query.T}}:
         return actions.last(self)
 
-    def last_or(self, default: R) -> Union[{{query.row}}, R]:
+    def last_or(self, default: R) -> Union[{{query.T}}, R]:
         return actions.last_or(self, default)
 
-    def last_or_raise(self, exc: Union[str, Exception]) -> {{query.row}}:
+    def last_or_raise(self, exc: Union[str, Exception]) -> {{query.T}}:
         return actions.last_or_raise(self, exc)
 
     @overload
-    def cast(self, type: Type[Tuple[K2, V2]]) -> "{{pair.name}}[K2, V2]":
+    def cast(self, type: Type[Tuple[K2, V2]]) -> "{{pair.SELF__}}[K2, V2]":
         pass
 
     @overload
@@ -222,15 +222,15 @@ class {{query.cls}}:
     def cast(self, type: Type[R]) -> "Query[R]":
         return self
 
-    def enumerate(self, start: int = 0, step: int = 1) -> "{{pair.name}}[int, {{query.row}}]":
+    def enumerate(self, start: int = 0, step: int = 1) -> "{{pair.SELF__}}[int, {{query.T}}]":
         return queries.Enumerate(self, start, step)
 
     @overload
-    def map(self, selector: Callable[[{{query.row}}], Tuple[K2, V2]]) -> "{{pair.name}}[K2, V2]":
+    def map(self, selector: Callable[[{{query.T}}], Tuple[K2, V2]]) -> "{{pair.SELF__}}[K2, V2]":
         pass
 
     @overload
-    def map(self, selector: Callable[[{{query.row}}], R]) -> "{{sequence.name}}[R]":
+    def map(self, selector: Callable[[{{query.T}}], R]) -> "{{sequence.SELF__}}[R]":
         pass
 
     def map(self, selector):
@@ -272,16 +272,16 @@ class {{query.cls}}:
     def reflect(self, mapping, default=NoReturn, attr: bool = False):
         return queries.Reflect(self, mapping, attr=attr)
 
-    def flat(self, selector: Callable[..., Iterable[R]] = None) -> "{{sequence.name}}[R]":
+    def flat(self, selector: Callable[..., Iterable[R]] = None) -> "{{sequence.SELF__}}[R]":
         return queries.Flat(self, selector)
 
-    def flat_recursive(self, selector: Callable[[{{query.row}}], Iterable[{{query.row}}]]) -> "{{sequence.name}}[{{query.row}}]":
+    def flat_recursive(self, selector: Callable[[{{query.T}}], Iterable[{{query.T}}]]) -> "{{sequence.SELF__}}[{{query.T}}]":
         return queries.FlatRecursive(self, selector)
 
-    def unpack_pos(self, selector: Callable[..., R]) -> "{{sequence.name}}[R]":
+    def unpack_pos(self, selector: Callable[..., R]) -> "{{sequence.SELF__}}[R]":
         return queries.UnpackPos(self, selector=selector)
 
-    def unpack_kw(self, selector: Callable[..., R]) -> "{{sequence.name}}[R]":
+    def unpack_kw(self, selector: Callable[..., R]) -> "{{sequence.SELF__}}[R]":
         return queries.UnpackKw(self, selector=selector)
 
     def pivot_unstack(self, default=None) -> "PairQuery[Any, List]":
@@ -290,10 +290,10 @@ class {{query.cls}}:
     def pivot_stack(self) -> "Query[Dict]":
         return queries.PivotStack(self)
 
-    def group_by(self, selector: Callable[[{{query.row}}], Tuple[K2, V2]] = lambda x: x) -> "{{pair.name}}[K2, List[V2]]":
+    def group_by(self, selector: Callable[[{{query.T}}], Tuple[K2, V2]] = lambda x: x) -> "{{pair.SELF__}}[K2, List[V2]]":
         return queries.GroupBy(self, selector=selector)
 
-    def chunked(self, size: int) -> "Query[List[{{query.row}}]]":
+    def chunked(self, size: int) -> "Query[List[{{query.T}}]]":
         return queries.Chunked(self, size=size)
 
     def tee(self, size: int):
@@ -319,75 +319,75 @@ class {{query.cls}}:
     def request_async(self, func, retry: int = None, timeout=None) -> "Query[Response]":
         return queries.RequestAsync(self, func, retry=retry, timeout=None)
 
-    def debug(self, breakpoint=lambda x: x, printer=print) -> "{{query.str}}":
+    def debug(self, breakpoint=lambda x: x, printer=print) -> "{{query.SELF_T}}":
         return queries.Debug(self, breakpoint=breakpoint, printer=printer)
 
-    def debug_path(self, selector_sync=lambda x: -10, selector_async=lambda x: 10) -> "{{query.str}}":
+    def debug_path(self, selector_sync=lambda x: -10, selector_async=lambda x: 10) -> "{{query.SELF_T}}":
         return queries.DebugPath(self, selector_sync, selector_async)
 
-    def filter(self, predicate: Callable[[{{query.row}}], bool]) -> "{{query.str}}":
+    def filter(self, predicate: Callable[[{{query.T}}], bool]) -> "{{query.SELF_T}}":
         return queries.Filter(self, predicate)
 
-    def filter_type(self, *types: Type[R]) -> "{{query.str}}":
+    def filter_type(self, *types: Type[R]) -> "{{query.SELF_T}}":
         return queries.FilterType(self, *types)
 
     @overload
-    def filter_unique(self) -> "{{query.str}}":
+    def filter_unique(self) -> "{{query.SELF_T}}":
         ...
 
     @overload
-    def filter_unique(self, selector: Callable[[{{query.row}}], Tuple[K2, V2]]) -> "{{pair.name}}[K2, V2]":
+    def filter_unique(self, selector: Callable[[{{query.T}}], Tuple[K2, V2]]) -> "{{pair.SELF__}}[K2, V2]":
         ...
 
     @overload
-    def filter_unique(self, selector: Callable[[{{query.row}}], R]) -> "{{sequence.name}}[R]":
+    def filter_unique(self, selector: Callable[[{{query.T}}], R]) -> "{{sequence.SELF__}}[R]":
         ...
 
     def filter_unique(self, selector=None):
         return queries.FilterUnique(self, selector=selector)
 
-    def distinct(self, selector: Callable[[{{query.row}}], Any]) -> "{{query.str}}":
+    def distinct(self, selector: Callable[[{{query.T}}], Any]) -> "{{query.SELF_T}}":
         return queries.FilterUnique(self, selector=selector)
 
-    def must(self, predicate: Callable[[{{query.row}}], bool], msg: str="") -> "{{query.str}}":
+    def must(self, predicate: Callable[[{{query.T}}], bool], msg: str="") -> "{{query.SELF_T}}":
         """要素の検証に失敗した時例外を発生させる。"""
         return queries.Must(self, predicate, msg)
 
-    def must_type(self, type, *types: Type) -> "{{query.str}}":
+    def must_type(self, type, *types: Type) -> "{{query.SELF_T}}":
         """要素の検証に失敗した時例外を発生させる。"""
         return queries.MustType(self, type, *types)
 
     def must_unique(self, selector: Callable[[T], R] = None):
         return queries.MustUnique(self, selector=selector)
 
-    def take(self, count_or_range: Union[int, range]) -> "{{query.str}}":
+    def take(self, count_or_range: Union[int, range]) -> "{{query.SELF_T}}":
         return queries.Take(self, count_or_range)
 
-    def take_while(self, predicate) -> "{{query.str}}":
+    def take_while(self, predicate) -> "{{query.SELF_T}}":
         return queries.TakeWhile(self, predicate)
 
-    def skip(self, count_or_range: Union[int, range]) -> "{{query.str}}":
+    def skip(self, count_or_range: Union[int, range]) -> "{{query.SELF_T}}":
         return queries.Skip(self, count_or_range)
 
-    def take_page(self, page: int, size: int) -> "{{query.str}}":
+    def take_page(self, page: int, size: int) -> "{{query.SELF_T}}":
         return queries.TakePage(self, page=page, size=size)
 
-    def order_by(self, *fields, desc: bool = False, attr: bool = False) -> "{{query.str}}":
+    def order_by(self, *fields, desc: bool = False, attr: bool = False) -> "{{query.SELF_T}}":
         return queries.OrderBy(self, *fields, desc=desc, attr=attr)
 
-    def order_by_map(self, selector=None, *, desc: bool = False) -> "{{query.str}}":
+    def order_by_map(self, selector=None, *, desc: bool = False) -> "{{query.SELF_T}}":
         return queries.OrderByMap(self, selector=selector, desc=desc)
 
-    def order_by_reverse(self) -> "{{query.str}}":
+    def order_by_reverse(self) -> "{{query.SELF_T}}":
         return queries.OrderByReverse(self)
 
-    def order_by_shuffle(self) -> "{{query.str}}":
+    def order_by_shuffle(self) -> "{{query.SELF_T}}":
         return queries.OrderByShuffle(self)
 
-    def sleep(self, seconds: float) -> "{{query.str}}":
+    def sleep(self, seconds: float) -> "{{query.SELF_T}}":
         return queries.Sleep(self, seconds)
 
-    def sleep_async(self, seconds: float) -> "{{query.str}}":
+    def sleep_async(self, seconds: float) -> "{{query.SELF_T}}":
         return queries.Sleep(self, seconds)
 
     def zip(self):

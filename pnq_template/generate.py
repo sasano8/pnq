@@ -18,19 +18,23 @@ class Info:
         return typevars
 
     @property
-    def cls(self):
+    def CLS(self):
         typevars = self.get_typevars()
         if typevars:
             typevars = "(Generic" + typevars + ")"
         return self.name + typevars
 
     @property
-    def str(self):
+    def SELF__(self):
+        return self.name
+
+    @property
+    def SELF_T(self):
         typevars = self.get_typevars()
         return self.name + typevars
 
     @property
-    def row(self):
+    def T(self):
         if len(self.typevars) == 1:
             return self.typevars[0]
         elif len(self.typevars) == 2:
@@ -87,13 +91,13 @@ class Info:
 
 """
 templateで利用するプロパティは次のような文字が返る
-query.cls = "PairQuery(Generic[K, V])"
-query.str = "PairQuery[K, V]"
-query.name = "PairQuery"
-query.selector = "lambda k, v: (k, v)"
-query.row = "Tuple[K, V]"
+query.CLS = "PairQuery(Generic[K, V])"
+query.SELF__ = "PairQuery"
+query.SELF_T = "PairQuery[K, V]"
+query.T = "Tuple[K, V]"
 query.K = "K"
 query.V = "K, V"
+query.selector = "lambda k, v: (k, v)"
 """
 
 
@@ -103,11 +107,8 @@ PairQuery = Info("PairQuery", "K", "V", is_pair=True)
 
 
 data = {
-    "str": str,
     "sequence": Query,
     "pair": PairQuery,
-    # "IndexQuery": IndexQuery,
-    # "queries": [Query, PairQuery, IndexQuery],
     "queries": [Query, PairQuery],
 }
 
