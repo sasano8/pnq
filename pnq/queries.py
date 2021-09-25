@@ -42,7 +42,6 @@ V = TypeVar("V")
 K2 = TypeVar("K2")
 V2 = TypeVar("V2")
 R = TypeVar("R")
-MAPPING = TypeVar("MAPPING", bound=Mapping)
 
 
 __all__ = ["Query", "PairQuery", "query"]
@@ -174,6 +173,9 @@ class Query(Generic[T]):
 
     def to(self, func: Callable[[Iterable[T]], R]) -> R:
         return actions.to(self, func)
+
+    def lazy(self, func, *args, **kwargs):
+        return queries.Lazy(self, func, *args, **kwargs)
 
     def each(self, func: Callable = lambda x: x):
         return actions.each(self, func)
@@ -392,8 +394,6 @@ class Query(Generic[T]):
     def cartesian(self, *iterables) -> "Query[Tuple]":
         return queries.Cartesian(self, *iterables)
 
-    # if index query
-
 
 class PairQuery(Generic[K, V]):
     if TYPE_CHECKING:
@@ -541,6 +541,9 @@ class PairQuery(Generic[K, V]):
 
     def to(self, func: Callable[[Iterable[T]], R]) -> R:
         return actions.to(self, func)
+
+    def lazy(self, func, *args, **kwargs):
+        return queries.Lazy(self, func, *args, **kwargs)
 
     def each(self, func: Callable = lambda x: x):
         return actions.each(self, func)
@@ -774,34 +777,6 @@ class PairQuery(Generic[K, V]):
 
     def cartesian(self, *iterables) -> "Query[Tuple]":
         return queries.Cartesian(self, *iterables)
-
-    # if index query
-
-
-# class IndexQuery(Generic[K,V]):
-
-#     def filter_keys(self, *keys) -> "IndexQuery[K,V]":
-#         raise NotImplementedError()
-
-#     def must_keys(self, *keys) -> "IndexQuery[K,V]":
-#         raise NotImplementedError()
-
-#     @overload
-#     def get(self, key: K) -> V:
-#         ...
-
-#     @overload
-#     def get(self, key: K, default: R = NoReturn) -> Union[V, R]:
-#         ...
-
-#     def get(self, key: K, default=NoReturn) -> Any:
-#         return actions.get(self, key, default)
-
-#     def get_or(self, key: K, default: R) -> Union[V, R]:
-#         return actions.get_or(self, key, default)
-
-#     def get_or_raise(self, key: K, exc: Union[str, Exception]) -> V:
-#         return actions.get_or_raise(self, key, exc)
 
 
 if not TYPE_CHECKING:

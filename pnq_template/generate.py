@@ -99,15 +99,16 @@ query.V = "K, V"
 
 Query = Info("Query", "T")
 PairQuery = Info("PairQuery", "K", "V", is_pair=True)
-IndexQuery = Info("IndexQuery", "K", "V", is_index=True, is_pair=True)
+# IndexQuery = Info("IndexQuery", "K", "V", is_index=True, is_pair=True)
 
 
 data = {
     "str": str,
     "sequence": Query,
     "pair": PairQuery,
-    "IndexQuery": IndexQuery,
-    "queries": [Query, PairQuery, IndexQuery],
+    # "IndexQuery": IndexQuery,
+    # "queries": [Query, PairQuery, IndexQuery],
+    "queries": [Query, PairQuery],
 }
 
 

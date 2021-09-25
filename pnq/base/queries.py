@@ -32,10 +32,11 @@ class Lazy(Query, Awaitable[R]):
         self.kwargs = kwargs
 
     def __call__(self) -> R:
-        return self.finalizer(self.source, *self.args, **self.kwargs)
+        return self.finalizer(self.__iter__(), *self.args, **self.kwargs)
 
     def __await__(self):
-        return self.finalizer(self.source, *self.args, **self.kwargs).__await__()
+        coro = self.finalizer(self.__aiter__(), *self.args, **self.kwargs)
+        return coro.__await__()
 
 
 @mark

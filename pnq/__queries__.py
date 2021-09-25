@@ -51,10 +51,6 @@ __all__ = ["Query", "PairQuery", "query"]
 
 {% for query in queries %}
 
-
-    {% if not query.is_index %}
-
-
 class {{query.cls}}:
     if TYPE_CHECKING:
         def __iter__(self) -> Iterator[{{query.row}}]:
@@ -172,6 +168,9 @@ class {{query.cls}}:
 
     def to(self, func: Callable[[Iterable[T]], R]) -> R:
         return actions.to(self, func)
+
+    def lazy(self, func, *args, **kwargs):
+        return queries.Lazy(self, func, *args, **kwargs)
 
     def each(self, func: Callable = lambda x: x):
         return actions.each(self, func)
@@ -397,34 +396,6 @@ class {{query.cls}}:
     def cartesian(self, *iterables) -> "Query[Tuple]":
         return queries.Cartesian(self, *iterables)
 
-    # if index query
-    {% else %}
-# class {{query.cls}}:
-
-#     def filter_keys(self, *keys) -> "{{query.str}}":
-#         raise NotImplementedError()
-
-#     def must_keys(self, *keys) -> "{{query.str}}":
-#         raise NotImplementedError()
-
-#     @overload
-#     def get(self, key: {{query.K}}) -> {{query.V}}:
-#         ...
-
-#     @overload
-#     def get(self, key: {{query.K}}, default: R = NoReturn) -> Union[{{query.V}}, R]:
-#         ...
-
-#     def get(self, key: {{query.K}}, default=NoReturn) -> Any:
-#         return actions.get(self, key, default)
-
-#     def get_or(self, key: {{query.K}}, default: R) -> Union[{{query.V}}, R]:
-#         return actions.get_or(self, key, default)
-
-#     def get_or_raise(self, key: {{query.K}}, exc: Union[str, Exception]) -> {{query.V}}:
-#         return actions.get_or_raise(self, key, exc)
-
-    {% endif %}
 {% endfor %}
 
 
