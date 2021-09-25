@@ -2,12 +2,9 @@ from jinja2 import Environment, FileSystemLoader
 
 
 class Info:
-    def __init__(
-        self, name, *typevars: str, is_index: bool = False, is_pair: bool = False
-    ):
-        self.name = name
+    def __init__(self, name, *typevars: str, is_pair: bool = False):
+        self.SELF__ = name
         self.typevars = typevars
-        self.is_index = is_index
         self.is_pair = is_pair
 
     def get_typevars(self):
@@ -22,16 +19,12 @@ class Info:
         typevars = self.get_typevars()
         if typevars:
             typevars = "(Generic" + typevars + ")"
-        return self.name + typevars
-
-    @property
-    def SELF__(self):
-        return self.name
+        return self.SELF__ + typevars
 
     @property
     def SELF_T(self):
         typevars = self.get_typevars()
-        return self.name + typevars
+        return self.SELF__ + typevars
 
     @property
     def T(self):
@@ -41,24 +34,6 @@ class Info:
             return "Tuple[" + ",".join(self.typevars) + "]"
         else:
             return "##### exception #####"
-
-    @property
-    def to_dict(self):
-        if len(self.typevars) == 1:
-            return "DictEx[Any,Any]"
-        elif len(self.typevars) == 2:
-            return f"DictEx[{self.typevars[0]},{self.typevars[1]}]"
-        else:
-            return "DictEx[Any,Any]"
-
-    @property
-    def to_list(self):
-        if len(self.typevars) == 1:
-            return f"ListEx[{self.typevars[0]}]"
-        elif len(self.typevars) == 2:
-            return f"ListEx[Tuple[{self.typevars[0]},{self.typevars[1]}]]"
-        else:
-            return "ListEx"
 
     @property
     def K(self):
@@ -73,13 +48,6 @@ class Info:
             return self.typevars[1]
         else:
             return "##### exception #####"
-
-    @property
-    def value(self):
-        if len(self.typevars) == 2:
-            return self.typevars[1]
-        else:
-            return self.typevars[0]
 
     @property
     def selector(self):
@@ -103,7 +71,6 @@ query.selector = "lambda k, v: (k, v)"
 
 Query = Info("Query", "T")
 PairQuery = Info("PairQuery", "K", "V", is_pair=True)
-# IndexQuery = Info("IndexQuery", "K", "V", is_index=True, is_pair=True)
 
 
 data = {
