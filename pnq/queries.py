@@ -348,11 +348,9 @@ class Query(Generic[T]):
         return queries.FilterUnique(self, selector=selector)
 
     def must(self, predicate: Callable[[T], bool], msg: str = "") -> "Query[T]":
-        """要素の検証に失敗した時例外を発生させる。"""
         return queries.Must(self, predicate, msg)
 
     def must_type(self, type, *types: Type) -> "Query[T]":
-        """要素の検証に失敗した時例外を発生させる。"""
         return queries.MustType(self, type, *types)
 
     def must_unique(self, selector: Callable[[T], R] = None):
@@ -730,11 +728,9 @@ class PairQuery(Generic[K, V]):
     def must(
         self, predicate: Callable[[Tuple[K, V]], bool], msg: str = ""
     ) -> "PairQuery[K,V]":
-        """要素の検証に失敗した時例外を発生させる。"""
         return queries.Must(self, predicate, msg)
 
     def must_type(self, type, *types: Type) -> "PairQuery[K,V]":
-        """要素の検証に失敗した時例外を発生させる。"""
         return queries.MustType(self, type, *types)
 
     def must_unique(self, selector: Callable[[T], R] = None):

@@ -350,11 +350,9 @@ class {{query.CLS}}:
         return queries.FilterUnique(self, selector=selector)
 
     def must(self, predicate: Callable[[{{query.T}}], bool], msg: str="") -> "{{query.SELF_T}}":
-        """要素の検証に失敗した時例外を発生させる。"""
         return queries.Must(self, predicate, msg)
 
     def must_type(self, type, *types: Type) -> "{{query.SELF_T}}":
-        """要素の検証に失敗した時例外を発生させる。"""
         return queries.MustType(self, type, *types)
 
     def must_unique(self, selector: Callable[[T], R] = None):
