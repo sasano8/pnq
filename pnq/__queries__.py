@@ -1,10 +1,7 @@
-# type: ignore
-
-from functools import wraps
-from operator import attrgetter, itemgetter
 from typing import (
     TYPE_CHECKING,
     Any,
+    AsyncIterable,
     AsyncIterator,
     Callable,
     Dict,
@@ -31,7 +28,7 @@ except:
     from typing_extensions import Literal
 
 from . import actions
-from .base import builder, core, queries
+from .base import builder, core, finalizers, queries
 from .base.exceptions import NoElementError, NotFoundError, NotOneElementError
 from .base.op import TH_ASSIGN_OP
 from .base.requests import Response
@@ -58,6 +55,13 @@ class {{query.CLS}}:
 
         def __aiter__(self) -> AsyncIterator[{{query.T}}]:
             ...
+
+    def as_aiter(self) -> "finalizers.AsyncFinalizer[{{query.T}}]":
+        return finalizers.AsyncFinalizer(self)
+
+    @property
+    def _(self) -> "finalizers.AsyncFinalizer[{{query.T}}]":
+        return finalizers.AsyncFinalizer(self)
 
     def len(self) -> int:
         return actions.len(self)
@@ -523,6 +527,13 @@ class QuerySet(Query[T], core.QuerySet[T]):
         else:
             return result
 
+if TYPE_CHECKING:
+    class QuerySeqPair(PairQuery[K, V], core.QuerySeq[Tuple[K, V]]):
+        pass
+
+    class QuerySetPair(PairQuery[K, V], core.QuerySeq[Tuple[K, V]]):
+        pass
+
 
 class QueryBuilder(builder.Builder):
     QUERY_BOTH = QueryBase
@@ -539,12 +550,27 @@ def query(source: Mapping[K, V]) -> QueryDict[K, V]:
 
 
 @overload
+def query(source: Set[Tuple[K, V]]) -> "QuerySetPair[K, V]":
+    ...
+
+@overload
 def query(source: Set[T]) -> QuerySet[T]:
     ...
 
+@overload
+def query(source: Iterable[Tuple[K, V]]) -> "QuerySeqPair[K, V]":
+    ...
 
 @overload
 def query(source: Iterable[T]) -> QuerySeq[T]:
+    ...
+
+@overload
+def query(source: AsyncIterable[Tuple[K, V]]) -> "QuerySeqPair[K, V]":
+    ...
+
+@overload
+def query(source: AsyncIterable[T]) -> QuerySeq[T]:
     ...
 
 

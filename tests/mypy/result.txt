@@ -1,8 +1,6 @@
-tests/mypy/__init__.py:31: error: Incompatible types in "yield" (actual type "QueryDict[<nothing>, <nothing>]", expected type "Query[Any]")  [misc]
-tests/mypy/__init__.py:51: error: Incompatible types in "yield" (actual type "QueryDict[str, int]", expected type "Query[Tuple[str, int]]")  [misc]
-tests/mypy/__init__.py:70: error: Incompatible types in "yield" (actual type "Iterable[int]", expected type "List[Any]")  [misc]
-tests/mypy/__init__.py:72: error: Incompatible types in "yield" (actual type "Iterable[int]", expected type "List[Any]")  [misc]
 tests/mypy/__init__.py:73: error: Incompatible types in "yield" (actual type "Iterable[int]", expected type "List[Any]")  [misc]
-tests/mypy/__init__.py:74: error: Incompatible types in "yield" (actual type "Iterable[int]", expected type "List[Any]")  [misc]
-tests/mypy/__init__.py:75: error: Incompatible types in "yield" (actual type "Iterable[Any]", expected type "List[Any]")  [misc]
-Found 7 errors in 1 file (checked 1 source file)
+tests/mypy/__init__.py:75: error: Incompatible types in "yield" (actual type "Iterable[int]", expected type "List[Any]")  [misc]
+tests/mypy/__init__.py:76: error: Incompatible types in "yield" (actual type "Iterable[int]", expected type "List[Any]")  [misc]
+tests/mypy/__init__.py:77: error: Incompatible types in "yield" (actual type "Iterable[int]", expected type "List[Any]")  [misc]
+tests/mypy/__init__.py:78: error: Incompatible types in "yield" (actual type "Iterable[int]", expected type "List[Any]")  [misc]
+Found 5 errors in 1 file (checked 1 source file)

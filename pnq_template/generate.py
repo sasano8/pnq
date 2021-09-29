@@ -2,9 +2,10 @@ from jinja2 import Environment, FileSystemLoader
 
 
 class Info:
-    def __init__(self, name, *typevars: str, is_pair: bool = False):
+    def __init__(self, name, *typevars: str, inherit: str = "", is_pair: bool = False):
         self.SELF__ = name
         self.typevars = typevars
+        self.inherit = inherit
         self.is_pair = is_pair
 
     def get_typevars(self):
@@ -17,9 +18,15 @@ class Info:
     @property
     def CLS(self):
         typevars = self.get_typevars()
+        mro = []
         if typevars:
-            typevars = "(Generic" + typevars + ")"
-        return self.SELF__ + typevars
+            generic = "Generic" + typevars
+            mro.append(generic)
+
+        if self.inherit:
+            mro.append(self.inherit)
+
+        return self.SELF__ + f"({','.join(mro)})"
 
     @property
     def SELF_T(self):
@@ -70,7 +77,7 @@ query.selector = "lambda k, v: (k, v)"
 
 
 Query = Info("Query", "T")
-PairQuery = Info("PairQuery", "K", "V", is_pair=True)
+PairQuery = Info("PairQuery", "K", "V", inherit="Query[Tuple[K, V]]", is_pair=True)
 
 
 data = {

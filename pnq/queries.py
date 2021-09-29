@@ -1,10 +1,7 @@
-# type: ignore
-
-from functools import wraps
-from operator import attrgetter, itemgetter
 from typing import (
     TYPE_CHECKING,
     Any,
+    AsyncIterable,
     AsyncIterator,
     Callable,
     Dict,
@@ -31,7 +28,7 @@ except:
     from typing_extensions import Literal
 
 from . import actions
-from .base import builder, core, queries
+from .base import builder, core, finalizers, queries
 from .base.exceptions import NoElementError, NotFoundError, NotOneElementError
 from .base.op import TH_ASSIGN_OP
 from .base.requests import Response
@@ -55,6 +52,13 @@ class Query(Generic[T]):
 
         def __aiter__(self) -> AsyncIterator[T]:
             ...
+
+    def as_aiter(self) -> "finalizers.AsyncFinalizer[T]":
+        return finalizers.AsyncFinalizer(self)
+
+    @property
+    def _(self) -> "finalizers.AsyncFinalizer[T]":
+        return finalizers.AsyncFinalizer(self)
 
     def len(self) -> int:
         return actions.len(self)
@@ -393,7 +397,7 @@ class Query(Generic[T]):
         return queries.Cartesian(self, *iterables)
 
 
-class PairQuery(Generic[K, V]):
+class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
     if TYPE_CHECKING:
 
         def __iter__(self) -> Iterator[Tuple[K, V]]:
@@ -401,6 +405,13 @@ class PairQuery(Generic[K, V]):
 
         def __aiter__(self) -> AsyncIterator[Tuple[K, V]]:
             ...
+
+    def as_aiter(self) -> "finalizers.AsyncFinalizer[Tuple[K,V]]":
+        return finalizers.AsyncFinalizer(self)
+
+    @property
+    def _(self) -> "finalizers.AsyncFinalizer[Tuple[K,V]]":
+        return finalizers.AsyncFinalizer(self)
 
     def len(self) -> int:
         return actions.len(self)
@@ -902,6 +913,15 @@ class QuerySet(Query[T], core.QuerySet[T]):
             return result
 
 
+if TYPE_CHECKING:
+
+    class QuerySeqPair(PairQuery[K, V], core.QuerySeq[Tuple[K, V]]):
+        pass
+
+    class QuerySetPair(PairQuery[K, V], core.QuerySeq[Tuple[K, V]]):
+        pass
+
+
 class QueryBuilder(builder.Builder):
     QUERY_BOTH = QueryBase
     QUERY_ASYNC = QueryAsync
@@ -917,12 +937,32 @@ def query(source: Mapping[K, V]) -> QueryDict[K, V]:
 
 
 @overload
+def query(source: Set[Tuple[K, V]]) -> "QuerySetPair[K, V]":
+    ...
+
+
+@overload
 def query(source: Set[T]) -> QuerySet[T]:
     ...
 
 
 @overload
+def query(source: Iterable[Tuple[K, V]]) -> "QuerySeqPair[K, V]":
+    ...
+
+
+@overload
 def query(source: Iterable[T]) -> QuerySeq[T]:
+    ...
+
+
+@overload
+def query(source: AsyncIterable[Tuple[K, V]]) -> "QuerySeqPair[K, V]":
+    ...
+
+
+@overload
+def query(source: AsyncIterable[T]) -> QuerySeq[T]:
     ...
 
 
