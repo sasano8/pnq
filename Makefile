@@ -12,7 +12,10 @@ format-isort:
 test:
 	@echo [pytest] && poetry run pytest -sv -m "not slow" -x # x -１つエラーが発生したら中断する
 
-test-full:
+test-mypy:
+	@poetry run mypy tests/mypy > tests/mypy/result.txt
+
+test-full: test-mypy
 	@echo [pytest] && poetry run pytest . -sv
 
 doc-build:

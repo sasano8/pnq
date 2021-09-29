@@ -89,7 +89,7 @@ async def main():
     async for x in pnq.query(async_iterate()).map(lambda x: x * 2):
         print(x)
 
-import asyncio.run(main())
+asyncio.run(main())
 # => 2 4 6
 ```
 
