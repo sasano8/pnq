@@ -6,6 +6,7 @@ from typing import (
     Callable,
     Dict,
     FrozenSet,
+    Generator,
     Generic,
     Iterable,
     Iterator,
@@ -62,6 +63,28 @@ class {{query.CLS}}:
     @property
     def _(self) -> "finalizers.AsyncFinalizer[{{query.T}}]":
         return finalizers.AsyncFinalizer(self)
+
+    async def _call(self):
+        return await PnqList.from_aiter(self)
+        # return QuerySeq([x async for x in self])
+
+    {% if query.is_pair %}
+
+    def save(self) -> "PnqListPair[{{query.K}}, {{query.V}}]":
+        return PnqList(self)
+
+    def __await__(self) -> Generator[Any, Any, "PnqListPair[{{query.K}}, {{query.V}}]"]:
+        return self._call().__await__()
+
+    {% else %}
+
+    def save(self) -> "PnqList[{{query.T}}]":
+        return PnqList(self)
+
+    def __await__(self) -> Generator[Any, Any, "PnqList[{{query.T}}]"]:
+        return self._call().__await__()
+
+    {% endif %}
 
     def len(self) -> int:
         return actions.len(self)
@@ -468,7 +491,49 @@ class QuerySeq(Query[T], core.QuerySeq[T]):
     def filter_keys(self, *keys) -> "Query[T]":
         return queries.FilterKeys(self, *keys)
 
-    # @no_type_check
+    def must_keys(self, *keys) -> "Query[T]":
+        return queries.MustKeys(self, *keys, typ="seq")
+
+    def get(self, key) -> T:
+        try:
+            return self.source[key]
+        except IndexError:
+            raise NotFoundError(key)
+
+    def get_or(self, key, default: R = None) -> Union[T, R]:
+        try:
+            return self.get(key)
+        except NotFoundError:
+            return default
+
+    def get_or_raise(self, key, exc: Union[str, Exception]) -> T:
+        undefined = object()
+        result = self.get_or(key, undefined)
+        if result is undefined:
+            if isinstance(exc, str):
+                raise Exception(exc)
+            else:
+                raise exc
+        else:
+            return result
+
+
+class PnqList(Query[T], List[T]):
+    @property
+    def source(self):
+        return self
+
+    @classmethod
+    async def from_aiter(cls, aiter: AsyncIterable[T]) -> "PnqList[T]":
+        result = cls()
+        async for x in aiter:
+            result.append(x)
+
+        return result
+
+    def filter_keys(self, *keys) -> "Query[T]":
+        return queries.FilterKeys(self, *keys)
+
     def must_keys(self, *keys) -> "Query[T]":
         return queries.MustKeys(self, *keys, typ="seq")
 
@@ -500,7 +565,6 @@ class QuerySet(Query[T], core.QuerySet[T]):
     def filter_keys(self, *keys) -> "Query[T]":
         return queries.FilterKeys(self, *keys)
 
-    # @no_type_check
     def must_keys(self, *keys) -> "Query[T]":
         return queries.MustKeys(self, *keys, typ="set")
 
@@ -529,10 +593,14 @@ class QuerySet(Query[T], core.QuerySet[T]):
 
 if TYPE_CHECKING:
     class QuerySeqPair(PairQuery[K, V], core.QuerySeq[Tuple[K, V]]):
-        pass
+        ...
 
     class QuerySetPair(PairQuery[K, V], core.QuerySeq[Tuple[K, V]]):
-        pass
+        ...
+
+    class PnqListPair(PairQuery[K, V], PnqList[Tuple[K, V]]):
+        def __init__(self, source: Iterable[Tuple[K, V]]):
+            ...
 
 
 class QueryBuilder(builder.Builder):

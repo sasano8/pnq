@@ -131,6 +131,35 @@ class Test000_Init:
         with pytest.raises(TypeError, match="object is not subscriptable"):
             pnq(src)[0]
 
+    def test_save(self):
+        from pnq import list as plist
+
+        assert pnq([]).save() == []
+        assert isinstance(pnq([]).save(), plist)
+        assert pnq([1, 2, 3]).save() == [1, 2, 3]
+        assert pnq((1, 2, 3)).save() == [1, 2, 3]
+        assert pnq(tuple([1, 2, 3])).save() == [1, 2, 3]
+        assert pnq({"a": 1}).save() == [("a", 1)]
+        result = pnq({1, 2, 3}).save()
+        assert len(result) == 3
+        assert 1 in result
+        assert 2 in result
+        assert 3 in result
+
+        async def aiter():
+            yield 1
+            yield 2
+            yield 3
+
+        async def main():
+            result = await pnq(aiter())
+            assert result == [1, 2, 3]
+            assert isinstance(result, plist)
+
+        import asyncio
+
+        asyncio.run(main())
+
 
 class Test009_Sleep:
     def test_sync(self):

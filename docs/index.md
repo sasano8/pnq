@@ -23,6 +23,13 @@ PNQ is a Python implementation like Language Integrated Query (LINQ).
 - 型ヒントの活用
 - 非同期ストリームに対応
 
+## Similar tools
+
+- [PyFunctional](https://github.com/EntilZha/PyFunctional)
+- [linqit](https://github.com/avilum/linqit)
+- [aioitertools](https://github.com/omnilib/aioitertools)
+- [asyncstdlib](https://github.com/maxfischer2781/asyncstdlib)
+
 ## Documentation
 
 - See [documentation](https://sasano8.github.io/pnq/) for more details.
@@ -41,13 +48,39 @@ $ pip install pnq
 
 ## Getting Started
 
-```python
+``` python
 import pnq
 
-pnq.query([1]).map(lambda x: x * 2).to(list)
-# >> [2]
+for x in pnq.query([1, 2, 3]).map(lambda x: x * 2)
+    print(x)
+# => 2, 4, 6
 
-pnq.query({"a": 1, "b": 2}).filter(lambda x: x[0] == "a").to(list)
-# >> [("a", 1)]
+pnq.query([1, 2, 3]).map(lambda x: x * 2).save()
+# => [2, 4, 6]
 
+pnq.query([1]).map(lambda x: x * 2).one()
+# => 2
+```
+
+``` python
+import asyncio
+import pnq
+
+async def aiter():
+    yield 1
+    yield 2
+    yield 3
+
+async def main():
+    async for x in pnq.query(aiter()).map(lambda x: x * 2):
+        print(x)
+    # => 2, 4, 6
+
+    await pnq.query(aiter()).map(lambda x: x * 2)
+    # => [2, 4, 6]
+
+    await pnq.query(aiter()).filter(lambda x: x == 3)._.one()
+    # => 3
+
+asyncio.run(main())
 ```

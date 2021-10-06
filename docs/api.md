@@ -131,6 +131,9 @@
 ::: pnq.actions.zip
     :docstring:
 
+::: pnq.actions.compress
+    :docstring:
+
 ## Finalizing - Executing
 
 ::: pnq.actions.to

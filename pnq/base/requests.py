@@ -1,6 +1,11 @@
 import traceback
 from datetime import datetime, timezone
+from json import dumps as _dumps
 from typing import Any, Dict, NamedTuple, Tuple, Union
+
+
+def dumps(obj: Any) -> str:
+    return _dumps(obj, ensure_ascii=False)
 
 
 class CancelToken:
@@ -47,20 +52,26 @@ class Response(NamedTuple):
         """jsonに近いように辞書化します。kwargsとresultは解析されません。"""
         st = None
         err = None
+        msg = None
         if self.err:
-            err = str(self.err)
+            err = self.err.__class__.__name__
+            msg = str(self.err)
             if stack_trace:
                 st = self.stack_trace
 
         return {
             "func": self.func.__name__,
             "kwargs": self.kwargs,
-            "err": err,
             "result": self.result,
             "start": self.start.isoformat(),
             "end": self.end.isoformat(),
+            "err": err,
+            "msg": msg,
             "stack_trace": st,
         }
+
+    def to_json(self, serializer=dumps):
+        return serializer(self.to_dict())
 
 
 class StopWatch:

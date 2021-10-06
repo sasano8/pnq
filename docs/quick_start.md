@@ -6,152 +6,201 @@
 $ pip install pnq
 ```
 
-## 動作確認
+## クエリを組み立てる
 
-次のスクリプトを実行し、動作確認します。
+`pnq.query`を介して、データソースを加工するパイプラインメソッドをチェインできます。
+組み立てたクエリは、`save`を実行することでリストとして実体化できます。
 
-```python
+``` python
+import pnq
+
+pnq.query([1, 2]).map(lambda x: x * 2).filter(lambda x: x > 2).save()
+# => [4]
+```
+
+`save`で返されるリストは、リストを継承した独自拡張クラス（`pnq.list`）で、引き続きパイプラインメソッドをチェインできます。
+
+``` python
+import pnq
+
+saved = pnq.query([1]).map(lambda x: x * 2).save()
+saved.map(lambda x: x * 2).save()
+# => [4]
+```
+
+`pnq.list`はリストと完全な互換性がありますが、可能な限り副作用を避ける場合は、`to(list)`または単に`list`で組込みのリストにできます。
+
+``` python
 import pnq
 
 pnq.query([1]).map(lambda x: x * 2).to(list)
-# >> [2]
+# => [2]
 
-pnq.query({"a": 1, "b": 2}).filter(lambda x: x[0] == "a").to(list)
-# >> [("a", 1)]
+list(pnq.query([1]).map(lambda x: x * 2))
+# => [2]
 ```
 
-## クエリオブジェクト
-
-`pnq.query`は、イテラブルなオブジェクトを受け取ると、さまざまなクエリ操作が可能なクエリオブジェクトを返します。
-クエリオブジェクトを扱う上で、まず簡単に特性を理解しましょう。
-
-### 1. クエリオブジェクトはイテラブルなプロトコルのみ公開します
-
-クエリオブジェクトはリストまたは辞書のように扱うことはできず、`__iter__`もしくは`__aiter__`とコレクション操作に関するクエリメソッドのみ提供するイテラブルなオブジェクトであることを主張します。
-例えば、添字アクセスは不可能になります。
+データソースが辞書の場合は、キーバリューペアが列挙されることに注意してください。
 
 ``` python
-data = pnq.query({"a": 1, "b": 2})
-print(data["a"])
-# =>  'Query' object is not subscriptable
+import pnq
+
+pnq.query({"a": 1, "b": 2, "c": 3}).filter(lambda x: x[1] > 1).save()
+# => [("b", 2), ("c", 3)]
 ```
 
-辞書やリストをクエリ化した直後であれば、代わりに`get`を使用することができます。
+リストでなく辞書として実体化したい場合は、`save`の代わりに`to(dict)`または単に`dict`を使用してください。
 
 ``` python
-data = pnq.query({"a": 1, "b": 2})
-print(data.get("a"))
-# => 1
+import pnq
+
+pnq.query({"a": 1, "b": 2, "c": 3}).filter(lambda x: x[1] > 1).to(dict)
+# => {"b": 2, "c": 3}
+
+dict(pnq.query({"a": 1, "b": 2, "c": 3}).filter(lambda x: x[1] > 1))
+# => {"b": 2, "c": 3}
 ```
 
-### 2. 辞書はキーバリューペア（タプル）を返します
+なお、`to`はイテラブルを引数とする任意の関数を渡すことができます。
 
-Pythonでは辞書をイテレートするとキーのみを返しますが、
-`pnq.query`で辞書をラップするとキーバリューペアをイテレートするようになります。
+## 非同期イテレータを扱う
 
-``` python
-list({"a": 1, "b": 2})
-# =>  ["a", "b"]
-
-list(pnq.query({"a": 1, "b": 2}))
-# =>  [("a", 1), ("b", 2)]
-```
-
-キーバリューペアを要素とするイテラブルは`dict`関数で辞書化できるため、いつでも辞書に戻すことができます。
-
-``` python
-dict([("a", 1), ("b", 2)])
-# => {"a": 1, "b": 2}
-```
-
-キーバリューペアは添字でキーと値にアクセスできます。
-
-``` python
-dict(pnq.query({"a": 1, "b": 2}).map(lambda x: (x[0], x[1] * 2)))
-# =>  {"a": 2, "b": 4}
-```
-
-
-### 3. 非同期イテレータのサポート
-
-クエリオブジェクトは`__aiter__`をサポートしているので、`async_for`でも同じようにクエリメソッドを使用できます。
-ただし、一部メソッドは非同期未対応です。
+`pnq.query`は非同期イテレータも取り扱うことができます。
+ただし、非同期イテレータを実体化するには`save`の代わりに`await`を使用します。
 
 ``` python
 import asyncio
+import pnq
+
+async def aiter():
+    yield 1
+    yield 2
+    yield 3
 
 async def main():
-    async def async_iterate():
-        yield 1
-        yield 2
-        yield 3
-
-    async for x in pnq.query(async_iterate()).map(lambda x: x * 2):
-        print(x)
+    return await pnq.query(aiter()).map(lambda x: x * 2)
 
 asyncio.run(main())
-# => 2 4 6
+# >> [2, 4, 6]
 ```
 
-### 4. 遅延評価・キャッシュ
-
-クエリオブジェクトは、評価が必要となるまでイテレーションを保留します。
-次の例を見てみます。
+クエリは`for`文でも使用できます。
 
 ``` python
-def add_one(x):
-    print(x)
-    return x + 1
+import asyncio
+import pnq
 
+async def aiter():
+    yield 4
+    yield 5
+    yield 6
 
-q = pnq.query([1]).map(add_one)
+async def main():
+    for x in pnq.query([1, 2, 3]).map(lambda x: x * 2):
+        print(x)
+    # => 2, 4, 6
 
-result = q.to(list)
-# => 1
+    async for x in pnq.query(aiter()).map(lambda x: x * 2):
+        print(x)
+    # => 8, 10, 12
+
+asyncio.run(main())
 ```
 
-`add_one`に定義された`print`の結果は`to(list)`のタイミングで表示され、
-`map(add_one)`を定義した時点では実行されないことが分かります。
+## クエリを実行する
 
-次の例も見てみます。
+`pnq.query`は可能な限り評価を保留（遅延評価）します。
+クエリは、評価を要求されたとき実際に実行されます。
+
+すでにいくつか評価方法（`for`文、`save`、`to`）を紹介していますが、ほかにもいくつか評価メソッドを紹介します。
 
 ``` python
-def add_one(x):
-    print(x)
-    return x + 1
+import pnq
 
-q = pnq.query([1]).map(add_one)
+# for x in ...: func(x)のショートカットとして使用できます
+pnq.query([1, 2, 3]).map(lambda x: x * 2).each(print)
+# => 2, 4, 6
 
-for x in q:
-    ...
-# => 1
-
-for x in q:
-    ...
-# => 1
+# 要素の合計を求めます
+pnq.query([1, 2, 3]).map(lambda x: x * 2).sum()
+# => 12
 ```
 
-2回の`for`のタイミングで`print`が実行されています。
-
-ここで、2回`print`が実行されるべきか検討が必要です。
-2回実行されるということは多くの処理が走っていることになります。
-
-何度も同じ結果を使い回す意図があるなら、`to(list)`等で評価を確定させて結果をキャッシュするべきです。
+非同期イテレータをデータソースとする場合は、`_`で明示的に非同期イテレータを評価すると伝え、`await`する必要があります。
 
 ``` python
-def add_one(x):
-    print(x)
-    return x + 1
+import asyncio
+import pnq
 
-result = pnq.query([1]).map(add_one).to(list)
-# => 1
+async def aiter():
+    yield 1
+    yield 2
+    yield 3
 
-for x in result:
-    ...
+async def main():
+    await pnq.query(aiter()).map(lambda x: x * 2)._.each(print)
+    # => 2, 4, 6
+
+    await pnq.query(aiter()).map(lambda x: x * 2)._.sum()
+    # => 12
+
+asyncio.run(main())
 ```
 
-## はじめよう
+## バッチ処理に活用する
 
-これで自由にクエリオブジェクトを扱えるようになったはずです。
+`request`メソッドは、簡易的なバッチ処理に活用できます。
+`request`メソッドはシーケンスの要素を任意の関数に送出し、実行結果（`pnq.Response`）を返します。
+
+処理中に例外が発生した場合、例外情報が`err` `msg` `stack_trace`属性にエラー情報が格納されます。
+
+``` python
+import datetime
+import logging
+import pnq
+
+log_name = "log_" + datetime.datetime.utcnow().isoformat() + ".jsonl.log"
+log = logging.FileHandler(filename=log_name)
+
+logger = logging.getLogger()
+logger.addHandler(log)
+
+
+params = pnq.query([{"val": 0}, {"val": 1}])
+
+# パラメータを関数に渡します
+# パラメータはキーワード引数としてアンパックされるため、パラメータは辞書互換オブジェクトである必要があります
+@params.request
+def do_something(val):
+    if not (val > 0):
+        raise ValueError(f"val must be 1 or greater. But got {val}")
+    else:
+        return "success"
+
+
+# 処理が失敗した場合、実行情報をjsonl（１行１Json）形式で出力します
+@do_something.each
+def dump_if_error(x: pnq.Response):
+    # エラーだった場合、ログに出力します
+    if x.err:
+        # レスポンスををjsonにシリアライズします
+        # シリアライザはデフォルトで`json.dumps`(ensure_ascii=False)が使用されます
+        logger.error(x.to_json())
+
+
+# 全ての処理が成功した場合は`0`、いずれかが失敗した場合は`1`を返します
+exit(pnq.from_jsonl(log_name).exists())
+```
+
+エラーログは、次のような出力になります。
+
+``` bash
+cat `ls *.jsonl.log`
+# {"func": "do_something", "kwargs": {"val": 0}, "err": "ValueError", "msg": "val must be 1 or greater: 0", "result": None, ...}
+```
+
+## もっと知りたい
+
+これであなたはクエリを自由に扱えるようになったはずです。
 
 次章の参考例からお気に入りの機能を見つけましょう。

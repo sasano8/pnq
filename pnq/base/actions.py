@@ -908,6 +908,13 @@ def __zip(self, *iterables):
     raise NotImplementedError()
 
 
+def compress(self, *iterables):
+    """未実装"""
+    import itertools
+
+    return itertools.compress(self, *iterables)
+
+
 @mark
 def cartesian(self, *iterables):
     """複数のシーケンスのデカルト積を返します。

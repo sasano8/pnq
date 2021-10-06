@@ -51,6 +51,7 @@ from .base.actions import __min as min
 from .base.actions import __range as range
 from .base.actions import __sum as sum
 from .base.actions import __zip as zip
+from .base.actions import compress as compress
 from .base.actions import average as average
 from .base.actions import cast as cast
 from .base.actions import concat as concat
