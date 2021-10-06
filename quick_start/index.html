@@ -266,55 +266,35 @@
       
         <li class="md-nav__item">
   <a href="#_2" class="md-nav__link">
-    動作確認
+    クエリを組み立てる
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#_3" class="md-nav__link">
-    クエリオブジェクト
+    非同期イテレータを扱う
   </a>
-  
-    <nav class="md-nav" aria-label="クエリオブジェクト">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#1" class="md-nav__link">
-    1. クエリオブジェクトはイテラブルなプロトコルのみ公開します
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2" class="md-nav__link">
-    2. 辞書はキーバリューペア（タプル）を返します
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#3" class="md-nav__link">
-    3. 非同期イテレータのサポート
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#4" class="md-nav__link">
-    4. 遅延評価・キャッシュ
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#_4" class="md-nav__link">
-    はじめよう
+    クエリを実行する
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    バッチ処理に活用する
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    もっと知りたい
   </a>
   
 </li>
@@ -434,55 +414,35 @@
       
         <li class="md-nav__item">
   <a href="#_2" class="md-nav__link">
-    動作確認
+    クエリを組み立てる
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#_3" class="md-nav__link">
-    クエリオブジェクト
+    非同期イテレータを扱う
   </a>
-  
-    <nav class="md-nav" aria-label="クエリオブジェクト">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#1" class="md-nav__link">
-    1. クエリオブジェクトはイテラブルなプロトコルのみ公開します
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2" class="md-nav__link">
-    2. 辞書はキーバリューペア（タプル）を返します
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#3" class="md-nav__link">
-    3. 非同期イテレータのサポート
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#4" class="md-nav__link">
-    4. 遅延評価・キャッシュ
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#_4" class="md-nav__link">
-    はじめよう
+    クエリを実行する
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    バッチ処理に活用する
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    もっと知りたい
   </a>
   
 </li>
@@ -506,111 +466,161 @@
 <p>まず、<code>pnq</code>をインストールします。</p>
 <div class="highlight"><pre><span></span><code>$ pip install pnq
 </code></pre></div>
-<h2 id="_2">動作確認</h2>
-<p>次のスクリプトを実行し、動作確認します。</p>
+<h2 id="_2">クエリを組み立てる</h2>
+<p><code>pnq.query</code>を介して、データソースを加工するパイプラインメソッドをチェインできます。
+組み立てたクエリは、<code>save</code>を実行することでリストとして実体化できます。</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">pnq</span>
+
+<span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+<span class="c1"># =&gt; [4]</span>
+</code></pre></div>
+<p><code>save</code>で返されるリストは、リストを継承した独自拡張クラス（<code>pnq.list</code>）で、引き続きパイプラインメソッドをチェインできます。</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">pnq</span>
+
+<span class="n">saved</span> <span class="o">=</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+<span class="n">saved</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+<span class="c1"># =&gt; [4]</span>
+</code></pre></div>
+<p><code>pnq.list</code>はリストと完全な互換性がありますが、可能な限り副作用を避ける場合は、<code>to(list)</code>または単に<code>list</code>で組込みのリストにできます。</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">pnq</span>
 
 <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
-<span class="c1"># &gt;&gt; [2]</span>
+<span class="c1"># =&gt; [2]</span>
 
-<span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">})</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;a&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
-<span class="c1"># &gt;&gt; [(&quot;a&quot;, 1)]</span>
+<span class="nb">list</span><span class="p">(</span><span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">))</span>
+<span class="c1"># =&gt; [2]</span>
 </code></pre></div>
-<h2 id="_3">クエリオブジェクト</h2>
-<p><code>pnq.query</code>は、イテラブルなオブジェクトを受け取ると、さまざまなクエリ操作が可能なクエリオブジェクトを返します。
-クエリオブジェクトを扱う上で、まず簡単に特性を理解しましょう。</p>
-<h3 id="1">1. クエリオブジェクトはイテラブルなプロトコルのみ公開します</h3>
-<p>クエリオブジェクトはリストまたは辞書のように扱うことはできず、<code>__iter__</code>もしくは<code>__aiter__</code>とコレクション操作に関するクエリメソッドのみ提供するイテラブルなオブジェクトであることを主張します。
-例えば、添字アクセスは不可能になります。</p>
-<div class="highlight"><pre><span></span><code><span class="n">data</span> <span class="o">=</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">})</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">])</span>
-<span class="c1"># =&gt;  &#39;Query&#39; object is not subscriptable</span>
-</code></pre></div>
-<p>辞書やリストをクエリ化した直後であれば、代わりに<code>get</code>を使用することができます。</p>
-<div class="highlight"><pre><span></span><code><span class="n">data</span> <span class="o">=</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">})</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">))</span>
-<span class="c1"># =&gt; 1</span>
-</code></pre></div>
-<h3 id="2">2. 辞書はキーバリューペア（タプル）を返します</h3>
-<p>Pythonでは辞書をイテレートするとキーのみを返しますが、
-<code>pnq.query</code>で辞書をラップするとキーバリューペアをイテレートするようになります。</p>
-<div class="highlight"><pre><span></span><code><span class="nb">list</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">})</span>
-<span class="c1"># =&gt;  [&quot;a&quot;, &quot;b&quot;]</span>
+<p>データソースが辞書の場合は、キーバリューペアが列挙されることに注意してください。</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">pnq</span>
 
-<span class="nb">list</span><span class="p">(</span><span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}))</span>
-<span class="c1"># =&gt;  [(&quot;a&quot;, 1), (&quot;b&quot;, 2)]</span>
+<span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">})</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+<span class="c1"># =&gt; [(&quot;b&quot;, 2), (&quot;c&quot;, 3)]</span>
 </code></pre></div>
-<p>キーバリューペアを要素とするイテラブルは<code>dict</code>関数で辞書化できるため、いつでも辞書に戻すことができます。</p>
-<div class="highlight"><pre><span></span><code><span class="nb">dict</span><span class="p">([(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)])</span>
-<span class="c1"># =&gt; {&quot;a&quot;: 1, &quot;b&quot;: 2}</span>
+<p>リストでなく辞書として実体化したい場合は、<code>save</code>の代わりに<code>to(dict)</code>または単に<code>dict</code>を使用してください。</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">pnq</span>
+
+<span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">})</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+<span class="c1"># =&gt; {&quot;b&quot;: 2, &quot;c&quot;: 3}</span>
+
+<span class="nb">dict</span><span class="p">(</span><span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">})</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">))</span>
+<span class="c1"># =&gt; {&quot;b&quot;: 2, &quot;c&quot;: 3}</span>
 </code></pre></div>
-<p>キーバリューペアは添字でキーと値にアクセスできます。</p>
-<div class="highlight"><pre><span></span><code><span class="nb">dict</span><span class="p">(</span><span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">})</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)))</span>
-<span class="c1"># =&gt;  {&quot;a&quot;: 2, &quot;b&quot;: 4}</span>
-</code></pre></div>
-<h3 id="3">3. 非同期イテレータのサポート</h3>
-<p>クエリオブジェクトは<code>__aiter__</code>をサポートしているので、<code>async_for</code>でも同じようにクエリメソッドを使用できます。
-ただし、一部メソッドは非同期未対応です。</p>
+<p>なお、<code>to</code>はイテラブルを引数とする任意の関数を渡すことができます。</p>
+<h2 id="_3">非同期イテレータを扱う</h2>
+<p><code>pnq.query</code>は非同期イテレータも取り扱うことができます。
+ただし、非同期イテレータを実体化するには<code>save</code>の代わりに<code>await</code>を使用します。</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">import</span> <span class="nn">pnq</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">aiter</span><span class="p">():</span>
+    <span class="k">yield</span> <span class="mi">1</span>
+    <span class="k">yield</span> <span class="mi">2</span>
+    <span class="k">yield</span> <span class="mi">3</span>
 
 <span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
-    <span class="k">async</span> <span class="k">def</span> <span class="nf">async_iterate</span><span class="p">():</span>
-        <span class="k">yield</span> <span class="mi">1</span>
-        <span class="k">yield</span> <span class="mi">2</span>
-        <span class="k">yield</span> <span class="mi">3</span>
+    <span class="k">return</span> <span class="k">await</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">aiter</span><span class="p">())</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
 
-    <span class="k">async</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">async_iterate</span><span class="p">())</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">):</span>
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+<span class="c1"># &gt;&gt; [2, 4, 6]</span>
+</code></pre></div>
+<p>クエリは<code>for</code>文でも使用できます。</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">import</span> <span class="nn">pnq</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">aiter</span><span class="p">():</span>
+    <span class="k">yield</span> <span class="mi">4</span>
+    <span class="k">yield</span> <span class="mi">5</span>
+    <span class="k">yield</span> <span class="mi">6</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">):</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="c1"># =&gt; 2, 4, 6</span>
 
-<span class="kn">import</span> <span class="nn">asyncio.run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
-<span class="c1"># =&gt; 2 4 6</span>
+    <span class="k">async</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">aiter</span><span class="p">())</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="c1"># =&gt; 8, 10, 12</span>
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
 </code></pre></div>
-<h3 id="4">4. 遅延評価・キャッシュ</h3>
-<p>クエリオブジェクトは、評価が必要となるまでイテレーションを保留します。
-次の例を見てみます。</p>
-<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">add_one</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">1</span>
+<h2 id="_4">クエリを実行する</h2>
+<p><code>pnq.query</code>は可能な限り評価を保留（遅延評価）します。
+クエリは、評価を要求されたとき実際に実行されます。</p>
+<p>すでにいくつか評価方法（<code>for</code>文、<code>save</code>、<code>to</code>）を紹介していますが、ほかにもいくつか評価メソッドを紹介します。</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">pnq</span>
 
+<span class="c1"># for x in ...: func(x)のショートカットとして使用できます</span>
+<span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">each</span><span class="p">(</span><span class="nb">print</span><span class="p">)</span>
+<span class="c1"># =&gt; 2, 4, 6</span>
 
-<span class="n">q</span> <span class="o">=</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">add_one</span><span class="p">)</span>
-
-<span class="n">result</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
-<span class="c1"># =&gt; 1</span>
+<span class="c1"># 要素の合計を求めます</span>
+<span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+<span class="c1"># =&gt; 12</span>
 </code></pre></div>
-<p><code>add_one</code>に定義された<code>print</code>の結果は<code>to(list)</code>のタイミングで表示され、
-<code>map(add_one)</code>を定義した時点では実行されないことが分かります。</p>
-<p>次の例も見てみます。</p>
-<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">add_one</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">1</span>
+<p>非同期イテレータをデータソースとする場合は、<code>_</code>で明示的に非同期イテレータを評価すると伝え、<code>await</code>する必要があります。</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">import</span> <span class="nn">pnq</span>
 
-<span class="n">q</span> <span class="o">=</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">add_one</span><span class="p">)</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">aiter</span><span class="p">():</span>
+    <span class="k">yield</span> <span class="mi">1</span>
+    <span class="k">yield</span> <span class="mi">2</span>
+    <span class="k">yield</span> <span class="mi">3</span>
 
-<span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">q</span><span class="p">:</span>
-    <span class="o">...</span>
-<span class="c1"># =&gt; 1</span>
+<span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="k">await</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">aiter</span><span class="p">())</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">_</span><span class="o">.</span><span class="n">each</span><span class="p">(</span><span class="nb">print</span><span class="p">)</span>
+    <span class="c1"># =&gt; 2, 4, 6</span>
 
-<span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">q</span><span class="p">:</span>
-    <span class="o">...</span>
-<span class="c1"># =&gt; 1</span>
+    <span class="k">await</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">aiter</span><span class="p">())</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">_</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="c1"># =&gt; 12</span>
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
 </code></pre></div>
-<p>2回の<code>for</code>のタイミングで<code>print</code>が実行されています。</p>
-<p>ここで、2回<code>print</code>が実行されるべきか検討が必要です。
-2回実行されるということは多くの処理が走っていることになります。</p>
-<p>何度も同じ結果を使い回す意図があるなら、<code>to(list)</code>等で評価を確定させて結果をキャッシュするべきです。</p>
-<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">add_one</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">1</span>
+<h2 id="_5">バッチ処理に活用する</h2>
+<p><code>request</code>メソッドは、簡易的なバッチ処理に活用できます。
+<code>request</code>メソッドはシーケンスの要素を任意の関数に送出し、実行結果（<code>pnq.Response</code>）を返します。</p>
+<p>処理中に例外が発生した場合、例外情報が<code>err</code> <code>msg</code> <code>stack_trace</code>属性にエラー情報が格納されます。</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">pnq</span>
 
-<span class="n">result</span> <span class="o">=</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">add_one</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
-<span class="c1"># =&gt; 1</span>
+<span class="n">log_name</span> <span class="o">=</span> <span class="s2">&quot;log_&quot;</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">()</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;.jsonl.log&quot;</span>
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">log_name</span><span class="p">)</span>
 
-<span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
-    <span class="o">...</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">log</span><span class="p">)</span>
+
+
+<span class="n">params</span> <span class="o">=</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([{</span><span class="s2">&quot;val&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span> <span class="p">{</span><span class="s2">&quot;val&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}])</span>
+
+<span class="c1"># パラメータを関数に渡します</span>
+<span class="c1"># パラメータはキーワード引数としてアンパックされるため、パラメータは辞書互換オブジェクトである必要があります</span>
+<span class="nd">@params</span><span class="o">.</span><span class="n">request</span>
+<span class="k">def</span> <span class="nf">do_something</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">val</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;val must be 1 or greater. But got </span><span class="si">{</span><span class="n">val</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;success&quot;</span>
+
+
+<span class="c1"># 処理が失敗した場合、実行情報をjsonl（１行１Json）形式で出力します</span>
+<span class="nd">@do_something</span><span class="o">.</span><span class="n">each</span>
+<span class="k">def</span> <span class="nf">dump_if_error</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">pnq</span><span class="o">.</span><span class="n">Response</span><span class="p">):</span>
+    <span class="c1"># エラーだった場合、ログに出力します</span>
+    <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">err</span><span class="p">:</span>
+        <span class="c1"># レスポンスををjsonにシリアライズします</span>
+        <span class="c1"># シリアライザはデフォルトで`json.dumps`(ensure_ascii=False)が使用されます</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">to_json</span><span class="p">())</span>
+
+
+<span class="c1"># 全ての処理が成功した場合は`0`、いずれかが失敗した場合は`1`を返します</span>
+<span class="n">exit</span><span class="p">(</span><span class="n">pnq</span><span class="o">.</span><span class="n">from_jsonl</span><span class="p">(</span><span class="n">log_name</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">())</span>
 </code></pre></div>
-<h2 id="_4">はじめよう</h2>
-<p>これで自由にクエリオブジェクトを扱えるようになったはずです。</p>
+<p>エラーログは、次のような出力になります。</p>
+<div class="highlight"><pre><span></span><code>cat <span class="sb">`</span>ls *.jsonl.log<span class="sb">`</span>
+<span class="c1"># {&quot;func&quot;: &quot;do_something&quot;, &quot;kwargs&quot;: {&quot;val&quot;: 0}, &quot;err&quot;: &quot;ValueError&quot;, &quot;msg&quot;: &quot;val must be 1 or greater: 0&quot;, &quot;result&quot;: None, ...}</span>
+</code></pre></div>
+<h2 id="_6">もっと知りたい</h2>
+<p>これであなたはクエリを自由に扱えるようになったはずです。</p>
 <p>次章の参考例からお気に入りの機能を見つけましょう。</p>
                 
               
