@@ -1,4 +1,5 @@
 import asyncio
+import itertools
 from collections import defaultdict
 from operator import attrgetter, itemgetter
 from typing import Awaitable, Callable, Mapping, NoReturn, TypeVar, Union
@@ -583,8 +584,6 @@ class Tee(Query):
         self.size = size
 
     def _impl_iter(self):
-        import itertools
-
         return iter(itertools.tee(self.source, self.size))
 
 
@@ -845,27 +844,14 @@ class Take(Query):
         self.start = r.start
         self.stop = r.stop
 
+        if self.start < 0:
+            self.start = 0
+
+        if self.stop < 0:
+            self.stop = 0
+
     def _impl_iter(self):
-        start = self.start
-        stop = self.stop
-
-        current = 0
-
-        it = iter(self.source)
-
-        try:
-            while current < start:
-                next(it)
-                current += 1
-        except StopIteration:
-            return
-
-        try:
-            while current < stop:
-                yield next(it)
-                current += 1
-        except StopIteration:
-            return
+        return itertools.islice(self.source, self.start, self.stop)
 
     async def _impl_aiter(self):
         start = self.start
