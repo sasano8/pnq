@@ -1,9 +1,11 @@
 import asyncio
 import itertools
+import sys
 from collections import defaultdict
 from operator import attrgetter, itemgetter
 from typing import Awaitable, Callable, Mapping, NoReturn, TypeVar, Union
 
+from .. import _selectors, inspect
 from .core import IterType, Query, QueryDict, QuerySeq, QuerySet
 from .exceptions import (
     DuplicateElementError,
@@ -95,159 +97,62 @@ class Map(Query):
 
 
 @mark
-class UnpackPos(Map):
-    def _impl_iter(self):
-        selector = self.selector
-        return (selector(*v) for v in self.source)
+class MapAwait(Query):
+    def __init__(self, source):
+        super().__init__(source)
 
-    def _impl_aiter(self):
-        selelctor = self.selector
-        return (selelctor(*v) async for v in self.source)
+    def _impl_iter(self):
+        as_future = inspect.as_future
+        for futurable in self.source:
+            future = as_future(futurable)
+            yield future.result()
+
+    async def _impl_aiter(self):
+        as_future = inspect.as_afuture
+        async for futurable in self.source:
+            future = as_future(futurable)
+            yield await future
+
+
+@mark
+class UnpackPos(Map):
+    def __init__(self, source, selector):
+        selector = _selectors.map(selector, unpack="*")
+        super().__init__(source, selector)
 
 
 @mark
 class UnpackKw(Map):
-    def _impl_iter(self):
-        selector = self.selector
-        return (selector(**v) for v in self.source)
-
-    def _impl_aiter(self):
-        selector = self.selector
-        return (selector(**v) async for v in self.source)
+    def __init__(self, source, selector):
+        selector = _selectors.map(selector, unpack="**")
+        super().__init__(source, selector)
 
 
 @mark
 class Select(Map):
     def __init__(self, source, *fields, attr: bool = False):
-        if attr:
-            selector = attrgetter(*fields)
-        else:
-            selector = itemgetter(*fields)
+        selector = _selectors.select(*fields, attr=attr)
         super().__init__(source, selector)
 
 
 @mark
 class SelectAsTuple(Map):
     def __init__(self, source, *fields, attr: bool = False):
-        if len(fields) > 1:
-            if attr:
-                selector = attrgetter(*fields)
-            else:
-                selector = itemgetter(*fields)
-        elif len(fields) == 1:
-            field = fields[0]
-            if attr:
-                selector = lambda x: (getattr(x, field),)
-            else:
-                selector = lambda x: (x[field],)
-        else:
-            selector = lambda x: ()
+        selector = _selectors.select_as_tuple(*fields, attr=attr)
         super().__init__(source, selector)
 
 
 @mark
 class SelectAsDict(Map):
     def __init__(self, source, *fields, attr: bool = False, default=NoReturn):
-        if attr:
-            if default is NoReturn:
-                selector = lambda x: {k: getattr(x, k) for k in fields}  # noqa
-            else:
-                selector = lambda x: {k: getattr(x, k, default) for k in fields}  # noqa
-        else:
-            if default is NoReturn:
-                selector = lambda x: {k: x[k] for k in fields}  # noqa
-            else:
-
-                def get(obj, k):
-                    try:
-                        return obj[k]
-                    except Exception:
-                        return default
-
-                selector = lambda x: {k: get(x, k) for k in fields}  # noqa
+        selector = _selectors.select_as_dict(*fields, attr=attr, default=default)
         super().__init__(source, selector)
-
-
-def transpose(mapping):
-
-    tmp = defaultdict(list)
-
-    for left, right in mapping.items():
-        if isinstance(right, str):
-            tmp[left].append(right)
-        elif isinstance(right, list):
-            tmp[left] = right
-        elif isinstance(right, tuple):
-            tmp[left] = right
-        elif isinstance(right, set):
-            tmp[left] = right
-        else:
-            raise TypeError(f"{v} is not a valid mapping")
-
-    # output属性 - 元の属性（複数の場合あり）
-    target = defaultdict(list)
-
-    for k, outputs in tmp.items():
-        for out in outputs:
-            target[out].append(k)
-
-    return target
-
-
-def split_single_multi(dic):
-    single = {}
-    multi = {}
-    for k, v in dic.items():
-        if len(v) > 1:
-            multi[k] = v
-        else:
-            single[k] = v[0]
-
-    return single, multi
-
-
-def build_selector(single, multi, attr: bool = False):
-    template = {}
-    for k in multi.keys():
-        template[k] = []
-
-    if attr:
-
-        def reflector(x):
-            result = {}
-            for k, v in single.items():
-                result[k] = x[v]
-
-            for k, fields in multi.items():
-                result[k] = []
-                for f in fields:
-                    result[k].append(x[f])
-
-            return result
-
-    else:
-
-        def reflector(x):
-            result = {}
-            for k, v in single.items():
-                result[k] = x[v]
-
-            for k, fields in multi.items():
-                result[k] = []
-                for f in fields:
-                    result[k].append(x[f])
-
-            return result
-
-    return reflector
 
 
 @mark
 class Reflect(Map):
     def __init__(self, source, mapping, attr: bool = False):
-        transposed = transpose(mapping)
-        single, multi = split_single_multi(transposed)
-        selector = build_selector(single, multi, attr)
+        selector = _selectors.reflect(mapping, attr=attr)
         super().__init__(source, selector)
 
 
@@ -447,6 +352,12 @@ class RequestAsync(Query):
 
 
 @mark
+class Parallel:
+    def __init__(self, *args, **kwargs) -> None:
+        pass
+
+
+@mark
 class Debug(Query):
     def __init__(self, source, breakpoint=lambda x: x, printer=print) -> None:
         super().__init__(source)
@@ -539,19 +450,19 @@ class Chunked(Query):
 
         while running:
             current = 0
-            queue = []
+            chunk = []
 
             while current < size:
                 current += 1
                 try:
                     val = next(it)
-                    queue.append(val)
+                    chunk.append(val)
                 except StopIteration:
                     running = False
                     break
 
-            if queue:
-                yield queue
+            if chunk:
+                yield chunk
 
     async def _impl_aiter(self):
         size = self.size
@@ -843,6 +754,7 @@ class Take(Query):
             r = range(count_or_range)
         self.start = r.start
         self.stop = r.stop
+        self.step = r.step
 
         if self.start < 0:
             self.start = 0
@@ -850,12 +762,16 @@ class Take(Query):
         if self.stop < 0:
             self.stop = 0
 
+        if self.step < 1:
+            raise ValueError()
+
     def _impl_iter(self):
-        return itertools.islice(self.source, self.start, self.stop)
+        return itertools.islice(self.source, self.start, self.stop, self.step)
 
     async def _impl_aiter(self):
         start = self.start
         stop = self.stop
+        step = self.step
 
         current = 0
 
@@ -864,14 +780,14 @@ class Take(Query):
         try:
             while current < start:
                 await it.__anext__()
-                current += 1
+                current += step
         except StopAsyncIteration:
             return
 
         try:
             while current < stop:
                 yield await it.__anext__()
-                current += 1
+                current += step
         except StopAsyncIteration:
             return
 
