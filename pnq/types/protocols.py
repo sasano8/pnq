@@ -1,6 +1,6 @@
-from typing import Any, Iterable, Mapping, NoReturn, overload
+from typing import Iterable, Mapping
 
-from typing_extensions import Literal, Protocol
+from typing_extensions import Protocol
 
 
 class PArgment(Protocol):
