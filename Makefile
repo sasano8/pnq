@@ -35,3 +35,6 @@ gen: generate test
 generate:
 	@poetry run python3 pnq_template/generate.py -i pnq/__queries__.py -o pnq/queries.py
 	@make format
+
+unasync:
+	@poetry run python3 pnq/_itertools/generate_unasync.py
