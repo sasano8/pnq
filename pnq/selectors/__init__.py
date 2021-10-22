@@ -149,7 +149,7 @@ __all__ = [
     "map",
     "select",
     "select_from_attr",
-    "select_from_atem",
+    "select_from_item",
     "select_as_tuple",
     "select_as_dict",
     "reflect",
