@@ -13,6 +13,13 @@ class Listable(Iterable[T]):
     def save(self):
         return list(self.source)
 
+    def result(self, timeout=None):
+        # TODO: implement timeout
+        return self.save()
+
+    def __future__(self):
+        raise NotImplementedError()
+
 
 class AsyncListable(AsyncIterable[T]):
     def __init__(self, iterable: AsyncIterable[T]):
@@ -26,6 +33,9 @@ class AsyncListable(AsyncIterable[T]):
 
     def __await__(self):
         return self.save_async().__await__()
+
+    def __afuture__(self):
+        raise NotImplementedError()
 
 
 class LazyListable(Listable[T], AsyncListable[T]):  # type: ignore
