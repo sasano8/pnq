@@ -1,3 +1,4 @@
+import asyncio
 from contextlib import AsyncExitStack, ExitStack
 from typing import TYPE_CHECKING, Iterable
 
@@ -99,3 +100,39 @@ class PnqExitStack:
 
 
 exitstack = PnqExitStack.from_args
+
+
+class PnqQueue:
+    def __init__(self) -> None:
+        from collections import deque
+
+        self._items = deque()
+        self._running = True
+
+    def stop(self):
+        self._running = False
+
+    def kill(self):
+        self._running = False
+        self._items.clear()
+
+    def put(self, item):
+        if not self._running:
+            raise RuntimeError("Queue is stopped")
+        self._items.append(item)
+
+    async def __aiter__(self):
+        if not self._running:
+            raise RuntimeError("Queue is stopped")
+
+        sleep = asyncio.sleep
+        queue = self._items
+
+        while self._running:
+            if not queue:
+                await sleep(0)
+                continue
+            yield queue.popleft()
+
+        while queue:
+            yield queue.popleft()
