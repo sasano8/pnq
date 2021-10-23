@@ -1,4 +1,5 @@
 import asyncio
+from concurrent.futures import Future as ConcurrentFuture
 from typing import AsyncIterable, AsyncIterator, List, TypeVar
 
 from ..common import Listable, name_as
@@ -23,9 +24,44 @@ def _map(source: AsyncIterable[T], selector, unpack=""):
             raise ValueError("unpack must be one of '', '*', '**', '***'")
 
 
-async def map_await(source: AsyncIterable[T], parallel: int = None):
-    async for x in source:
-        yield await x  # type: ignore
+async def gather(
+    source: AsyncIterable[T], selector=None, parallel: int = 1, timeout=None
+):
+    if selector is None:
+        selector = lambda x: x  # noqa
+
+    async for tag, result in gather_tagged(
+        _enumerate(Listable(source, selector)), parallel=parallel, timeout=timeout
+    ):
+        yield result
+
+
+async def gather_tagged(
+    source: AsyncIterable[T], selector=None, parallel: int = 1, timeout=None
+):
+    if selector is None:
+        selector = lambda x: x  # noqa
+
+    if parallel > 1:
+        async for chunk in chunked(source, size=parallel):
+            results = await asyncio.gather(
+                *(asyncio.wait_for(x, timeout) for tag, x in Listable(chunk, selector))
+            )
+            for tagged_result in ((chunk[i][0], x) for i, x in enumerate(results)):
+                yield tagged_result
+    else:
+        async for x in source:
+            tag, awaitable = selector(x)
+            yield tag, await asyncio.wait_for(awaitable, timeout)
+
+
+def schedule(pnq_future_coro):
+    if asyncio.iscoroutine(pnq_future_coro):
+        return asyncio.create_task(pnq_future_coro)
+    elif isinstance(pnq_future_coro, ConcurrentFuture):
+        return asyncio.wrap_future(pnq_future_coro)
+    else:
+        raise NotImplementedError()
 
 
 async def flat(source: AsyncIterable[T], selector=None):
@@ -149,9 +185,19 @@ async def request_async(source: AsyncIterable[T], func, retry: int = None):
     ...
 
 
-async def parallel(source: AsyncIterable[T], backend=None):
+async def parallel(
+    source: AsyncIterable[T], func, unpack="", executor=None, chunksize=None
+):
     """PEP 3148"""
-    ...
+    if chunksize is None:
+        async for x in source:
+            yield await executor.asubmit(x)
+    else:
+        async for chunck in chunked(source, chunksize):
+            future = executor.amap(func, chunck)
+            result = await future
+            for x in result:
+                yield x
 
 
 async def debug(source: AsyncIterable[T], breakpoint=lambda x: x, printer=print):

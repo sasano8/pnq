@@ -121,6 +121,13 @@ class PnqQueue:
             raise RuntimeError("Queue is stopped")
         self._items.append(item)
 
+    def try_pop(self):
+        if not self._running:
+            raise RuntimeError("Queue is stopped")
+        if not self._items:
+            return False, None
+        return True, self._items.popleft()
+
     async def __aiter__(self):
         if not self._running:
             raise RuntimeError("Queue is stopped")

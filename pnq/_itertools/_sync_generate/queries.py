@@ -1,4 +1,5 @@
 import asyncio
+from concurrent.futures import Future as ConcurrentFuture
 from typing import Iterable, Iterator, List, TypeVar
 
 from ..common import Listable, name_as
@@ -23,9 +24,40 @@ def _map(source: Iterable[T], selector, unpack=""):
             raise ValueError("unpack must be one of '', '*', '**', '***'")
 
 
-def map_await(source: Iterable[T], parallel: int = None):
-    for x in source:
-        yield x  # type: ignore
+def gather(source: Iterable[T], selector=None, parallel: int = 1, timeout=None):
+    if selector is None:
+        selector = lambda x: x  # noqa
+
+    for tag, result in gather_tagged(
+        _enumerate(Listable(source, selector)), parallel=parallel, timeout=timeout
+    ):
+        yield result
+
+
+def gather_tagged(source: Iterable[T], selector=None, parallel: int = 1, timeout=None):
+    if selector is None:
+        selector = lambda x: x  # noqa
+
+    if parallel > 1:
+        for chunk in chunked(source, size=parallel):
+            results = asyncio.gather(
+                *(asyncio.wait_for(x, timeout) for tag, x in Listable(chunk, selector))
+            )
+            for tagged_result in ((chunk[i][0], x) for i, x in enumerate(results)):
+                yield tagged_result
+    else:
+        for x in source:
+            tag, awaitable = selector(x)
+            yield tag, asyncio.wait_for(awaitable, timeout)
+
+
+def schedule(pnq_future_coro):
+    if asyncio.iscoroutine(pnq_future_coro):
+        return asyncio.create_task(pnq_future_coro)
+    elif isinstance(pnq_future_coro, ConcurrentFuture):
+        return asyncio.wrap_future(pnq_future_coro)
+    else:
+        raise NotImplementedError()
 
 
 def flat(source: Iterable[T], selector=None):
@@ -198,7 +230,7 @@ def compress(source: Iterable[T]):
 
 
 def cartesian(source: Iterable[T], *iterables):
-    ...
+    return itertools.product(self.source, *self.iterables)
 
 
 @name_as("filter")

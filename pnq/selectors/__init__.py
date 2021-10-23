@@ -1,3 +1,4 @@
+from functools import partial as _partial
 from operator import attrgetter, itemgetter
 from typing import Any, NoReturn
 
@@ -6,6 +7,18 @@ from typing_extensions import Literal
 
 def to_str(x):
     return "" if x is None else str(x)
+
+
+def _starmap(func, val):
+    return func(*val)
+
+
+def _star2map(func, val):
+    return func(**val)
+
+
+def _star3map(func, val):
+    return func(*val.args, **val.kwargs)
 
 
 def map(func, unpack: Literal["", "*", "**", "***"] = ""):
@@ -17,11 +30,11 @@ def map(func, unpack: Literal["", "*", "**", "***"] = ""):
     if unpack == "":
         return func
     elif unpack == "*":
-        return lambda x: func(*x)
+        return _partial(_starmap, func)
     elif unpack == "**":
-        return lambda x: func(**x)
+        return _partial(_star2map, func)
     elif unpack == "***":
-        return lambda x: func(*x.args, **x.kwargs)
+        return _partial(_star3map, func)
     else:
         raise ValueError(f"Unsupported unpack mode: {unpack}")
 
