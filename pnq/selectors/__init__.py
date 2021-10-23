@@ -12,7 +12,7 @@ __all__ = [
     "select_as_tuple",
     "select_as_dict",
     "reflect",
-    "select_recursive",
+    "flat_recursive",
 ]
 
 
@@ -181,7 +181,7 @@ def _build_selector(single, multi, attr: bool = False):
     return reflector
 
 
-def select_recursive(func):
+def flat_recursive(func):
     def wrapper(x):
         node = x
         while node:
@@ -191,3 +191,5 @@ def select_recursive(func):
                 node = func(x)
             except Exception:
                 ...
+
+    return wrapper

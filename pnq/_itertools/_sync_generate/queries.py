@@ -1,10 +1,12 @@
 import asyncio
 from concurrent.futures import Future as ConcurrentFuture
 from functools import partial
-from typing import Iterable, Iterator, List, TypeVar
+from typing import Iterable, TypeVar
 
+from ...selectors import flat_recursive as _flat_recursive
 from ...selectors import map as unpacking
 from ..common import Listable, name_as
+from ..protocols import PExecutor
 
 T = TypeVar("T")
 
@@ -70,18 +72,10 @@ def flat(source: Iterable[T], selector=None):
 
 
 def flat_recursive(source: Iterable[T], selector):
-    def scan(parent):
-        nodes = selector(parent)
-        if nodes is None:
-            return
-        for node in nodes:
-            yield node
-            yield from scan(node)
-
+    scanner = _flat_recursive(selector)
     for node in source:
-        yield node
-        for c in scan(node):
-            yield c
+        for x in scanner(node):
+            yield x
 
 
 def pivot_unstack(source: Iterable[T], default=None):
@@ -183,28 +177,27 @@ def request_async(source: Iterable[T], func, retry: int = None):
     ...
 
 
-def procceed(func, iterable):
+def _procceed(func, iterable):
     return [func(x) for x in iterable]
 
 
-def procceed_async(func, iterable):
+def _procceed_async(func, iterable):
     return [func(x) for x in iterable]
 
 
-def parallel(source: Iterable[T], func, executor=None, *, unpack="", chunksize=1):
+def parallel(source: Iterable[T], func, executor: PExecutor, *, unpack="", chunksize=1):
     new_func = unpacking(func, unpack)
 
     if executor.is_cpubound and chunksize != 1:
-        runner = procceed_async if asyncio.iscoroutine(func) else procceed
+        runner = _procceed_async if asyncio.iscoroutine(func) else _procceed
         runner = partial(runner, new_func)
 
         tasks = []
         for chunck in chunked(source, chunksize):
             tasks.append(executor.asubmit(runner, chunck))
 
-        for x in tasks:
-            results = x
-            for x in results:
+        for task in tasks:
+            for x in task:
                 yield x
 
     else:
@@ -212,8 +205,8 @@ def parallel(source: Iterable[T], func, executor=None, *, unpack="", chunksize=1
         for x in source:
             tasks.append(executor.asubmit(new_func, x))
 
-        for x in tasks:
-            yield x
+        for task in tasks:
+            yield task
 
 
 def debug(source: Iterable[T], breakpoint=lambda x: x, printer=print):

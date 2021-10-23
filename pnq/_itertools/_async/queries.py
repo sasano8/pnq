@@ -1,8 +1,9 @@
 import asyncio
 from concurrent.futures import Future as ConcurrentFuture
 from functools import partial
-from typing import AsyncIterable, AsyncIterator, List, TypeVar
+from typing import AsyncIterable, TypeVar
 
+from ...selectors import flat_recursive as _flat_recursive
 from ...selectors import map as unpacking
 from ..common import Listable, name_as
 from ..protocols import PExecutor
@@ -75,18 +76,10 @@ async def flat(source: AsyncIterable[T], selector=None):
 
 
 async def flat_recursive(source: AsyncIterable[T], selector):
-    def scan(parent):
-        nodes = selector(parent)
-        if nodes is None:
-            return
-        for node in nodes:
-            yield node
-            yield from scan(node)
-
+    scanner = _flat_recursive(selector)
     async for node in source:
-        yield node
-        for c in scan(node):
-            yield c
+        for x in scanner(node):
+            yield x
 
 
 async def pivot_unstack(source: AsyncIterable[T], default=None):
