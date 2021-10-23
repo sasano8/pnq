@@ -111,9 +111,9 @@ async def test_executor_spec(factory) -> Tuple[bool, ExecutorSpec]:
         spec.__aexit__ = True
 
     async with factory(1) as executor:
-        spec.is_cpubound = hasattr(executor, "is_cpubound")
-        spec.max_workers = bool(executor.max_workers)
-        spec.is_async_only = hasattr(executor, "is_async_only")
+        spec.is_cpubound = isinstance(executor.is_cpubound, bool)
+        spec.max_workers = isinstance(executor.is_cpubound, int)
+        spec.is_async_only = isinstance(executor.is_async_only, bool)
         spec.submit_sync = try_submit(executor, return_one, 1)
         spec.submit_async = try_submit(executor, return_two, 2)
         spec.asubmit_sync = await try_asubmit(executor, return_one, 1)
