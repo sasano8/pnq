@@ -27,6 +27,7 @@ PNQ is a Python implementation like Language Integrated Query (LINQ).
 
 - [PyFunctional](https://github.com/EntilZha/PyFunctional)
 - [linqit](https://github.com/avilum/linqit)
+- [python-linq](https://github.com/jakkes/python-linq)
 - [aioitertools](https://github.com/omnilib/aioitertools)
 - [asyncstdlib](https://github.com/maxfischer2781/asyncstdlib)
 
@@ -51,14 +52,14 @@ $ pip install pnq
 ``` python
 import pnq
 
-for x in pnq.query([1, 2, 3]).map(lambda x: x * 2)
+for x in pnq.query([1, 2, 3]).map(lambda x: x * 2):
     print(x)
 # => 2, 4, 6
 
 pnq.query([1, 2, 3]).map(lambda x: x * 2).save()
 # => [2, 4, 6]
 
-pnq.query([1]).map(lambda x: x * 2).one()
+pnq.query([1, 2, 3]).filter(lambda x: x == 3).one()
 # => 2
 ```
 

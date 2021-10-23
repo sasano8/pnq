@@ -1,3 +1,4 @@
+import sys
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -22,6 +23,8 @@ from typing import (
     no_type_check,
     overload,
 )
+
+from pnq.base.actions import result
 
 try:
     from typing import Literal
@@ -57,6 +60,9 @@ class {{query.CLS}}:
         def __aiter__(self) -> AsyncIterator[{{query.T}}]:
             ...
 
+    def as_iter(self) -> "finalizers.SyncFinalizer[{{query.T}}]":
+        return finalizers.SyncFinalizer(self)
+
     def as_aiter(self) -> "finalizers.AsyncFinalizer[{{query.T}}]":
         return finalizers.AsyncFinalizer(self)
 
@@ -73,6 +79,8 @@ class {{query.CLS}}:
     def save(self) -> "PnqListPair[{{query.K}}, {{query.V}}]":
         return PnqList(self)
 
+    result = save
+
     def __await__(self) -> Generator[Any, Any, "PnqListPair[{{query.K}}, {{query.V}}]"]:
         return self._call().__await__()
 
@@ -80,6 +88,8 @@ class {{query.CLS}}:
 
     def save(self) -> "PnqList[{{query.T}}]":
         return PnqList(self)
+
+    result = save
 
     def __await__(self) -> Generator[Any, Any, "PnqList[{{query.T}}]"]:
         return self._call().__await__()
@@ -261,7 +271,7 @@ class {{query.CLS}}:
         pass
 
     def map(self, selector):
-        return queries.Map(self, selector)
+        return queries.MapNullable(self, selector)
 
     {% if query.is_pair %}
 
@@ -345,6 +355,9 @@ class {{query.CLS}}:
 
     def request_async(self, func, retry: int = None, timeout=None) -> "Query[Response]":
         return queries.RequestAsync(self, func, retry=retry, timeout=None)
+
+    def parallel(self, func, size: int = sys.maxsize):
+        return queries.Parallel(self, func, size)
 
     def debug(self, breakpoint=lambda x: x, printer=print) -> "{{query.SELF_T}}":
         return queries.Debug(self, breakpoint=breakpoint, printer=printer)

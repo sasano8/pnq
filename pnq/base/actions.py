@@ -1,3 +1,4 @@
+import sys
 from collections import defaultdict
 from decimal import Decimal
 from decimal import InvalidOperation as DecimalInvalidOperation
@@ -371,6 +372,44 @@ def select_single_node(
     return_selector=lambda nest, parent, child: (nest, parent, child),
 ):
     pass
+
+
+@mark
+def map_await(self):
+    """シーケンスから列挙されるフューチャーオブジェクトから結果を取り出し、新しいフォームに射影します。
+    同期実行の場合は`result`、非同期実行の場合は`\_\_await\_\_`が実装されている場合、フューチャーオブジェクトとみなされます。
+
+    `pnq.query`は、それらのインターフェースを実装しており、本メソッドで実体化可能です。
+
+    Usage:
+    ```
+    from concurretn.futures import Future
+    import asyncio
+
+    def main1():
+        future = Future()
+        future.set_result(1)
+        return pnq.query([future]).map_await().save()
+
+    async def main2():
+        async def heavy_task():
+            return 1
+
+        async def aiter():
+            yield 3
+            yield 4
+
+        tasks = pnq.query([
+            asyncio.create_task(heavy_task()),
+            pnq.([1, 2]).map(lambda x: x * 2),
+            pnq.(aiter()).map(lambda x: x * 2)
+        ])
+        return await tasks.map_await()
+
+    main()  # => [1]
+    asyncio.run(main2())  # => [[1], [2, 4], [6, 8]]
+    ```
+    """
 
 
 @mark
@@ -778,29 +817,10 @@ def request(self, func, retry: int = None):
     >>>     print(f"SUCCESS: {res.to(dict)}")
     ```
     """
-    from .requests import Response, StopWatch
-
-    if retry:
-        raise NotImplementedError("retry not implemented")
-
-    for v in self:
-
-        with StopWatch() as sw:
-            err = None
-            result = None
-            try:
-                result = func(**v)
-            except Exception as e:
-                err = e
-
-        res = Response(
-            func, kwargs=v, err=err, result=result, start=sw.start, end=sw.end
-        )
-
-        yield res
+    ...
 
 
-async def request_async(self, func, timeout: float = None, retry: int = None):
+def request_async(self, func, timeout: float = None, retry: int = None):
     """シーケンスから流れてくる値を非同期関数に送出するように要求します。
     例外はキャッチされ、実行結果を返すイテレータを生成します。
     関数呼び出し時にキーワードアンパックするため、要素は辞書である必要があります。
@@ -828,29 +848,14 @@ async def request_async(self, func, timeout: float = None, retry: int = None):
     >>>     print(f"SUCCESS: {res.to(dict)}")
     ```
     """
-    from .requests import Response, StopWatch
+    ...
 
-    if retry:
-        raise NotImplementedError("retry not implemented")
 
-    if timeout:
-        raise NotImplementedError("timeout not implemented")
-
-    for v in self:
-
-        with StopWatch() as sw:
-            err = None
-            result = None
-            try:
-                result = await func(**v)
-            except Exception as e:
-                err = e
-
-        res = Response(
-            func, kwargs=v, err=err, result=result, start=sw.start, end=sw.end
-        )
-
-        yield res
+def parallel(self, source, func, concurrency: int = sys.maxsize):
+    """シーケンスから流れてくる値を関数に送出します。
+    （未実装）
+    """
+    ...
 
 
 def debug(self, breakpoint=lambda x: x, printer=print):
@@ -1074,7 +1079,7 @@ def must_keys(self, *keys):
 
     not_exists = set()
     key_values = []
-    raise_if_not_unique_keys(keys)
+    __raise_if_not_unique_keys(keys)
     undefined = object()
 
     for k in keys:
@@ -1098,6 +1103,15 @@ def must_keys(self, *keys):
             yield k
     else:
         raise TypeError(f"unknown type: {typ}")
+
+
+def __raise_if_not_unique_keys(keys):
+    if isinstance(keys, set):
+        unique = keys
+    else:
+        unique = set(keys)
+    if len(unique) != len(keys):
+        raise TypeError(f"can't accept duplicate keys: {keys}")
 
 
 @mark
@@ -1158,15 +1172,6 @@ def must_unique(self, selector=None):
         else:
             duplidate.add(value)
             yield value
-
-
-def raise_if_not_unique_keys(keys):
-    if isinstance(keys, set):
-        unique = keys
-    else:
-        unique = set(keys)
-    if len(unique) != len(keys):
-        raise TypeError(f"can't accept duplicate keys: {keys}")
 
 
 ###########################################
@@ -1681,6 +1686,34 @@ def concat(self, selector=lambda x: x, delimiter: str = ""):
 
 
 @mark
+def save(self):
+    """ストリームを評価し、結果をリストとして保存します。
+    返されたリストは、クエリメソッドが実装されたリストの拡張クラスです。
+
+    Args:
+
+    * self: 評価するシーケンス
+
+    Returns: `pnq.list`
+
+    Usage:
+    ```
+    >>> saved = pnq.query([1, 2, 3]).save()
+    [1, 2, 3]
+    >>> saved.map(lambda x: x * 2).save()
+    [2, 4, 6]
+    ```
+    """
+
+
+@mark
+def result(self):
+    """`save`と同じですが、`concurrent.futures.Future`互換にするために実装されています。
+    これにより、`map_await`で複数のクエリを一括で評価するような使い方ができます。
+    """
+
+
+@mark
 def to(self, finalizer):
     """ストリームをファイナライザによって処理します。
 
@@ -1694,7 +1727,7 @@ def to(self, finalizer):
     Usage:
     ```
     >>> pnq.query([1, 2, 3]).to(list)
-    [1, 2]
+    [1, 2, 3]
     >>> pnq.query({1: "a", 2: "b"}).to(dict)
     {1: "a", 2: "b"}
     ```
@@ -1710,6 +1743,39 @@ async def to_async(self, finalizer):
         return await finalizer(self)
     else:
         return await finalizer(self)
+
+
+@mark
+def to_task(self):
+    """実体化を開始し、任意のタイミングで結果を受け取れるasyncio.Taskを返します。
+    このメソッドは、非同期イテレータや並列処理などを非同期で進行しながら、
+    他の処理を進める場合に役に立ちます。
+
+    taskはawaitすることで、結果を受け取ることができます。
+
+    Usage:
+    ```
+    >>> task = pnq.query(aiter).to_task()
+    >>> await do_something()
+    >>> await task
+    [1, 2, 3]
+    ```
+    """
+
+
+@mark
+def to_lifespan(self):
+    """イテレータを生存期間つきのイテレータ（コンテキスト）にします。
+    このメソッドは、無限イテレータの開始・停止の管理に役立ちます。
+
+    callbackが設定されている場合は、ルートイテレータが停止されるまで生存し、
+    callbackが指定されていない場合は、直ちにイテレートを停止します。
+
+    >>> queue = pnq.Queue()
+    >>> async with pnq.query(queue).to_lifespan(print, callback=queue.stop):
+    >>>   await queue.put(1)
+    >>>   await queue.put(2)
+    """
 
 
 @mark

@@ -1,11 +1,10 @@
 import asyncio
 import itertools
-import sys
 from collections import defaultdict
 from operator import attrgetter, itemgetter
 from typing import Awaitable, Callable, Mapping, NoReturn, TypeVar, Union
 
-from .. import _selectors, inspect
+from .. import selectors as _selectors
 from .core import IterType, Query, QueryDict, QuerySeq, QuerySet
 from .exceptions import (
     DuplicateElementError,
@@ -74,12 +73,13 @@ class Sleep(Query):
 
 
 @mark
-class Map(Query):
-    def __init__(self, source, selector):
-        super().__init__(source)
-        if selector is str:
-            selector = lambda x: "" if x is None else str(x)
-        self.selector = selector
+class MapNullable(Query):
+    def __init__(self, source, selector=None):
+        Query.__init__(self, source)
+        if selector is None:
+            self.selector = selector
+        else:
+            self.selector = _selectors.map(selector)
 
     def _impl_iter(self):
         selector = self.selector
@@ -94,6 +94,13 @@ class Map(Query):
             return self.source.__aiter__()
         else:
             return (selector(x) async for x in self.source)
+
+
+@mark
+class Map(MapNullable):
+    def __init__(self, source, selector):
+        Query.__init__(self, source)
+        self.selector = _selectors.map(selector)
 
 
 @mark
@@ -210,25 +217,6 @@ class FlatRecursive(Query):
 
 
 @mark
-class Enumerate(Query):
-    def __init__(self, source, start: int = 0, step: int = 1):
-        super().__init__(source)
-        self.start = start
-        self.step = step
-
-    def _impl_iter(self):
-        step = self.step
-        return (x * step for x in enumerate(self.source, self.start))
-
-    async def _impl_aiter(self):
-        step = self.step
-        i = self.start - step
-        async for x in self.source:
-            i += step
-            yield i, x
-
-
-@mark
 class PivotUnstack(Query):
     def __init__(self, source, default=None) -> None:
         super().__init__(source)
@@ -276,6 +264,25 @@ class PivotStack(Query):
 
     async def _impl_aiter(self):
         raise NotImplementedError()
+
+
+@mark
+class Enumerate(Query):
+    def __init__(self, source, start: int = 0, step: int = 1):
+        super().__init__(source)
+        self.start = start
+        self.step = step
+
+    def _impl_iter(self):
+        step = self.step
+        return (x * step for x in enumerate(self.source, self.start))
+
+    async def _impl_aiter(self):
+        step = self.step
+        i = self.start - step
+        async for x in self.source:
+            i += step
+            yield i, x
 
 
 @mark
@@ -480,7 +487,7 @@ class Chunked(Query):
                 try:
                     val = await it.__anext__()
                     queue.append(val)
-                except StopIteration:
+                except StopAsyncIteration:
                     running = False
                     break
 
@@ -580,7 +587,7 @@ class MustType(Query):
 class FilterUnique(Query):
     def __init__(self, source, selector=None):
         if selector is not None:
-            source = Map(source, selector)
+            source = MapNullable(source, selector)
         super().__init__(source)
 
     def _impl_iter(self):

@@ -1,3 +1,4 @@
+import sys
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -22,6 +23,8 @@ from typing import (
     no_type_check,
     overload,
 )
+
+from pnq.base.actions import result
 
 try:
     from typing import Literal
@@ -54,6 +57,9 @@ class Query(Generic[T]):
         def __aiter__(self) -> AsyncIterator[T]:
             ...
 
+    def as_iter(self) -> "finalizers.SyncFinalizer[T]":
+        return finalizers.SyncFinalizer(self)
+
     def as_aiter(self) -> "finalizers.AsyncFinalizer[T]":
         return finalizers.AsyncFinalizer(self)
 
@@ -67,6 +73,8 @@ class Query(Generic[T]):
 
     def save(self) -> "PnqList[T]":
         return PnqList(self)
+
+    result = save
 
     def __await__(self) -> Generator[Any, Any, "PnqList[T]"]:
         return self._call().__await__()
@@ -254,7 +262,7 @@ class Query(Generic[T]):
         pass
 
     def map(self, selector):
-        return queries.Map(self, selector)
+        return queries.MapNullable(self, selector)
 
     @overload
     def select(self, field) -> "Query[Any]":
@@ -327,6 +335,9 @@ class Query(Generic[T]):
 
     def request_async(self, func, retry: int = None, timeout=None) -> "Query[Response]":
         return queries.RequestAsync(self, func, retry=retry, timeout=None)
+
+    def parallel(self, func, size: int = sys.maxsize):
+        return queries.Parallel(self, func, size)
 
     def debug(self, breakpoint=lambda x: x, printer=print) -> "Query[T]":
         return queries.Debug(self, breakpoint=breakpoint, printer=printer)
@@ -417,6 +428,9 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
         def __aiter__(self) -> AsyncIterator[Tuple[K, V]]:
             ...
 
+    def as_iter(self) -> "finalizers.SyncFinalizer[Tuple[K,V]]":
+        return finalizers.SyncFinalizer(self)
+
     def as_aiter(self) -> "finalizers.AsyncFinalizer[Tuple[K,V]]":
         return finalizers.AsyncFinalizer(self)
 
@@ -430,6 +444,8 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
 
     def save(self) -> "PnqListPair[K, V]":
         return PnqList(self)
+
+    result = save
 
     def __await__(self) -> Generator[Any, Any, "PnqListPair[K, V]"]:
         return self._call().__await__()
@@ -639,7 +655,7 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
         pass
 
     def map(self, selector):
-        return queries.Map(self, selector)
+        return queries.MapNullable(self, selector)
 
     @overload
     def select(self, item: Literal[0]) -> "Query[K]":
@@ -722,6 +738,9 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
 
     def request_async(self, func, retry: int = None, timeout=None) -> "Query[Response]":
         return queries.RequestAsync(self, func, retry=retry, timeout=None)
+
+    def parallel(self, func, size: int = sys.maxsize):
+        return queries.Parallel(self, func, size)
 
     def debug(self, breakpoint=lambda x: x, printer=print) -> "PairQuery[K,V]":
         return queries.Debug(self, breakpoint=breakpoint, printer=printer)

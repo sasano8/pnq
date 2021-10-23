@@ -2,6 +2,8 @@
 
 # generating
 # transforming
+from .base.actions import __map as map
+from .base.actions import map_await as gather
 from .base.actions import debug as debug
 from .base.actions import unpack_kw as unpack_kw
 from .base.actions import unpack_pos as unpack_pos
@@ -14,6 +16,7 @@ from .base.actions import reflect as reflect
 from .base.actions import chunked as chunked
 from .base.actions import tee as tee
 
+from .base.actions import parallel
 
 # filtering
 from .base.actions import filter_unique as filter_unique
@@ -30,6 +33,8 @@ from .base.actions import take_while as take_while
 
 # expanding
 # executing
+from .base.actions import save as save
+from .base.actions import to as to
 from .base.actions import each as each
 from .base.actions import each_unpack as each_unpack
 from .base.actions import each_async as each_async
@@ -45,7 +50,6 @@ from .base.actions import __enumerate as enumerate
 from .base.actions import __filter as filter
 from .base.actions import __iter as iter
 from .base.actions import __len as len
-from .base.actions import __map as map
 from .base.actions import __max as max
 from .base.actions import __min as min
 from .base.actions import __range as range
@@ -100,7 +104,6 @@ from .base.actions import select as select
 from .base.actions import select_as_dict as select_as_dict
 from .base.actions import select_as_tuple as select_as_tuple
 from .base.actions import select_single_node as select_single_nod
-from .base.actions import to as to
 from .base.actions import union as union
 from .base.actions import union_all as union_all
 from .base.actions import union_intersect as union_intersect
@@ -113,7 +116,7 @@ from .base.actions import sleep as sleep
 from .base.actions import sleep_async as sleep_async
 
 # other
-from .base.actions import raise_if_not_unique_keys as raise_if_not_unique_keys
+from .base.actions import __raise_if_not_unique_keys as __raise_if_not_unique_keys
 from .base.actions import take_page_calc as take_page_calc
 
 # isort: on
