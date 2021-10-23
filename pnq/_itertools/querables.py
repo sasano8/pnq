@@ -247,6 +247,8 @@ class Parallel(Query):
     I/Oバウンドを効率化するにはchunksizeを1にする。
     CPUをフル活用するにはchunksizeを大きくする。
     ProcessPoolのみchunksizeは有効
+    スクレイピングなどの重い処理を並列化する parallel([], func, chunksize=1)
+    簡単な計算を大量に行う処理を並列化する parallel([], func, chunksize=100)
     """
 
     _ait = sm | A.queries.parallel

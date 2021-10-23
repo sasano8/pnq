@@ -6,11 +6,22 @@ from concurrent.futures import Future
 from concurrent.futures import ProcessPoolExecutor as _ProcessPoolExecutor
 from concurrent.futures import ThreadPoolExecutor as _ThreadPoolExecutor
 from contextlib import AsyncExitStack, ExitStack
-from functools import partial
+from functools import lru_cache, partial
 from typing import TYPE_CHECKING, Union
 
 from . import tools
 from .protocols import Executor, PExecutable, PExecutor
+
+
+@lru_cache(32)
+def is_coroutine_function(func):
+    # TODO: python3.8からはpartialが自動でasync functionを認識するので削除する
+    if isinstance(func, partial):
+        target = func.func
+    else:
+        target = func
+
+    return asyncio.iscoroutinefunction(target)
 
 
 class OverrideExecutor:
@@ -91,9 +102,11 @@ class ExecutorWrapper(PExecutor, PExecutable):
         if isinstance(executor, _ProcessPoolExecutor):
             self._is_closed = lambda: executor._shutdown_thread  # type: ignore
             self._is_cpubound = True
+            self._is_async_only = False
         elif isinstance(executor, _ThreadPoolExecutor):
             self._is_closed = lambda: executor._shutdown
             self._is_cpubound = False
+            self._is_async_only = False
         else:
             raise TypeError()
 
@@ -125,8 +138,12 @@ class ExecutorWrapper(PExecutor, PExecutable):
     def is_cpubound(self) -> bool:
         return self._is_cpubound
 
+    @property
+    def is_async_only(self):
+        return self._is_async_only
+
     def submit(self, func, *args, **kwargs):
-        if asyncio.iscoroutinefunction(func):
+        if is_coroutine_function(func):
             return self.executor.submit(
                 self.__class__.ASYNC_RUNNER, func, *args, **kwargs
             )
@@ -196,10 +213,6 @@ class ProcessPoolExecutor(PoolContext):
     async def __aexit__(self, *args, **kwargs):
         return self.__exit__(*args, **kwargs)
 
-    @property
-    def is_async_only(self):
-        return False
-
 
 class ThreadPoolExecutor(PoolContext):
     POOL_FACTORY = _ThreadPoolExecutor  # type: ignore
@@ -210,10 +223,6 @@ class ThreadPoolExecutor(PoolContext):
 
     async def __aexit__(self, *args, **kwargs):
         return self.__exit__(*args, **kwargs)
-
-    @property
-    def is_async_only(self):
-        return False
 
 
 class NestedFuture(asyncio.Future):
@@ -406,12 +415,7 @@ class AsyncPoolExecutor(PExecutor, PExecutable):
         raise NotImplementedError()
 
     def asubmit(self, func, *args, **kwargs):
-        if isinstance(func, partial):
-            target = func.args[0]
-        else:
-            target = func
-
-        is_async = asyncio.iscoroutinefunction(target)
+        is_async = is_coroutine_function(func)
         return self._asubmit_inner(is_async, func, args, kwargs)
 
     def amap(self, func, iterable):

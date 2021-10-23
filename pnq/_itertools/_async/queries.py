@@ -193,24 +193,19 @@ async def parallel(
     source: AsyncIterable[T], func, executor: PExecutor, *, unpack="", chunksize=1
 ):
     new_func = unpacking(func, unpack)
+    submit = executor.asubmit
 
     if executor.is_cpubound and chunksize != 1:
         runner = _procceed_async if asyncio.iscoroutine(func) else _procceed
         runner = partial(runner, new_func)
 
-        tasks = []
-        async for chunck in chunked(source, chunksize):
-            tasks.append(executor.asubmit(runner, chunck))
-
+        tasks = [submit(runner, chunck) async for chunck in chunked(source, chunksize)]
         for task in tasks:
             for x in await task:
                 yield x
 
     else:
-        tasks = []
-        async for x in source:
-            tasks.append(executor.asubmit(new_func, x))
-
+        tasks = [submit(new_func, x) async for x in source]
         for task in tasks:
             yield await task
 

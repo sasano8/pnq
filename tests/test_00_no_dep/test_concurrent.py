@@ -39,6 +39,21 @@ async def do_heavy_async(x):
 
 
 @to_sync
+async def test_base_spec():
+    import pnq.concurrent.testtool as testtool
+
+    assert await testtool.ExecutorSpec.test_capability(
+        ProcessPool, is_async_only=False, submit_sync=True
+    )
+    assert await testtool.ExecutorSpec.test_capability(
+        ThreadPool, is_async_only=False, submit_sync=True
+    )
+    assert await testtool.ExecutorSpec.test_capability(
+        AsyncPool, is_async_only=True, submit_sync=False
+    )
+
+
+@to_sync
 async def test_is_cpubound():
     with ProcessPool(1) as pool:
         assert pool.is_cpubound
