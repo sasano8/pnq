@@ -4,6 +4,17 @@ from typing import Any, NoReturn
 
 from typing_extensions import Literal
 
+__all__ = [
+    "map",
+    "select",
+    "select_from_attr",
+    "select_from_item",
+    "select_as_tuple",
+    "select_as_dict",
+    "reflect",
+    "select_recursive",
+]
+
 
 def to_str(x):
     return "" if x is None else str(x)
@@ -21,6 +32,18 @@ def _star3map(func, val):
     return func(*val.args, **val.kwargs)
 
 
+def starmap(func):
+    return _partial(_starmap, func)
+
+
+def star2map(func):
+    return _partial(_star2map, func)
+
+
+def star3map(func):
+    return _partial(_star3map, func)
+
+
 def map(func, unpack: Literal["", "*", "**", "***"] = ""):
     if func is None:
         raise TypeError("func is None")
@@ -30,11 +53,11 @@ def map(func, unpack: Literal["", "*", "**", "***"] = ""):
     if unpack == "":
         return func
     elif unpack == "*":
-        return _partial(_starmap, func)
+        return starmap(func)
     elif unpack == "**":
-        return _partial(_star2map, func)
+        return star2map(func)
     elif unpack == "***":
-        return _partial(_star3map, func)
+        return star3map(func)
     else:
         raise ValueError(f"Unsupported unpack mode: {unpack}")
 
@@ -158,12 +181,13 @@ def _build_selector(single, multi, attr: bool = False):
     return reflector
 
 
-__all__ = [
-    "map",
-    "select",
-    "select_from_attr",
-    "select_from_item",
-    "select_as_tuple",
-    "select_as_dict",
-    "reflect",
-]
+def select_recursive(func):
+    def wrapper(x):
+        node = x
+        while node:
+            yield node
+            try:
+                node = None
+                node = func(x)
+            except Exception:
+                ...

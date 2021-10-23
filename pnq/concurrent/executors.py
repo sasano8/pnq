@@ -90,8 +90,10 @@ class ExecutorWrapper(PExecutor, PExecutable):
 
         if isinstance(executor, _ProcessPoolExecutor):
             self._is_closed = lambda: executor._shutdown_thread  # type: ignore
+            self._is_cpubound = True
         elif isinstance(executor, _ThreadPoolExecutor):
             self._is_closed = lambda: executor._shutdown
+            self._is_cpubound = False
         else:
             raise TypeError()
 
@@ -119,6 +121,10 @@ class ExecutorWrapper(PExecutor, PExecutable):
     def max_workers(self) -> int:
         return self.executor._max_workers
 
+    @property
+    def is_cpubound(self) -> bool:
+        return self._is_cpubound
+
     def submit(self, func, *args, **kwargs):
         if asyncio.iscoroutinefunction(func):
             return self.executor.submit(
@@ -145,7 +151,7 @@ class PoolContext:
         self.kwargs = kwargs
         self.executor = None
 
-    def __enter__(self):
+    def __enter__(self) -> PExecutor:
         if self.executor:
             raise RuntimeError()
 
@@ -157,7 +163,7 @@ class PoolContext:
             stack.pop_all()
         return executor_wrapper
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> PExecutor:
         if self.executor:
             raise RuntimeError()
 
@@ -185,10 +191,10 @@ class ProcessPoolExecutor(PoolContext):
     POOL_WRAPEER = ExecutorWrapper
 
     async def __aenter__(self):
-        raise NotImplementedError()
+        return self.__enter__()
 
     async def __aexit__(self, *args, **kwargs):
-        raise NotImplementedError()
+        return self.__exit__(*args, **kwargs)
 
     @property
     def is_async_only(self):
@@ -200,10 +206,10 @@ class ThreadPoolExecutor(PoolContext):
     POOL_WRAPEER = ExecutorWrapper
 
     async def __aenter__(self):
-        raise NotImplementedError()
+        return self.__enter__()
 
     async def __aexit__(self, *args, **kwargs):
-        raise NotImplementedError()
+        return self.__exit__(*args, **kwargs)
 
     @property
     def is_async_only(self):
@@ -303,7 +309,7 @@ class AsyncPoolExecutor(PExecutor, PExecutable):
     def __exit__(self, *args, **kwargs):
         raise NotImplementedError()
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> PExecutor:
         if self._loop:
             raise RuntimeError("already initialized.")
 
@@ -384,7 +390,9 @@ class AsyncPoolExecutor(PExecutor, PExecutable):
             logging.exception(str(e))
             raise
 
-    def _asubmit_inner(self, is_async, func, args, kwargs):
+    def _asubmit_inner(self, is_async, func, args=None, kwargs=None):
+        args = args or tuple()
+        kwargs = kwargs or {}
         if self.is_closed:
             raise RuntimeError("cannot schedule new futures after shutdown")
 
@@ -398,8 +406,31 @@ class AsyncPoolExecutor(PExecutor, PExecutable):
         raise NotImplementedError()
 
     def asubmit(self, func, *args, **kwargs):
-        is_async = asyncio.iscoroutinefunction(func)
+        if isinstance(func, partial):
+            target = func.args[0]
+        else:
+            target = func
+
+        is_async = asyncio.iscoroutinefunction(target)
         return self._asubmit_inner(is_async, func, args, kwargs)
+
+    def amap(self, func, iterable):
+        return self._amap(func, iterable)
+
+    def _amap(self, func, iterable):
+        if isinstance(func, partial):
+            target = func.args[0]
+        else:
+            target = func
+
+        if asyncio.iscoroutinefunction(target):
+
+            async def main():
+                return await asyncio.gather(*(func(x) for x in iterable))
+
+            return asyncio.create_task(main())
+        else:
+            return self._asubmit_inner(False, map, (func, iterable))
 
     @property
     def running_task_count(self):
@@ -415,6 +446,10 @@ class AsyncPoolExecutor(PExecutor, PExecutable):
     @property
     def max_workers(self):
         return self._max_workers
+
+    @property
+    def is_cpubound(self):
+        return False
 
 
 # class DummyPoolExecutor(OverrideExecutor, _Executor):
@@ -472,3 +507,7 @@ class DummyPoolExecutor(OverrideExecutor):
 
     async def __aexit__(self, *args, **kwargs):
         return self.__exit__(*args, **kwargs)
+
+    @property
+    def is_cpubound(self):
+        return False

@@ -1,4 +1,5 @@
 from .._sync_generate.queries import *  # noqa
+from .._sync_generate.queries import _filter, _map
 
 _zip = zip
 _enumerate = enumerate

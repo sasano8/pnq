@@ -38,6 +38,21 @@ async def do_heavy_async(x):
     return x
 
 
+@to_sync
+async def test_is_cpubound():
+    with ProcessPool(1) as pool:
+        assert pool.is_cpubound
+
+    with ThreadPool(1) as pool:
+        assert not pool.is_cpubound
+
+    async with AsyncPool(1) as pool:
+        assert not pool.is_cpubound
+
+    with DummyPool(1) as pool:
+        assert not pool.is_cpubound
+
+
 def test_sync_func():
     futures = []
 
@@ -244,13 +259,13 @@ async def test_context_err_handle():
         with AsyncPool(2) as pool:
             ...
 
-    with pytest.raises(NotImplementedError):
+    with pytest.raises(Exception, match="err"):
         async with ProcessPool(2) as pool:
-            ...
+            raise Exception("err")
 
-    with pytest.raises(NotImplementedError):
+    with pytest.raises(Exception, match="err"):
         async with ThreadPool(2) as pool:
-            ...
+            raise Exception("err")
 
     with pytest.raises(Exception, match="err"):
         async with AsyncPool(2) as pool:

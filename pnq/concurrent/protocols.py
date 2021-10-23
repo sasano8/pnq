@@ -39,6 +39,10 @@ class PExecutor(Protocol):
     def max_workers(self) -> int:
         ...
 
+    @property
+    def is_cpubound(self) -> bool:
+        ...
+
 
 class PExecutable(Protocol):
     def __executor__(self) -> PExecutor:

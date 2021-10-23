@@ -31,16 +31,18 @@ class Query:
         self.source = source
 
     def __iter__(self, *args, **kwds):
-        return self._sit(*args, **kwds)
+        # return self._sit(*args, **kwds)
+        return self._impl_iter()
 
     def __aiter__(self, *args, **kwds):
-        typ, it = self.__iter_or_aiter__()
-        if typ == 0:
-            self._sit(*args, **kwds)
-        elif typ == 1:
-            self._ait(*args, **kwds)
-        else:
-            raise TypeError("{!r} is not iterable".format(self.source))
+        # typ, it = self.__iter_or_aiter__()
+        # if typ == 0:
+        #     self._sit(*args, **kwds)
+        # elif typ == 1:
+        #     self._ait(*args, **kwds)
+        # else:
+        #     raise TypeError("{!r} is not iterable".format(self.source))
+        return self._impl_aiter()
 
     def __iter_or_aiter__(self):
         get_iter = getattr(self.source, "__iter_or_aiter__", None)
@@ -101,9 +103,9 @@ class Reflect(Map):
         super().__init__(source, selector)
 
 
-class MapAwait(Query):
-    _ait = sm | A.queries.map_await
-    _sit = sm | S.queries.map_await
+class Gather(Query):
+    _ait = sm | A.queries.gather
+    _sit = sm | S.queries.gather
 
 
 class Flat(Query):
@@ -239,10 +241,29 @@ class RequestAsync(Query):
         return (self.func, self.timeout, self.retry), {}
 
 
-# PEP 3148
 class Parallel(Query):
+    """
+    PEP 3148
+    I/Oバウンドを効率化するにはchunksizeを1にする。
+    CPUをフル活用するにはchunksizeを大きくする。
+    ProcessPoolのみchunksizeは有効
+    """
+
     _ait = sm | A.queries.parallel
     _sit = sm | S.queries.parallel
+
+    def __init__(self, source, func, executor=None, *, unpack="", chunksize=1):
+        super().__init__(source)
+        self.func = func
+        self.unpack = unpack
+        self.executor = executor
+        self.chunksize = chunksize
+
+    def __args__(self):
+        return (self.func, self.executor), {
+            "unpack": self.unpack,
+            "chunksize": self.chunksize,
+        }
 
 
 class Debug(Query):

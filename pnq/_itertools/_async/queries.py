@@ -1,8 +1,11 @@
 import asyncio
 from concurrent.futures import Future as ConcurrentFuture
+from functools import partial
 from typing import AsyncIterable, AsyncIterator, List, TypeVar
 
+from ...selectors import map as unpacking
 from ..common import Listable, name_as
+from ..protocols import PExecutor
 
 T = TypeVar("T")
 
@@ -185,19 +188,38 @@ async def request_async(source: AsyncIterable[T], func, retry: int = None):
     ...
 
 
+def _procceed(func, iterable):
+    return [func(x) for x in iterable]
+
+
+async def _procceed_async(func, iterable):
+    return [await func(x) for x in iterable]
+
+
 async def parallel(
-    source: AsyncIterable[T], func, unpack="", executor=None, chunksize=None
+    source: AsyncIterable[T], func, executor: PExecutor, *, unpack="", chunksize=1
 ):
-    """PEP 3148"""
-    if chunksize is None:
-        async for x in source:
-            yield await executor.asubmit(x)
-    else:
+    new_func = unpacking(func, unpack)
+
+    if executor.is_cpubound and chunksize != 1:
+        runner = _procceed_async if asyncio.iscoroutine(func) else _procceed
+        runner = partial(runner, new_func)
+
+        tasks = []
         async for chunck in chunked(source, chunksize):
-            future = executor.amap(func, chunck)
-            result = await future
-            for x in result:
+            tasks.append(executor.asubmit(runner, chunck))
+
+        for task in tasks:
+            for x in await task:
                 yield x
+
+    else:
+        tasks = []
+        async for x in source:
+            tasks.append(executor.asubmit(new_func, x))
+
+        for task in tasks:
+            yield await task
 
 
 async def debug(source: AsyncIterable[T], breakpoint=lambda x: x, printer=print):
