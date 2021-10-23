@@ -6,6 +6,7 @@ from typing import Iterable, TypeVar
 from ...selectors import flat_recursive as _flat_recursive
 from ...selectors import map as unpacking
 from ..common import Listable, name_as
+from ..exceptions import DuplicateElementError, MustError, MustTypeError
 from ..protocols import PExecutor
 
 T = TypeVar("T")
@@ -187,24 +188,19 @@ def _procceed_async(func, iterable):
 
 def parallel(source: Iterable[T], func, executor: PExecutor, *, unpack="", chunksize=1):
     new_func = unpacking(func, unpack)
+    submit = executor.asubmit
 
     if executor.is_cpubound and chunksize != 1:
         runner = _procceed_async if asyncio.iscoroutine(func) else _procceed
         runner = partial(runner, new_func)
 
-        tasks = []
-        for chunck in chunked(source, chunksize):
-            tasks.append(executor.asubmit(runner, chunck))
-
+        tasks = [submit(runner, chunck) for chunck in chunked(source, chunksize)]
         for task in tasks:
             for x in task:
                 yield x
 
     else:
-        tasks = []
-        for x in source:
-            tasks.append(executor.asubmit(new_func, x))
-
+        tasks = [submit(new_func, x) for x in source]
         for task in tasks:
             yield task
 

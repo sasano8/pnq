@@ -6,6 +6,7 @@ from typing import AsyncIterable, TypeVar
 from ...selectors import flat_recursive as _flat_recursive
 from ...selectors import map as unpacking
 from ..common import Listable, name_as
+from ..exceptions import DuplicateElementError, MustError, MustTypeError
 from ..protocols import PExecutor
 
 T = TypeVar("T")

@@ -3,6 +3,8 @@ from decimal import Decimal, InvalidOperation
 from typing import Any, Callable, Iterable, NoReturn, Sequence, TypeVar, Union
 
 from ..common import Listable, name_as
+from ..exceptions import NoElementError, NotOneElementError
+from ..op import MAP_ASSIGN_OP, TH_ASSIGN_OP, TH_ROUND
 
 T = TypeVar("T")
 
@@ -82,9 +84,6 @@ def _max(source: Iterable[T], selector=None, default=NoReturn):
         return max(Listable(source, selector), default=default)
 
 
-TH_ROUND = None
-
-
 def average(
     self: Iterable[T],
     selector=lambda x: x,
@@ -118,9 +117,6 @@ def average(
         return float(result)
     else:
         return result
-
-
-TH_ASSIGN_OP = None
 
 
 def reduce(

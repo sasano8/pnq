@@ -3,6 +3,8 @@ from decimal import Decimal, InvalidOperation
 from typing import Any, AsyncIterable, Callable, NoReturn, Sequence, TypeVar, Union
 
 from ..common import Listable, name_as
+from ..exceptions import NoElementError, NotOneElementError
+from ..op import MAP_ASSIGN_OP, TH_ASSIGN_OP, TH_ROUND
 
 T = TypeVar("T")
 
@@ -82,9 +84,6 @@ async def _max(source: AsyncIterable[T], selector=None, default=NoReturn):
         return max(await Listable(source, selector), default=default)
 
 
-TH_ROUND = None
-
-
 async def average(
     self: AsyncIterable[T],
     selector=lambda x: x,
@@ -118,9 +117,6 @@ async def average(
         return float(result)
     else:
         return result
-
-
-TH_ASSIGN_OP = None
 
 
 async def reduce(

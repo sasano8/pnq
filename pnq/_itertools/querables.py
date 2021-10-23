@@ -534,7 +534,6 @@ class FinalizerBase:
     reduce = S.finalizers.reduce
     contains = S.finalizers.contains
     concat = S.finalizers.concat
-    each = S.finalizers.each
     one = S.finalizers.one
     one_or = S.finalizers.one_or
     one_or_raise = S.finalizers.one_or_raise
@@ -544,6 +543,7 @@ class FinalizerBase:
     last = S.finalizers.last
     last_or = S.finalizers.last_or
     last_or_raise = S.finalizers.last_or_raise
+    each = S.finalizers.each
 
 
 class AsyncFinalizerBase:
