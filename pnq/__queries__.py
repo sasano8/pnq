@@ -32,6 +32,8 @@ except:
     from typing_extensions import Literal
 
 from . import actions
+
+# from ._itertools import querables as queries
 from .base import builder, core, finalizers, queries
 from .base.exceptions import NoElementError, NotFoundError, NotOneElementError
 from .base.op import TH_ASSIGN_OP
@@ -444,6 +446,8 @@ if not TYPE_CHECKING:
         pass
 
     from .base import queries
+
+    # from ._itertools import querables as queries
 
     classess = Queries()
 

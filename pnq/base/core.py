@@ -46,15 +46,6 @@ def get_iter_type(source):
         raise TypeError(f"{source} has no __iter__ or __aiter__")
 
 
-def to_query(source):
-    if isinstance(source, list):
-        return SyncSourceWrapper(source)
-    elif hasattr(source, "__aiter__"):
-        return Query(source)
-    else:
-        raise NotImplementedError()
-
-
 class Query(Iterable[T], AsyncIterable[T], Generic[T]):
     """Queryクラスをチェインするのに使うか、__iter__と__aiter__の挙動をソースに任せる場合に使います。"""
 
