@@ -15,8 +15,11 @@ T = TypeVar("T")
 @name_as("map")
 def _map(source: AsyncIterable[T], selector, unpack=""):
     if selector is None:
-        return source
+        return source.__aiter__()
     else:
+        if selector is str:
+            selector = lambda x: "" if x is None else str(x)
+
         if unpack == "":
             return (selector(x) async for x in source)
         elif unpack == "*":
@@ -418,3 +421,10 @@ async def order_by_shuffle(source: AsyncIterable[T]):
 
     for x in sorted(await Listable(source), key=lambda k: random.random()):
         yield x
+
+
+async def sleep(source: AsyncIterable[T], seconds: float):
+    sleep = asyncio.sleep
+    async for v in source:
+        yield v
+        await sleep(seconds)

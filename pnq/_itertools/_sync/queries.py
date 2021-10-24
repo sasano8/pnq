@@ -1,8 +1,10 @@
+import time
+
 from .._sync_generate.queries import *  # noqa
-from .._sync_generate.queries import _filter, _map
+from .._sync_generate.queries import _enumerate, _filter, _map
 
 _zip = zip
-_enumerate = enumerate
+# _enumerate = enumerate
 
 
 def gather(source, selector=None, parallel: int = 1, timeout=None):  # type: ignore
@@ -22,3 +24,12 @@ def order_by_reverse(source):  # type: ignore
             yield from reversed(list(source))
 
         return reverse_iterator()
+
+
+def sleep(source, seconds: float):  # type: ignore
+    # FIXME: テストを通すためとりあえず現在の実装に合わせている
+    raise NotImplementedError()
+    sleep = time.sleep
+    for v in source:
+        yield v
+        sleep(seconds)

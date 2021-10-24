@@ -183,13 +183,13 @@ def _build_selector(single, multi, attr: bool = False):
 
 def flat_recursive(func):
     def wrapper(x):
-        node = x
-        while node:
-            yield node
-            try:
-                node = None
-                node = func(x)
-            except Exception:
-                ...
+        yield x
+        try:
+            nodes = func(x)
+            for node in nodes:
+                yield from wrapper(node)
+
+        except Exception:
+            ...
 
     return wrapper

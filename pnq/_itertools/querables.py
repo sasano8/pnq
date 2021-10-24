@@ -1,10 +1,20 @@
-from typing import Callable, NoReturn, Union
+from typing import (
+    TYPE_CHECKING,
+    AsyncIterable,
+    Callable,
+    Iterable,
+    NoReturn,
+    TypeVar,
+    Union,
+)
 
 from pnq._itertools.common import name_as
 
 from .. import selectors
 from . import _async as A
 from . import _sync as S
+from .core import IterType
+from .core import Query as QueryBase
 
 
 def no_implement(*args, **kwargs):
@@ -16,43 +26,36 @@ class Staticmethod:
         return staticmethod(other)
 
 
+exports = []
+
+
+def export(cls):
+    exports.append(cls)
+    return cls
+
+
+T = TypeVar("T")
 sm = Staticmethod()
 
 
 #################################
 # query
 #################################
-class Query:
-    _iter_type = 0
-    # _sit: Callable
-    # _ait: Callable
+class Query(QueryBase[T]):
+    _iter_type = IterType.BOTH
 
-    def __init__(self, source):
-        self.source = source
+    if TYPE_CHECKING:
+        _sit: Callable
+        _ait: Callable
 
-    def __iter__(self, *args, **kwds):
-        # return self._sit(*args, **kwds)
+    def __init__(self, source: Union[Iterable[T], AsyncIterable[T]]):
+        super().__init__(source)
+
+    def __iter__(self):
         return self._impl_iter()
 
-    def __aiter__(self, *args, **kwds):
-        # typ, it = self.__iter_or_aiter__()
-        # if typ == 0:
-        #     self._sit(*args, **kwds)
-        # elif typ == 1:
-        #     self._ait(*args, **kwds)
-        # else:
-        #     raise TypeError("{!r} is not iterable".format(self.source))
+    def __aiter__(self):
         return self._impl_aiter()
-
-    def __iter_or_aiter__(self):
-        get_iter = getattr(self.source, "__iter_or_aiter__", None)
-        if get_iter:
-            return get_iter()
-        else:
-            if hasattr(self.source, "__aiter__"):
-                return 1, self.source.__aiter__()
-            else:
-                return 0, self.source.__iter__()
 
     def __args__(self):
         return tuple(), {}
@@ -66,6 +69,7 @@ class Query:
         return self._ait(self.source, *args, **kwargs)
 
 
+@export
 class Map(Query):
     _ait = sm | A.queries._map
     _sit = sm | S.queries._map
@@ -79,35 +83,58 @@ class Map(Query):
         return (self.selector, self.unpack), {}
 
 
+@export
+class MapNullable(Map):
+    ...
+
+
+@export
+class UnpackPos(Map):
+    def __init__(self, source, selector):
+        super().__init__(source, selector, unpack="*")
+
+
+@export
+class UnpackKw(Map):
+    def __init__(self, source, selector):
+        super().__init__(source, selector, unpack="**")
+
+
+@export
 class Select(Map):
     def __init__(self, source, *args, attr=False):
         selector = selectors.select(*args, attr=attr)
         super().__init__(source, selector)
 
 
+@export
 class SelectAsTuple(Map):
     def __init__(self, source, *args, attr=False):
         selector = selectors.select_as_tuple(*args, attr=attr)
         super().__init__(source, selector)
 
 
+@export
 class SelectAsDict(Map):
     def __init__(self, source, *args, attr=False, default=NoReturn):
         selector = selectors.select_as_dict(*args, attr=attr, default=default)
         super().__init__(source, selector)
 
 
+@export
 class Reflect(Map):
     def __init__(self, source, mapping, attr=False):
         selector = selectors.reflect(mapping, attr=attr)
         super().__init__(source, selector)
 
 
+@export
 class Gather(Query):
     _ait = sm | A.queries.gather
     _sit = sm | S.queries.gather
 
 
+@export
 class Flat(Query):
     _ait = sm | A.queries.flat
     _sit = sm | S.queries.flat
@@ -120,6 +147,7 @@ class Flat(Query):
         return (self.selector,), {}
 
 
+@export
 class FlatRecursive(Query):
     _ait = sm | A.queries.flat_recursive
     _sit = sm | S.queries.flat_recursive
@@ -132,6 +160,7 @@ class FlatRecursive(Query):
         return (self.selector,), {}
 
 
+@export
 class PivotUnstack(Query):
     _ait = sm | A.queries.pivot_unstack
     _sit = sm | S.queries.pivot_unstack
@@ -144,11 +173,13 @@ class PivotUnstack(Query):
         return (self.default,), {}
 
 
-class Pivotstack(Query):
+@export
+class PivotStack(Query):
     _ait = sm | A.queries.pivot_stack
     _sit = sm | S.queries.pivot_stack
 
 
+@export
 class Enumerate(Query):
     _ait = sm | A.queries._enumerate
     _sit = sm | S.queries._enumerate
@@ -162,6 +193,7 @@ class Enumerate(Query):
         return (self.start, self.step), {}
 
 
+@export
 class GroupBy(Query):
     _ait = sm | A.queries.group_by
     _sit = sm | S.queries.group_by
@@ -171,19 +203,22 @@ class GroupBy(Query):
         self.selector = selector
 
     def __args__(self):
-        return (self.selector), {}
+        return (self.selector,), {}
 
 
+@export
 class Join(Query):
     _ait = sm | A.queries.join
     _sit = sm | S.queries.join
 
 
+@export
 class GroupJoin(Query):
     _ait = sm | A.queries.group_join
     _sit = sm | S.queries.group_join
 
 
+@export
 class Chunked(Query):
     _ait = sm | A.queries.chunked
     _sit = sm | S.queries.chunked
@@ -196,9 +231,10 @@ class Chunked(Query):
             raise ValueError("count must be greater than 0")
 
     def __args__(self):
-        return (self.size), {}
+        return (self.size,), {}
 
 
+@export
 class Tee(Query):
     _ait = sm | A.queries.tee
     _sit = sm | S.queries.tee
@@ -211,9 +247,10 @@ class Tee(Query):
             raise ValueError("count must be greater than 0")
 
     def __args__(self):
-        return (self.size), {}
+        return (self.size,), {}
 
 
+@export
 class Request(Query):
     _ait = sm | A.queries.request
     _sit = sm | S.queries.request
@@ -225,9 +262,10 @@ class Request(Query):
         self.timeout = timeout
 
     def __args__(self):
-        return (self.func, self.timeout, self.retry), {}
+        return (self.func, self.retry), {}
 
 
+@export
 class RequestAsync(Query):
     _ait = sm | A.queries.request_async
     _sit = sm | S.queries.request_async
@@ -241,6 +279,7 @@ class RequestAsync(Query):
         return (self.func, self.timeout, self.retry), {}
 
 
+@export
 class Parallel(Query):
     """
     PEP 3148
@@ -268,11 +307,21 @@ class Parallel(Query):
         }
 
 
+@export
 class Debug(Query):
     _ait = sm | A.queries.debug
     _sit = sm | S.queries.debug
 
+    def __init__(self, source, breakpoint=lambda x: x, printer=print):
+        super().__init__(source)
+        self.breakpoint = breakpoint
+        self.printer = printer
 
+    def __args__(self):
+        return (self.breakpoint, self.printer), {}
+
+
+@export
 class DebugPath(Query):
     def __init__(self, source, func=lambda x: -10, async_func=lambda x: 10):
         super().__init__(source)
@@ -293,6 +342,7 @@ class DebugPath(Query):
             yield async_func(v)
 
 
+@export
 class UnionAll(Query):
     _ait = sm | A.queries.union_all
     _sit = sm | S.queries.union_all
@@ -303,37 +353,44 @@ class UnionAll(Query):
 #     _sit = S.queries.extend
 
 
+@export
 @name_as("Union")
 class _Union(Query):
     _ait = sm | A.queries.union
     _sit = sm | S.queries.union
 
 
+@export
 class UnionIntersect(Query):
     _ait = sm | A.queries.union_intersect
     _sit = sm | S.queries.union_intersect
 
 
+@export
 class UnionMinus(Query):
     _ait = sm | A.queries.union_intersect
     _sit = sm | S.queries.union_intersect
 
 
+@export
 class Zip(Query):
     _ait = sm | no_implement
     _sit = sm | S.queries._zip
 
 
+@export
 class Compress(Query):
     _ait = sm | A.queries.compress
     _sit = sm | S.queries.compress
 
 
+@export
 class Cartesian(Query):
     _ait = sm | A.queries.cartesian
     _sit = sm | S.queries.cartesian
 
 
+@export
 class Filter(Query):
     _ait = sm | A.queries._filter
     _sit = sm | S.queries._filter
@@ -347,6 +404,7 @@ class Filter(Query):
         return (self.predicate, self.unpack), {}
 
 
+@export
 class Must(Query):
     _ait = sm | A.queries.must
     _sit = sm | S.queries.must
@@ -360,6 +418,7 @@ class Must(Query):
         return (self.predicate, self.msg), {}
 
 
+@export
 class FilterType(Query):
     _ait = sm | A.queries.filter_type
     _sit = sm | S.queries.filter_type
@@ -372,6 +431,7 @@ class FilterType(Query):
         return self.types, {}
 
 
+@export
 class MustType(Query):
     _ait = sm | A.queries.must_type
     _sit = sm | S.queries.must_type
@@ -384,6 +444,7 @@ class MustType(Query):
         return self.types, {}
 
 
+@export
 class FilterUnique(Query):
     _ait = sm | A.queries.filter_unique
     _sit = sm | S.queries.filter_unique
@@ -393,9 +454,10 @@ class FilterUnique(Query):
         self.selector = selector
 
     def __args__(self):
-        return self.selector, {}
+        return (self.selector,), {}
 
 
+@export
 class MustUnique(Query):
     _ait = sm | A.queries.must_unique
     _sit = sm | S.queries.must_unique
@@ -405,19 +467,22 @@ class MustUnique(Query):
         self.selector = selector
 
     def __args__(self):
-        return self.selector, {}
+        return (self.selector,), {}
 
 
+@export
 class FilterKeys(Query):
     _ait = sm | A.queries.filter_keys
     _sit = sm | S.queries.filter_keys
 
 
+@export
 class MustKeys(Query):
     _ait = sm | A.queries.must_keys
     _sit = sm | S.queries.must_keys
 
 
+@export
 class Take(Query):
     _ait = sm | A.queries.take
     _sit = sm | S.queries.take
@@ -444,11 +509,13 @@ class Take(Query):
         return (self.r,), {}
 
 
+@export
 class Skip(Take):
     _ait = sm | A.queries.skip
     _sit = sm | S.queries.skip
 
 
+@export
 class TakePage(Take):
     _ait = sm | A.queries.take
     _sit = sm | S.queries.take
@@ -463,6 +530,7 @@ class TakePage(Take):
         super().__init__(source, range(start, stop))
 
 
+@export
 class TakeWhile(Query):
     _ait = sm | A.queries.take_while
     _sit = sm | S.queries.take_while
@@ -475,11 +543,13 @@ class TakeWhile(Query):
         return (self.predicate,), {}
 
 
+@export
 class SkipWhile(TakeWhile):
     _ait = sm | A.queries.skip_while
     _sit = sm | S.queries.skip_while
 
 
+@export
 class OrderBy(Query):
     _ait = sm | A.queries.order_by
     _sit = sm | S.queries.order_by
@@ -493,6 +563,7 @@ class OrderBy(Query):
         return (self.selector, self.desc), {}
 
 
+@export
 class OrderBySelect(OrderBy):
     _ait = sm | A.queries.order_by
     _sit = sm | S.queries.order_by
@@ -509,14 +580,29 @@ class OrderBySelect(OrderBy):
         super().__init__(source, selector, desc)
 
 
+@export
 class OrderByReverse(Query):
     _ait = sm | A.queries.order_by_reverse
     _sit = sm | S.queries.order_by_reverse
 
 
+@export
 class OrderByShuffle(Query):
     _ait = sm | A.queries.order_by_shuffle
     _sit = sm | S.queries.order_by_shuffle
+
+
+@export
+class Sleep(Query):
+    _ait = sm | A.queries.sleep
+    _sit = sm | S.queries.sleep
+
+    def __init__(self, source, seconds):
+        super().__init__(source)
+        self.seconds = seconds
+
+    def __args__(self):
+        return (self.seconds,), {}
 
 
 #################################
