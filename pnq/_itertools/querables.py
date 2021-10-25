@@ -145,9 +145,6 @@ class Flat(Query):
         self.selector = selector
         self._args = Arguments(selector)
 
-    def __args__(self):
-        return (self.selector,), {}
-
 
 @export
 class FlatRecursive(Query):
@@ -519,9 +516,6 @@ class MustKeys(Query):
 
         self._ref = source
         self._getter = getter
-
-    def __args__(self):
-        return self.keys, {}
 
     def _impl_iter(self):
         source = self._ref
