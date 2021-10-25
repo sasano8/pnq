@@ -764,3 +764,35 @@ class AsyncFinalizer(AsyncFinalizerBase):
 
     async def _result_async(self):
         return [x async for x in self]
+
+
+# いらない！！！
+@export
+class AsyncMap(Query):
+    iter_type = IterType.ASYNC
+
+    def __init__(self, source, selector):
+        super().__init__(source)
+        self.selector = selector
+
+    async def _impl_aiter(self):
+        selector = self.selector
+        async for x in self.source:
+            yield await selector(x)
+
+
+# TODO： いらない！！！
+@export
+class Lazy(Query):
+    def __init__(self, source, finalizer, *args, **kwargs):
+        super().__init__(source)
+        self.finalizer = finalizer
+        self.args = args
+        self.kwargs = kwargs
+
+    def __call__(self):
+        return self.finalizer(self.source, *self.args, **self.kwargs)
+
+    def __await__(self):
+        coro = self.finalizer(self.source, *self.args, **self.kwargs)
+        return coro.__await__()

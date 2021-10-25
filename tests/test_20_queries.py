@@ -3,7 +3,17 @@ from typing import List
 
 import pytest
 
-from pnq.base.exceptions import (
+from pnq._itertools._async.queries import _take_page_calc
+
+# from pnq.base.exceptions import (
+#     DuplicateElementError,
+#     MustError,
+#     MustTypeError,
+#     NoElementError,
+#     NotFoundError,
+#     NotOneElementError,
+# )
+from pnq._itertools.exceptions import (
     DuplicateElementError,
     MustError,
     MustTypeError,
@@ -163,8 +173,8 @@ class Test000_Init:
 
 class Test009_Sleep:
     def test_sync(self):
-        with pytest.raises(NotImplementedError):
-            pnq([1, 2, 3]).sleep(0).to(list) == [1, 2, 3]
+        # with pytest.raises(NotImplementedError):
+        pnq([1, 2, 3]).sleep(0).to(list) == [1, 2, 3]
 
     def test_async(self):
         import asyncio
@@ -172,8 +182,7 @@ class Test009_Sleep:
         results = []
 
         async def func():
-            q = pnq([1, 2, 3]).sleep_async(0)
-            async for elm in pnq([1, 2, 3]).sleep_async(0):
+            async for elm in pnq([1, 2, 3]).sleep(0):
                 results.append(elm)
 
         asyncio.run(func())
@@ -225,6 +234,7 @@ class Test010_Finalizer:
             assert pnq([1]).to(to_list) == [1]
             assert pnq({1: 2}).to(to_list) == [(1, 2)]
 
+        @pytest.mark.skipif(True, reason="[each_asyncは不要だと思う。除去予定]")
         def test_each(self):
             import asyncio
 
@@ -949,7 +959,8 @@ class Test020_Transform:
     def test_request(self):
         from datetime import datetime
 
-        from pnq.base.requests import Response
+        # from pnq.base.requests import Response
+        from pnq._itertools.requests import Response
 
         result = []
 
@@ -988,7 +999,8 @@ class Test020_Transform:
         async def main():
             from datetime import datetime
 
-            from pnq.base.requests import Response
+            # from pnq.base.requests import Response
+            from pnq._itertools.requests import Response
 
             result = []
 
@@ -1221,27 +1233,33 @@ class Test050_Partition:
         pass
 
     def test_take_page(self):
-        from pnq.actions import take_page_calc
+        # from pnq.actions import take_page_calc
+        from pnq._itertools._sync.queries import _take_page_calc as take_page_calc
 
         with pytest.raises(ValueError):
-            take_page_calc(0, -1)
+            take_page_calc(1, -1)
 
-        assert take_page_calc(-1, 0) == (0, 0)
+        take_page_calc(1, 0)
 
-        assert take_page_calc(0, 0) == (0, 0)
-        assert take_page_calc(1, 0) == (0, 0)
-        assert take_page_calc(2, 0) == (0, 0)
-        assert take_page_calc(3, 0) == (0, 0)
+        with pytest.raises(ValueError):
+            take_page_calc(0, 0)
 
-        assert take_page_calc(0, 1) == (-1, 0)
-        assert take_page_calc(1, 1) == (0, 1)
-        assert take_page_calc(2, 1) == (1, 2)
-        assert take_page_calc(3, 1) == (2, 3)
+        # assert take_page_calc(-1, 0) == range(0, 0)
 
-        assert take_page_calc(0, 2) == (-2, 0)
-        assert take_page_calc(1, 2) == (0, 2)
-        assert take_page_calc(2, 2) == (2, 4)
-        assert take_page_calc(3, 2) == (4, 6)
+        # assert take_page_calc(0, 0) == range(0, 0)
+        assert take_page_calc(1, 0) == range(0, 0)
+        assert take_page_calc(2, 0) == range(0, 0)
+        assert take_page_calc(3, 0) == range(0, 0)
+
+        # assert take_page_calc(0, 1) == range(-1, 0)
+        assert take_page_calc(1, 1) == range(0, 1)
+        assert take_page_calc(2, 1) == range(1, 2)
+        assert take_page_calc(3, 1) == range(2, 3)
+
+        # assert take_page_calc(0, 2) == range(-2, 0)
+        assert take_page_calc(1, 2) == range(0, 2)
+        assert take_page_calc(2, 2) == range(2, 4)
+        assert take_page_calc(3, 2) == range(4, 6)
 
         arr = [1, 2, 3, 4, 5, 6]
 

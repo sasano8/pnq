@@ -1,19 +1,20 @@
 from typing import Any, Callable, Coroutine, TypeVar
 
 from .core import Query, QueryAsync, QueryDict, QueryNormal, QuerySeq, QuerySet
+from .requests import CancelToken
 
 R = TypeVar("R")
 
 
-class CancelToken:
-    def __init__(self):
-        self.is_cancelled = False
+# class CancelToken:
+#     def __init__(self):
+#         self.is_cancelled = False
 
-    def is_running(self, *args):
-        return not self.is_cancelled
+#     def is_running(self, *args):
+#         return not self.is_cancelled
 
-    def cancel(self):
-        self.is_cancelled = True
+#     def cancel(self):
+#         self.is_cancelled = True
 
 
 class Builder:

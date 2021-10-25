@@ -1,7 +1,8 @@
 import json
 from typing import TypeVar
 
-from .base.queries import Query as QueryBase
+# from .base.queries import Query as QueryBase
+from ._itertools.querables import Query as QueryBase
 from .queries import Query
 
 T = TypeVar("T")

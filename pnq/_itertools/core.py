@@ -94,12 +94,16 @@ class Query(PQuery[T]):
 
     def __iter__(self) -> Iterator[T]:
         if not (self.run_iter_type & IterType.NORMAL):
-            raise NotImplementedError(f"{self.__class__} can't __iter__()")
+            raise NotImplementedError(
+                f"{self.__class__.__name__}({self.source}) can't __iter__()"
+            )
         return self._impl_iter()
 
     def __aiter__(self) -> AsyncIterator[T]:
         if not (self.run_iter_type & IterType.ASYNC):
-            raise NotImplementedError(f"{self.__class__} can't __aiter__()")
+            raise NotImplementedError(
+                f"{self.__class__.__name__}({self.source}) can't __aiter__()"
+            )
         return self._impl_aiter()
 
     def _impl_iter(self):

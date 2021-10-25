@@ -3,8 +3,13 @@ from functools import wraps
 
 import pytest
 
-from pnq.base.core import IterType, Query, QueryNormal, QuerySyncToAsync
-from pnq.base.queries import AsyncMap, DebugPath, Lazy, Map, Sleep
+from pnq._itertools import AsyncMap, DebugPath, Lazy, Map, Sleep
+
+# from pnq.base.core import IterType, Query, QueryNormal, QuerySyncToAsync
+# from pnq.base.queries import AsyncMap, DebugPath, Lazy, Map, Sleep
+from pnq._itertools.core import IterType, Query, QueryNormal, QuerySyncToAsync
+
+# import pnq
 
 
 def async_test(func):
@@ -16,6 +21,11 @@ def async_test(func):
         return asyncio.run(main())
 
     return wrapper
+
+
+async def aiter(iterable=[]):
+    for i in iterable:
+        yield i
 
 
 async def create_aiter():
@@ -129,13 +139,12 @@ class Test010_Async:
 
     @async_test
     async def test_sleep(self):
-        with pytest.raises(NotImplementedError, match="can't __iter__"):
-            list(Sleep(Query([1, 2, 3]), 0))
-
-        assert [x async for x in Sleep(Query([1, 2, 3]), 0)] == [1, 2, 3]
+        assert list(Sleep(Query([1, 2, 3]), 0)) == [1, 2, 3]
+        assert [x async for x in Sleep(Query(aiter([1, 2, 3])), 0)] == [1, 2, 3]
 
     def test_builder(self):
-        from pnq.base.builder import Builder
+        # from pnq.base.builder import Builder
+        from pnq._itertools.builder import Builder
 
         assert list(Builder.query([1, 2, 3])) == [1, 2, 3]
         assert list(Builder.query({1: "a", 2: "b"})) == [(1, "a"), (2, "b")]
@@ -143,8 +152,10 @@ class Test010_Async:
     def test_builder_run(self):
         import tempfile
 
-        from pnq.base.builder import Builder
-        from pnq.base.requests import CancelToken
+        # from pnq.base.builder import Builder
+        # from pnq.base.requests import CancelToken
+        from pnq._itertools.builder import Builder
+        from pnq._itertools.requests import CancelToken
 
         async def func_1():
             return 100

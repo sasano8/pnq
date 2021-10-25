@@ -1,7 +1,9 @@
 # ファイル名が.pyだとpytestにスキャンされ失敗するため、拡張子をつけない
 
 import sys
-from pnq.base.builder import Builder
+
+# from pnq.base.builder import Builder
+from pnq._itertools.builder import Builder
 import asyncio
 
 self_path = sys.argv[0]

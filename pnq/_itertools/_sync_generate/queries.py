@@ -429,6 +429,8 @@ def take_page(source: Iterable[T], page: int, size: int):
 
 
 def _take_page_calc(page: int, size: int):
+    if page < 1:
+        raise ValueError("page must be greater than 0")
     if size < 0:
         raise ValueError("size must be >= 0")
     start = (page - 1) * size

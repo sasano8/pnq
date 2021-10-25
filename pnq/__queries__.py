@@ -24,20 +24,24 @@ from typing import (
     overload,
 )
 
-from pnq.base.actions import result
-
 try:
     from typing import Literal
 except:
     from typing_extensions import Literal
 
-from . import actions
+from ._itertools import actions, builder, core, finalizers
+from ._itertools import querables as queries
+from ._itertools.exceptions import NoElementError, NotFoundError, NotOneElementError
+from ._itertools.op import TH_ASSIGN_OP
+from ._itertools.requests import Response
 
-# from ._itertools import querables as queries
-from .base import builder, core, finalizers, queries
-from .base.exceptions import NoElementError, NotFoundError, NotOneElementError
-from .base.op import TH_ASSIGN_OP
-from .base.requests import Response
+# from . import actions, core, builder, queries
+# from .base.exceptions import NoElementError, NotFoundError, NotOneElementError
+# from .base.op import TH_ASSIGN_OP
+# from .base.requests import Response
+
+# from .base import finalizers
+
 
 T = TypeVar("T")
 K = TypeVar("K")
@@ -427,8 +431,8 @@ class {{query.CLS}}:
     def sleep(self, seconds: float) -> "{{query.SELF_T}}":
         return queries.Sleep(self, seconds)
 
-    def sleep_async(self, seconds: float) -> "{{query.SELF_T}}":
-        return queries.Sleep(self, seconds)
+    # def sleep_async(self, seconds: float) -> "{{query.SELF_T}}":
+    #     return queries.Sleep(self, seconds)
 
     def zip(self):
         raise NotImplementedError()
@@ -445,9 +449,9 @@ if not TYPE_CHECKING:
     class Queries:
         pass
 
-    from .base import queries
+    # from .base import queries
 
-    # from ._itertools import querables as queries
+    from ._itertools import querables as queries
 
     classess = Queries()
 
