@@ -155,7 +155,9 @@ class Test010_Async:
         # from pnq.base.builder import Builder
         # from pnq.base.requests import CancelToken
         from pnq._itertools.builder import Builder
-        from pnq._itertools.requests import CancelToken
+
+        # from pnq._itertools.requests import CancelToken
+        from pnq.aio import CancelToken
 
         async def func_1():
             return 100

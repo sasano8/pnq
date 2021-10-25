@@ -10,10 +10,6 @@ from ..op import MAP_ASSIGN_OP, TH_ASSIGN_OP, TH_ROUND
 T = TypeVar("T")
 
 
-def diter():
-    ...
-
-
 def to(source, finalizer):
     return finalizer(source)
 
@@ -184,22 +180,12 @@ def concat(source: Iterable[T], selector=None, delimiter: str = ""):
 
 
 def each(source: Iterable[T], func=lambda x: x, unpack=""):
-    typ, it = diter(source)
-
-    if typ == 0:
-        if asyncio.iscoroutinefunction(func):
-            for elm in source:
-                func(elm)
-        else:
-            for elm in source:
-                func(elm)
-    elif typ == 1:
-        if asyncio.iscoroutinefunction(func):
-            for elm in source:
-                func(elm)
-        else:
-            for elm in source:
-                func(elm)
+    if asyncio.iscoroutinefunction(func):
+        for elm in source:
+            func(elm)
+    else:
+        for elm in source:
+            func(elm)
 
 
 def each_unpack(source: Iterable[T], func):

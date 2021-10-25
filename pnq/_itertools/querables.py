@@ -261,8 +261,8 @@ class Parallel(Query):
     簡単な計算を大量に行う処理を並列化する parallel([], func, chunksize=100)
     """
 
-    _ait = sm | A.queries.parallel
-    _sit = sm | S.queries.parallel
+    _ait = sm | A.concurrent.parallel
+    _sit = sm | S.concurrent.parallel
 
     def __init__(self, source, func, executor=None, *, unpack="", chunksize=1):
         super().__init__(source)
@@ -713,6 +713,7 @@ class FinalizerBase:
     last_or_raise = S.finalizers.last_or_raise
     each = S.finalizers.each
     # each_unpack = S.finalizers.each_unpack
+    dispatch = S.concurrent.dispatch
 
 
 class AsyncFinalizerBase:
@@ -739,6 +740,7 @@ class AsyncFinalizerBase:
     last_or_raise = A.finalizers.last_or_raise
     each = A.finalizers.each
     each_unpack = A.finalizers.each_unpack
+    dispatch = A.concurrent.dispatch
 
 
 class Finalizer(FinalizerBase):

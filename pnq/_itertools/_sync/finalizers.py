@@ -42,7 +42,7 @@ def _sum(source, selector=None):
 
 def each(source, func=lambda x: x, unpack=""):
     if asyncio.iscoroutinefunction(func):
-        raise TypeError("func must be a regular function")
+        raise TypeError("cannot acceptable async funcition.")
 
     for elm in source:
         func(elm)

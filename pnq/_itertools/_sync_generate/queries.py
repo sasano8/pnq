@@ -1,14 +1,11 @@
 import asyncio
 from concurrent.futures import Future as ConcurrentFuture
-from functools import partial
 from typing import Iterable, TypeVar
 
 from pnq.exceptions import DuplicateElementError, MustError, MustTypeError
 
 from ...selectors import flat_recursive as _flat_recursive
-from ...selectors import map as unpacking
 from ..common import Listable, name_as
-from ..protocols import PExecutor
 
 T = TypeVar("T")
 
@@ -220,25 +217,6 @@ def _procceed(func, iterable):
 
 def _procceed_async(func, iterable):
     return [func(x) for x in iterable]
-
-
-def parallel(source: Iterable[T], func, executor: PExecutor, *, unpack="", chunksize=1):
-    new_func = unpacking(func, unpack)
-    submit = executor.asubmit
-
-    if executor.is_cpubound and chunksize != 1:
-        runner = _procceed_async if asyncio.iscoroutine(func) else _procceed
-        runner = partial(runner, new_func)
-
-        tasks = [submit(runner, chunck) for chunck in chunked(source, chunksize)]
-        for task in tasks:
-            for x in task:
-                yield x
-
-    else:
-        tasks = [submit(new_func, x) for x in source]
-        for task in tasks:
-            yield task
 
 
 def debug(source: Iterable[T], breakpoint=lambda x: x, printer=print):
