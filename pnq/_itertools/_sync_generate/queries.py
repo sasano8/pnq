@@ -174,11 +174,43 @@ def group_join(source: Iterable[T], size: int):
 
 
 def request(source: Iterable[T], func, retry: int = None):
-    ...
+    from ..requests import Response, StopWatch
+
+    for v in source:
+
+        with StopWatch() as sw:
+            err = None
+            result = None
+            try:
+                result = func(**v)
+            except Exception as e:
+                err = e
+
+        res = Response(
+            func, kwargs=v, err=err, result=result, start=sw.start, end=sw.end
+        )
+
+        yield res
 
 
-def request_async(source: Iterable[T], func, retry: int = None):
-    ...
+def request_async(source: Iterable[T], func, timeout: float = None, retry: int = None):
+    from ..requests import Response, StopWatch
+
+    for v in source:
+
+        with StopWatch() as sw:
+            err = None
+            result = None
+            try:
+                result = func(**v)
+            except Exception as e:
+                err = e
+
+        res = Response(
+            func, kwargs=v, err=err, result=result, start=sw.start, end=sw.end
+        )
+
+        yield res
 
 
 def _procceed(func, iterable):

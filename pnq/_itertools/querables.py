@@ -12,7 +12,7 @@ from typing import (
 )
 
 from pnq._itertools.common import name_as
-from pnq.types import args as Arguments
+from pnq.types import Arguments
 
 from .. import selectors
 from . import _async as A
