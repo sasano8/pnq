@@ -13,7 +13,7 @@ from pnq._itertools._async.queries import _take_page_calc
 #     NotFoundError,
 #     NotOneElementError,
 # )
-from pnq._itertools.exceptions import (
+from pnq.exceptions import (
     DuplicateElementError,
     MustError,
     MustTypeError,

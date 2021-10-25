@@ -11,7 +11,8 @@ from typing import (
     Union,
 )
 
-from .exceptions import NoElementError, NotOneElementError
+from pnq.exceptions import NoElementError, NotOneElementError
+
 from .op import MAP_ASSIGN_OP, TH_ASSIGN_OP, TH_ROUND
 
 T = TypeVar("T")

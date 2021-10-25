@@ -2,8 +2,9 @@ import asyncio
 from decimal import Decimal, InvalidOperation
 from typing import Any, Callable, Iterable, NoReturn, Sequence, TypeVar, Union
 
+from pnq.exceptions import NoElementError, NotOneElementError
+
 from ..common import Listable, name_as
-from ..exceptions import NoElementError, NotOneElementError
 from ..op import MAP_ASSIGN_OP, TH_ASSIGN_OP, TH_ROUND
 
 T = TypeVar("T")

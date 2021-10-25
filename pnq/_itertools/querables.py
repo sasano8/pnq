@@ -12,6 +12,7 @@ from typing import (
 )
 
 from pnq._itertools.common import name_as
+from pnq.exceptions import NotFoundError
 from pnq.types import Arguments
 
 from .. import selectors
@@ -20,7 +21,6 @@ from . import _sync as S
 from .core import IterType
 from .core import Query as QueryBase
 from .core import QueryDict, QuerySeq, QuerySet
-from .exceptions import NotFoundError
 
 
 def no_implement(*args, **kwargs):

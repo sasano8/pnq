@@ -3,10 +3,11 @@ from concurrent.futures import Future as ConcurrentFuture
 from functools import partial
 from typing import AsyncIterable, TypeVar
 
+from pnq.exceptions import DuplicateElementError, MustError, MustTypeError
+
 from ...selectors import flat_recursive as _flat_recursive
 from ...selectors import map as unpacking
 from ..common import Listable, name_as
-from ..exceptions import DuplicateElementError, MustError, MustTypeError
 from ..protocols import PExecutor
 
 T = TypeVar("T")
@@ -437,6 +438,8 @@ def take_page(source: AsyncIterable[T], page: int, size: int):
 
 
 def _take_page_calc(page: int, size: int):
+    if page < 1:
+        raise ValueError("page must be greater than 0")
     if size < 0:
         raise ValueError("size must be >= 0")
     start = (page - 1) * size

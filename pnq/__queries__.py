@@ -29,9 +29,10 @@ try:
 except:
     from typing_extensions import Literal
 
+from pnq.exceptions import NoElementError, NotFoundError, NotOneElementError
+
 from ._itertools import actions, builder, core, finalizers
 from ._itertools import querables as queries
-from ._itertools.exceptions import NoElementError, NotFoundError, NotOneElementError
 from ._itertools.op import TH_ASSIGN_OP
 from ._itertools.requests import Response
 
