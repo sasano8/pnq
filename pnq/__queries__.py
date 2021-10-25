@@ -33,7 +33,7 @@ except:
 from pnq.exceptions import NoElementError, NotFoundError, NotOneElementError
 
 from ._itertools import actions, builder, core, finalizers
-from ._itertools import queryable as queries
+from ._itertools import queryables as queries
 from ._itertools.op import TH_ASSIGN_OP
 from ._itertools.requests import Response
 
@@ -453,7 +453,7 @@ if not TYPE_CHECKING:
 
     # from .base import queries
 
-    from ._itertools import queryable as queries
+    from ._itertools import queryables as queries
 
     classess = Queries()
 

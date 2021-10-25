@@ -1,1 +1,1 @@
-from .queryable import *
+from .queryables import *
