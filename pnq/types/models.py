@@ -35,6 +35,13 @@ class Arguments:
     def items(self):
         return self.kwargs.items()
 
+    @classmethod
+    def from_obj(cls, args, kwargs):
+        obj = cls()
+        obj.args = args
+        obj.kwargs = kwargs
+        return obj
+
 
 class PnqExitStack:
     def __init__(self, contexts: Iterable):

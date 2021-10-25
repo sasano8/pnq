@@ -12,6 +12,7 @@ from typing import (
 )
 
 from pnq._itertools.common import name_as
+from pnq.types import args as Arguments
 
 from .. import selectors
 from . import _async as A
@@ -62,16 +63,15 @@ class Query(QueryBase[T]):
     # def __aiter__(self):
     #     return self._impl_aiter()
 
-    def __args__(self):
-        return tuple(), {}
+    _args = Arguments()
 
     def _impl_iter(self):
-        args, kwargs = self.__args__()
-        return self._sit(self.source, *args, **kwargs)
+        x = self._args
+        return self._sit(self.source, *x.args, **x.kwargs)
 
     def _impl_aiter(self):
-        args, kwargs = self.__args__()
-        return self._ait(self.source, *args, **kwargs)
+        x = self._args
+        return self._ait(self.source, *x.args, **x.kwargs)
 
 
 @export
@@ -81,11 +81,7 @@ class Map(Query):
 
     def __init__(self, source, selector, unpack=""):
         super().__init__(source)
-        self.selector = selector
-        self.unpack = unpack
-
-    def __args__(self):
-        return (self.selector, self.unpack), {}
+        self._args = Arguments(selector, unpack)
 
 
 @export
@@ -147,6 +143,7 @@ class Flat(Query):
     def __init__(self, source, selector=None):
         super().__init__(source)
         self.selector = selector
+        self._args = Arguments(selector)
 
     def __args__(self):
         return (self.selector,), {}
@@ -159,10 +156,7 @@ class FlatRecursive(Query):
 
     def __init__(self, source, selector):
         super().__init__(source)
-        self.selector = selector
-
-    def __args__(self):
-        return (self.selector,), {}
+        self._args = Arguments(selector)
 
 
 @export
@@ -172,10 +166,7 @@ class PivotUnstack(Query):
 
     def __init__(self, source, default=None):
         super().__init__(source)
-        self.default = default
-
-    def __args__(self):
-        return (self.default,), {}
+        self._args = Arguments(default)
 
 
 @export
@@ -191,11 +182,7 @@ class Enumerate(Query):
 
     def __init__(self, source, start=0, step=1):
         super().__init__(source)
-        self.start = start
-        self.step = step
-
-    def __args__(self):
-        return (self.start, self.step), {}
+        self._args = Arguments(start, step)
 
 
 @export
@@ -205,10 +192,7 @@ class GroupBy(Query):
 
     def __init__(self, source, selector=None):
         super().__init__(source)
-        self.selector = selector
-
-    def __args__(self):
-        return (self.selector,), {}
+        self._args = Arguments(selector)
 
 
 @export
@@ -230,13 +214,10 @@ class Chunked(Query):
 
     def __init__(self, source, size: int):
         super().__init__(source)
-        self.size = size
-
         if size <= 0:
             raise ValueError("count must be greater than 0")
 
-    def __args__(self):
-        return (self.size,), {}
+        self._args = Arguments(size)
 
 
 @export
@@ -246,13 +227,10 @@ class Tee(Query):
 
     def __init__(self, source, size: int):
         super().__init__(source)
-        self.size = size
-
         if size <= 0:
             raise ValueError("count must be greater than 0")
 
-    def __args__(self):
-        return (self.size,), {}
+        self._args = Arguments(size)
 
 
 @export
@@ -262,12 +240,7 @@ class Request(Query):
 
     def __init__(self, source, func, timeout: float = None, retry: int = 0):
         super().__init__(source)
-        self.func = func
-        self.retry = retry
-        self.timeout = timeout
-
-    def __args__(self):
-        return (self.func, self.retry), {}
+        self._args = Arguments(func, retry)
 
 
 @export
@@ -277,11 +250,7 @@ class RequestAsync(Query):
 
     def __init__(self, source, func, timeout: float = None, retry: int = 0):
         super().__init__(source)
-        self.func = func
-        self.retry = retry
-
-    def __args__(self):
-        return (self.func, self.timeout, self.retry), {}
+        self._args = Arguments(func, timeout, retry)
 
 
 @export
@@ -300,16 +269,7 @@ class Parallel(Query):
 
     def __init__(self, source, func, executor=None, *, unpack="", chunksize=1):
         super().__init__(source)
-        self.func = func
-        self.unpack = unpack
-        self.executor = executor
-        self.chunksize = chunksize
-
-    def __args__(self):
-        return (self.func, self.executor), {
-            "unpack": self.unpack,
-            "chunksize": self.chunksize,
-        }
+        self._args = Arguments(func, executor, unpack=unpack, chunksize=chunksize)
 
 
 @export
@@ -319,30 +279,22 @@ class Debug(Query):
 
     def __init__(self, source, breakpoint=lambda x: x, printer=print):
         super().__init__(source)
-        self.breakpoint = breakpoint
-        self.printer = printer
-
-    def __args__(self):
-        return (self.breakpoint, self.printer), {}
+        self._args = Arguments(breakpoint, printer)
 
 
 @export
 class DebugPath(Query):
     def __init__(self, source, func=lambda x: -10, async_func=lambda x: 10):
         super().__init__(source)
-        self.func = func
-        self.async_func = async_func
-
-    def __args__(self):
-        return (self.func, self.async_func), {}
+        self._args = Arguments(func, async_func)
 
     def _impl_iter(self):
-        func = self.func
+        func = self._args.args[0]
         for v in self.source:
             yield func(v)
 
     async def _impl_aiter(self):
-        async_func = self.async_func
+        async_func = self._args.args[1]
         async for v in self.source:
             yield async_func(v)
 
@@ -396,10 +348,7 @@ class Cartesian(Query):
 
     def __init__(self, source, *iterables):
         super().__init__(source)
-        self.iterables = iterables
-
-    def __args__(self):
-        return self.iterables, {}
+        self._args = Arguments.from_obj(iterables, {})
 
 
 @export
@@ -409,11 +358,7 @@ class Filter(Query):
 
     def __init__(self, source, predicate, unpack=""):
         super().__init__(source)
-        self.predicate = predicate
-        self.unpack = unpack
-
-    def __args__(self):
-        return (self.predicate, self.unpack), {}
+        self._args = Arguments(predicate, unpack)
 
 
 @export
@@ -423,11 +368,7 @@ class Must(Query):
 
     def __init__(self, source, predicate, msg: str = ""):
         super().__init__(source)
-        self.predicate = predicate
-        self.msg = msg
-
-    def __args__(self):
-        return (self.predicate, self.msg), {}
+        self._args = Arguments(predicate, msg)
 
 
 @export
@@ -437,10 +378,8 @@ class FilterType(Query):
 
     def __init__(self, source, *types):
         super().__init__(source)
-        self.types = tuple(None.__class__ if x is None else x for x in types)
-
-    def __args__(self):
-        return self.types, {}
+        types = tuple(None.__class__ if x is None else x for x in types)
+        self._args = Arguments.from_obj(types, {})
 
 
 @export
@@ -450,10 +389,8 @@ class MustType(Query):
 
     def __init__(self, source, *types):
         super().__init__(source)
-        self.types = tuple(None.__class__ if x is None else x for x in types)
-
-    def __args__(self):
-        return self.types, {}
+        types = tuple(None.__class__ if x is None else x for x in types)
+        self._args = Arguments.from_obj(types, {})
 
 
 @export
@@ -463,10 +400,7 @@ class FilterUnique(Query):
 
     def __init__(self, source, selector=None):
         super().__init__(source)
-        self.selector = selector
-
-    def __args__(self):
-        return (self.selector,), {}
+        self._args = Arguments(selector)
 
 
 @export
@@ -476,10 +410,7 @@ class MustUnique(Query):
 
     def __init__(self, source, selector=None):
         super().__init__(source)
-        self.selector = selector
-
-    def __args__(self):
-        return (self.selector,), {}
+        self._args = Arguments(selector)
 
 
 def get_many_for_mapping(query_dict, keys):
@@ -514,7 +445,8 @@ class FilterKeys(Query):
 
     def __init__(self, source, *keys):
         super().__init__(source)
-        self.keys = dict.fromkeys(keys, None)  # use dict. because set has no order.
+        keys = dict.fromkeys(keys, None)  # use dict. because set has no order.
+        self.keys = keys
 
         if isinstance(self.source, (QuerySeq, QueryDict, QuerySet)):
             source = self.source.source
@@ -531,9 +463,7 @@ class FilterKeys(Query):
 
         self._ref = source
         self._filter = filter
-
-    def __args__(self):
-        return self.keys, {}
+        self._args = Arguments.from_obj(keys, {})
 
     def _impl_iter(self):
         return self._filter(self._ref, self.keys)
@@ -570,7 +500,9 @@ class MustKeys(Query):
         # TODO: remove typ
 
         super().__init__(source)
-        self.keys = dict.fromkeys(keys, None)  # use dict. because set has no order.
+        keys = dict.fromkeys(keys, None)  # use dict. because set has no order.
+        self.keys = keys
+        self._args = Arguments.from_obj(keys, {})
 
         if isinstance(self.source, (QuerySeq, QueryDict, QuerySet)):
             source = self.source.source
@@ -654,10 +586,7 @@ class Take(Query):
         # if r.step < 1:
         #     raise ValueError()
 
-        self.r = r
-
-    def __args__(self):
-        return (self.r,), {}
+        self._args = Arguments(r)
 
 
 @export
@@ -689,10 +618,7 @@ class TakeWhile(Query):
 
     def __init__(self, source, predicate):
         super().__init__(source)
-        self.predicate = predicate
-
-    def __args__(self):
-        return (self.predicate,), {}
+        self._args = Arguments(predicate)
 
 
 @export
@@ -708,11 +634,7 @@ class OrderByMap(Query):
 
     def __init__(self, source, selector=None, desc: bool = False):
         super().__init__(source)
-        self.selector = selector
-        self.desc = desc
-
-    def __args__(self):
-        return (self.selector, self.desc), {}
+        self._args = Arguments(selector, desc)
 
 
 @export
@@ -729,9 +651,6 @@ class OrderBy(OrderByMap):
             else:
                 selector = selectors.select_from_item(*fields)
         super().__init__(source, selector, desc)
-
-    def __args__(self):
-        return (self.selector, self.desc), {}
 
 
 @export
@@ -770,10 +689,7 @@ class Sleep(Query):
 
     def __init__(self, source, seconds):
         super().__init__(source)
-        self.seconds = seconds
-
-    def __args__(self):
-        return (self.seconds,), {}
+        self._args = Arguments(seconds)
 
 
 #################################
