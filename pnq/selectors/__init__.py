@@ -1,16 +1,19 @@
+import asyncio
+from concurrent.futures import Future as ConcurrentFuture
 from functools import partial as _partial
 from operator import attrgetter, itemgetter
-from typing import Any, NoReturn
+from typing import Any, Awaitable, NoReturn
 
 from typing_extensions import Literal
 
 __all__ = [
-    "map",
+    "starmap",
     "select",
     "select_from_attr",
     "select_from_item",
     "select_as_tuple",
     "select_as_dict",
+    "select_as_awaitable",
     "reflect",
     "flat_recursive",
 ]
@@ -20,7 +23,7 @@ def to_str(x):
     return "" if x is None else str(x)
 
 
-def _starmap(func, val):
+def _star1map(func, val):
     return func(*val)
 
 
@@ -32,8 +35,8 @@ def _star3map(func, val):
     return func(*val.args, **val.kwargs)
 
 
-def starmap(func):
-    return _partial(_starmap, func)
+def star1map(func):
+    return _partial(_star1map, func)
 
 
 def star2map(func):
@@ -44,7 +47,7 @@ def star3map(func):
     return _partial(_star3map, func)
 
 
-def map(func, unpack: Literal["", "*", "**", "***"] = ""):
+def starmap(func, unpack: Literal["", "*", "**", "***"] = "*"):
     if func is None:
         raise TypeError("func is None")
 
@@ -53,7 +56,7 @@ def map(func, unpack: Literal["", "*", "**", "***"] = ""):
     if unpack == "":
         return func
     elif unpack == "*":
-        return starmap(func)
+        return star1map(func)
     elif unpack == "**":
         return star2map(func)
     elif unpack == "***":
@@ -112,6 +115,16 @@ def select_as_dict(*fields, attr=False, default=NoReturn):
             selector = lambda x: {k: getitem(x, k) for k in fields}  # noqa
 
     return selector
+
+
+def select_as_awaitable(target) -> Awaitable:
+    if hasattr(target, "__await__"):
+        return target
+
+    if isinstance(target, ConcurrentFuture):
+        return asyncio.wrap_future(target)
+
+    raise TypeError(f"{target} is not awaitable")
 
 
 def reflect(mapping, attr: bool = False):

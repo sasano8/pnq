@@ -1,7 +1,6 @@
 import asyncio
 import logging
 from collections import deque
-from concurrent.futures import Executor as _Executor
 from concurrent.futures import Future
 from concurrent.futures import ProcessPoolExecutor as _ProcessPoolExecutor
 from concurrent.futures import ThreadPoolExecutor as _ThreadPoolExecutor
@@ -468,6 +467,10 @@ class DummyPoolExecutor(OverrideExecutor):
     def __executor__(self) -> PExecutor:
         return self  # type: ignore
 
+    @property
+    def is_async_only(self):
+        return True
+
     def submit(self, func, *args, **kwargs):
         if self._shutdown:
             raise RuntimeError("cannot schedule new futures after shutdown")
@@ -501,16 +504,16 @@ class DummyPoolExecutor(OverrideExecutor):
         self._shutdown = True
 
     def __enter__(self):
-        return self
+        raise NotImplementedError()
 
     def __exit__(self, *args, **kwargs):
-        ...
+        raise NotImplementedError()
 
     async def __aenter__(self):
-        return self.__enter__()
+        return self
 
     async def __aexit__(self, *args, **kwargs):
-        return self.__exit__(*args, **kwargs)
+        ...
 
     @property
     def is_cpubound(self):

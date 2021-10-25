@@ -4,12 +4,7 @@ from functools import wraps
 import pytest
 
 from pnq._itertools import AsyncMap, DebugPath, Lazy, Map, Sleep
-
-# from pnq.base.core import IterType, Query, QueryNormal, QuerySyncToAsync
-# from pnq.base.queries import AsyncMap, DebugPath, Lazy, Map, Sleep
 from pnq._itertools.core import IterType, Query, QueryNormal, QuerySyncToAsync
-
-# import pnq
 
 
 def async_test(func):
@@ -143,7 +138,6 @@ class Test010_Async:
         assert [x async for x in Sleep(Query(aiter([1, 2, 3])), 0)] == [1, 2, 3]
 
     def test_builder(self):
-        # from pnq.base.builder import Builder
         from pnq._itertools.builder import Builder
 
         assert list(Builder.query([1, 2, 3])) == [1, 2, 3]
@@ -152,11 +146,7 @@ class Test010_Async:
     def test_builder_run(self):
         import tempfile
 
-        # from pnq.base.builder import Builder
-        # from pnq.base.requests import CancelToken
         from pnq._itertools.builder import Builder
-
-        # from pnq._itertools.requests import CancelToken
         from pnq.aio import CancelToken
 
         async def func_1():
@@ -192,25 +182,28 @@ class Test010_Async:
         import subprocess
         import time
         from functools import partial
+        from pathlib import Path
+
+        sigtest = Path(__file__).absolute().parent / "__signal_test"
 
         popen = partial(
             subprocess.Popen, stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
 
-        p = popen(["python", "tests/__signal_test", "0"])
+        p = popen(["python", sigtest, "0"])
         outs, errs = p.communicate()
         assert b"" in outs
         assert b"" in outs
         assert p.returncode == 0
 
-        p = popen(["python", "tests/__signal_test", "1"])
+        p = popen(["python", sigtest, "1"])
         outs, errs = p.communicate()
         assert b"" in outs
         assert b"" in outs
         assert p.returncode == 0
 
         # SIGINTを送信した時、強制キャンセルされることを確認
-        p = popen(["python", "tests/__signal_test", "0"])
+        p = popen(["python", sigtest, "0"])
         time.sleep(0.1)
         p.send_signal(signal.SIGINT)
         outs, errs = p.communicate()
@@ -220,7 +213,7 @@ class Test010_Async:
         assert p.returncode == 1
 
         # SIGINTを送信した時、強制キャンセルされないことを確認
-        p = popen(["python", "tests/__signal_test", "1"])
+        p = popen(["python", sigtest, "1"])
         time.sleep(0.1)
         p.send_signal(signal.SIGINT)
         outs, errs = p.communicate()

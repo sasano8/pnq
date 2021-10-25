@@ -5,7 +5,7 @@ from typing import Iterable, Mapping
 from typing_extensions import Protocol
 
 
-class PArgment(Protocol):
+class PArguments(Protocol):
     args: Iterable
     kwargs: Mapping
 

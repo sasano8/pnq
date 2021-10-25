@@ -1,5 +1,4 @@
 import asyncio
-from concurrent.futures import Future as ConcurrentFuture
 from typing import Iterable, TypeVar
 
 from pnq.exceptions import DuplicateElementError, MustError, MustTypeError
@@ -31,39 +30,43 @@ def _map(source: Iterable[T], selector, unpack=""):
 
 
 def gather(source: Iterable[T], selector=None, parallel: int = 1, timeout=None):
-    if selector is None:
-        selector = lambda x: x  # noqa
-
     for tag, result in gather_tagged(
         _enumerate(Listable(source, selector)), parallel=parallel, timeout=timeout
     ):
         yield result
 
 
+def call_func(sem, x, timeout):
+    with sem:
+        return asyncio.wait_for(x, timeout)
+
+
 def gather_tagged(source: Iterable[T], selector=None, parallel: int = 1, timeout=None):
-    if selector is None:
-        selector = lambda x: x  # noqa
-
     if parallel > 1:
-        for chunk in chunked(source, size=parallel):
-            results = asyncio.gather(
-                *(asyncio.wait_for(x, timeout) for tag, x in Listable(chunk, selector))
-            )
-            for tagged_result in ((chunk[i][0], x) for i, x in enumerate(results)):
-                yield tagged_result
+        tasks = []
+        sem = asyncio.Semaphore(parallel)
+        for tag, x in Listable(source, selector):
+            task = asyncio.create_task(call_func(sem, x, timeout))
+            tasks.append((tag, task))
+            asyncio.sleep(0)
+
+            if tasks[0][1].done():
+                tag, task = tasks.pop(0)
+                yield tag, task.result()
+
+        while tasks:
+            tag, task = tasks.pop(0)
+            yield tag, task
+
+        # async for chunk in chunked(Listable(source, selector), size=parallel):
+        #     results = await asyncio.gather(
+        #         *(asyncio.wait_for(x, timeout) for tag, x in chunk)
+        #     )
+        #     for tagged_result in ((chunk[i][0], x) for i, x in enumerate(results)):
+        #         yield tagged_result
     else:
-        for x in source:
-            tag, awaitable = selector(x)
+        for tag, awaitable in Listable(source, selector):
             yield tag, asyncio.wait_for(awaitable, timeout)
-
-
-def schedule(pnq_future_coro):
-    if asyncio.iscoroutine(pnq_future_coro):
-        return asyncio.create_task(pnq_future_coro)
-    elif isinstance(pnq_future_coro, ConcurrentFuture):
-        return asyncio.wrap_future(pnq_future_coro)
-    else:
-        raise NotImplementedError()
 
 
 def flat(source: Iterable[T], selector=None):

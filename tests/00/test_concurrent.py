@@ -1,17 +1,9 @@
 import asyncio
-from functools import wraps
 
 import pytest
 
 from pnq.concurrent import AsyncPool, DummyPool, ProcessPool, ThreadPool
-
-
-def to_sync(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        asyncio.run(func(*args, **kwargs))
-
-    return wrapper
+from tests.conftest import to_sync
 
 
 def do(x):
@@ -51,6 +43,9 @@ async def test_base_spec():
     assert await testtool.ExecutorSpec.test_capability(
         AsyncPool, is_async_only=True, submit_sync=False
     )
+    assert await testtool.ExecutorSpec.test_capability(
+        DummyPool, is_async_only=True, submit_sync=True
+    )
 
 
 @to_sync
@@ -64,7 +59,7 @@ async def test_is_cpubound():
     async with AsyncPool(1) as pool:
         assert not pool.is_cpubound
 
-    with DummyPool(1) as pool:
+    async with DummyPool(1) as pool:
         assert not pool.is_cpubound
 
 
@@ -79,9 +74,9 @@ def test_sync_func():
         future = pool.submit(do, 2)
         futures.append(future)
 
-    # with DummyPool(1) as pool:
-    #     future = pool.submit(do, 3)
-    #     futures.append(future)
+    with DummyPool(1) as pool:
+        future = pool.submit(do, 3)
+        futures.append(future)
 
     assert [x.result() for x in futures] == [1, 2]
 
@@ -97,10 +92,10 @@ def test_async_func():
         future = pool.submit(do_async, 2)
         futures.append(future)
 
-    with pytest.raises(TypeError, match="async function cannot be submitted"):
-        with DummyPool(1) as pool:
-            future = pool.submit(do_async, 3)
-            futures.append(future)
+    # with pytest.raises(TypeError, match="async function cannot be submitted"):
+    #     with DummyPool(1) as pool:
+    #         future = pool.submit(do_async, 3)
+    #         futures.append(future)
 
     assert [x.result() for x in futures] == [1, 2]
 

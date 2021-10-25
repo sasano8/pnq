@@ -2,8 +2,10 @@ import asyncio
 from contextlib import AsyncExitStack, ExitStack
 from typing import TYPE_CHECKING, Iterable
 
+from .protocols import PArguments
 
-class Arguments:
+
+class Arguments(PArguments):
     """引数を保持するためのクラスです。
 
     Usage:
@@ -20,6 +22,13 @@ class Arguments:
         self.args = args
         self.kwargs = kwargs
 
+    @classmethod
+    def from_obj(cls, args, kwargs):
+        obj = cls()
+        obj.args = args
+        obj.kwargs = kwargs
+        return obj
+
     def __iter__(self):
         return iter(self.args)
 
@@ -34,13 +43,6 @@ class Arguments:
 
     def items(self):
         return self.kwargs.items()
-
-    @classmethod
-    def from_obj(cls, args, kwargs):
-        obj = cls()
-        obj.args = args
-        obj.kwargs = kwargs
-        return obj
 
 
 class PnqExitStack:

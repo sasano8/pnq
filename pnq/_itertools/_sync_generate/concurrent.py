@@ -3,8 +3,8 @@ from functools import partial
 from typing import Iterable, TypeVar
 
 from pnq.protocols import PExecutor
+from pnq.selectors import starmap
 
-from ...selectors import map as unpacking
 from .queries import chunked
 
 T = TypeVar("T")
@@ -19,7 +19,7 @@ def _procceed_async(func, iterable):
 
 
 def parallel(source: Iterable[T], func, executor: PExecutor, *, unpack="", chunksize=1):
-    new_func = unpacking(func, unpack)
+    new_func = starmap(func, unpack)
     submit = executor.asubmit
 
     if executor.is_cpubound and chunksize != 1:
@@ -38,7 +38,7 @@ def parallel(source: Iterable[T], func, executor: PExecutor, *, unpack="", chunk
 
 
 def dispatch(source: Iterable[T], func, executor: PExecutor, *, unpack="", chunksize=1):
-    new_func = unpacking(func, unpack)
+    new_func = starmap(func, unpack)
     submit = executor.asubmit
 
     if executor.is_cpubound and chunksize != 1:
