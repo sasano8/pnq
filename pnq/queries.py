@@ -2,6 +2,7 @@ import sys
 from typing import (
     TYPE_CHECKING,
     Any,
+    AsyncGenerator,
     AsyncIterable,
     AsyncIterator,
     Callable,
@@ -1046,17 +1047,32 @@ def query(source: Iterable[Tuple[K, V]]) -> "QuerySeqPair[K, V]":
 
 
 @overload
-def query(source: Iterable[T]) -> QuerySeq[T]:
-    ...
-
-
-@overload
 def query(source: AsyncIterable[Tuple[K, V]]) -> "QuerySeqPair[K, V]":
     ...
 
 
 @overload
+def query(source: Generator[T, Any, Any]) -> QuerySeq[T]:
+    ...
+
+
+@overload
+def query(source: AsyncGenerator[T, Any]) -> QuerySeq[T]:
+    ...
+
+
+@overload
+def query(source: Iterable[T]) -> QuerySeq[T]:
+    ...
+
+
+@overload
 def query(source: AsyncIterable[T]) -> QuerySeq[T]:
+    ...
+
+
+@overload
+def query(source: Iterable[T]) -> QuerySeq[T]:
     ...
 
 
