@@ -4,13 +4,13 @@ import asyncio
 import pnq
 
 
-def test_args():
-    x1 = pnq.args()
+def test_arguments():
+    x1 = pnq.Arguments()
     assert [*x1] == []
     assert {**x1} == {}
     assert x1.args == tuple()
     assert x1.kwargs == {}
-    x2 = pnq.args(1, a=2)
+    x2 = pnq.Arguments(1, a=2)
     assert [*x2] == [1]
     assert {**x2} == {"a": 2}
     assert x2.args == (1,)

@@ -57,12 +57,6 @@ class Query(QueryBase[T]):
     def __init__(self, source: Union[Iterable[T], AsyncIterable[T]]):
         super().__init__(source)
 
-    # def __iter__(self):
-    #     return self._impl_iter()
-
-    # def __aiter__(self):
-    #     return self._impl_aiter()
-
     _args = Arguments()
 
     def _impl_iter(self):
