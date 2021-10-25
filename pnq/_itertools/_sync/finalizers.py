@@ -1,10 +1,11 @@
 import asyncio
 from typing import List
 
-from .._sync_generate.finalizers import (  # _all,; _any,; _sum,; each,
+from .._sync_generate.finalizers import (  # _all,; _any,; _sum,; each,; each,; each_unpack,
     _len,
     _max,
     _min,
+    accumulate,
     average,
     concat,
     contains,
@@ -19,6 +20,7 @@ from .._sync_generate.finalizers import (  # _all,; _any,; _sum,; each,
     one_or,
     one_or_raise,
     reduce,
+    to,
 )
 from ..common import Listable, name_as
 
@@ -44,3 +46,7 @@ def each(source, func=lambda x: x, unpack=""):
 
     for elm in source:
         func(elm)
+
+
+def each_unpack(source, func):
+    return each(source, func, unpack="*")

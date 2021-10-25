@@ -251,28 +251,32 @@ def compress(source: Iterable[T]):
     return itertools.compress(self, *iterables)
 
 
-def cartesian(source: Iterable[T], *iterables):
-    return itertools.product(self.source, *self.iterables)
+def cartesian(*iterables: Iterable[T]):
+    # FIXME: no implemented
+    import itertools
+
+    for x in itertools.product(*iterables):  # type: ignore
+        yield x
 
 
 @name_as("filter")
 def _filter(source: Iterable[T], predicate=None, unpack=""):
     if predicate is None:
-        return source
+        return source.__iter__()
     else:
         if unpack == "":
-            return (predicate(x) for x in source)
+            return (x for x in source if predicate(x))
         elif unpack == "*":
-            return (predicate(*x) for x in source)
+            return (x for x in source if predicate(*x))
         elif unpack == "**":
-            return (predicate(**x) for x in source)
+            return (x for x in source if predicate(**x))
         elif unpack == "***":
-            return (predicate(*x.args, **x.kwargs) for x in source)  # type: ignore
+            return (x for x in source if predicate(*x.args, **x.kwargs))  # type: ignore
         else:
             raise ValueError("unpack must be one of '', '*', '**', '***'")
 
 
-def must(source: Iterable[T], predicate):
+def must(source: Iterable[T], predicate, msg=""):
     for elm in source:
         if not predicate(elm):
             raise MustError(f"{msg} {elm}")
@@ -302,7 +306,7 @@ def must_keys(source: Iterable[T], *keys):
 
 def filter_unique(source: Iterable[T], selector=None):
     duplidate = set()
-    for value in source:
+    for value in _map(source, selector):
         if value in duplidate:
             pass
         else:
@@ -312,12 +316,11 @@ def filter_unique(source: Iterable[T], selector=None):
 
 def must_unique(source: Iterable[T], selector=None):
     duplidate = set()
-    for value in source:
-        target = selector(value)
-        if target in duplidate:
+    for value in _map(source, selector):
+        if value in duplidate:
             raise DuplicateElementError(value)
         else:
-            duplidate.add(target)
+            duplidate.add(value)
             yield value
 
 

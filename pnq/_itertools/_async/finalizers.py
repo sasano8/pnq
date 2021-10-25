@@ -13,8 +13,8 @@ def diter():
     ...
 
 
-# async def to(source, finalizer):
-#     return finalizer(await Listable(source, None))
+async def to(source, finalizer):
+    return await finalizer(source)
 
 
 @name_as("len")
@@ -85,7 +85,7 @@ async def _max(source: AsyncIterable[T], selector=None, default=NoReturn):
 
 
 async def average(
-    self: AsyncIterable[T],
+    source: AsyncIterable[T],
     selector=lambda x: x,
     exp: float = 0.00001,
     round: TH_ROUND = "ROUND_HALF_UP",
@@ -97,7 +97,7 @@ async def average(
     i = 0
     val = 0
 
-    async for val in Listable(self, selector):
+    async for val in Listable(source, selector):
         i += 1
         # val = selector(val)
         try:
@@ -120,25 +120,66 @@ async def average(
 
 
 async def reduce(
-    self: AsyncIterable[T],
-    seed: T,
+    source: AsyncIterable[T],
+    seed: Union[T, None],
     op: Union[TH_ASSIGN_OP, Callable[[Any, Any], Any]] = "+=",
     selector=lambda x: x,
 ) -> T:
-    if callable(op):
-        binary_op = op
-    else:
+    if isinstance(op, str):
         binary_op = MAP_ASSIGN_OP[op]
+    else:
+        binary_op = op
 
-    async for val in Listable(self, selector):
+    it = Listable(source, selector).__aiter__()
+
+    if seed is None:
+        async for val in it:
+            seed = val
+            break
+        else:
+            raise TypeError("empty sequence with no seed.")
+
+    async for val in Listable(source, selector):
         seed = binary_op(seed, val)
 
-    return seed
+    return seed  # type: ignore
 
 
-async def concat(self, selector=None, delimiter: str = ""):
+async def accumulate(
+    source: AsyncIterable[T],
+    seed: Union[T, None],
+    op: Union[TH_ASSIGN_OP, Callable[[Any, Any], Any]] = "+=",
+    selector=lambda x: x,
+):
+    if isinstance(op, str):
+        binary_op = MAP_ASSIGN_OP[op]
+    else:
+        binary_op = op
+
+    it = Listable(source, selector).__aiter__()
+
+    results = []
+
+    if seed is None:
+        async for val in it:
+            seed = val
+            results.append(seed)
+            break
+        else:
+            return results
+    else:
+        results.append(seed)
+
+    async for val in it:
+        seed = binary_op(seed, val)
+        results.append(seed)
+
+    return results
+
+
+async def concat(source: AsyncIterable[T], selector=None, delimiter: str = ""):
     to_str = lambda x: "" if x is None else str(x)  # noqa
-    return delimiter.join(await Listable(Listable(self, selector), to_str))
+    return delimiter.join(await Listable(Listable(source, selector), to_str))
 
 
 async def each(source: AsyncIterable[T], func=lambda x: x, unpack=""):
@@ -160,8 +201,12 @@ async def each(source: AsyncIterable[T], func=lambda x: x, unpack=""):
                 func(elm)
 
 
-async def one(self: AsyncIterable[T]):
-    it = self.__aiter__()
+def each_unpack(source: AsyncIterable[T], func):
+    return each(source, func, unpack="*")
+
+
+async def one(source: AsyncIterable[T]):
+    it = source.__aiter__()
     try:
         result = await it.__anext__()
     except StopAsyncIteration:
@@ -176,24 +221,24 @@ async def one(self: AsyncIterable[T]):
     return result
 
 
-async def first(self: AsyncIterable[T]):
-    it = self.__aiter__()
+async def first(source: AsyncIterable[T]):
+    it = source.__aiter__()
     try:
         return await it.__anext__()
     except StopAsyncIteration:
         raise NoElementError()
 
 
-async def last(self: AsyncIterable[T]):
-    if isinstance(self, Sequence):
+async def last(source: AsyncIterable[T]):
+    if isinstance(source, Sequence):
         try:
-            return self[-1]
+            return source[-1]
         except IndexError:
             raise NoElementError()
 
     undefined = object()
     last = undefined
-    async for elm in self:
+    async for elm in source:
         last = elm
 
     if last is undefined:
@@ -202,30 +247,30 @@ async def last(self: AsyncIterable[T]):
         return last
 
 
-async def one_or(self: AsyncIterable[T], default):
+async def one_or(source: AsyncIterable[T], default):
     try:
-        return await one(self)
+        return await one(source)
     except NoElementError:
         return default
 
 
-async def first_or(self: AsyncIterable[T], default):
+async def first_or(source: AsyncIterable[T], default):
     try:
-        return await first(self)
+        return await first(source)
     except NoElementError:
         return default
 
 
-async def last_or(self: AsyncIterable[T], default):
+async def last_or(source: AsyncIterable[T], default):
     try:
-        return await last(self)
+        return await last(source)
     except NoElementError:
         return default
 
 
-async def one_or_raise(self: AsyncIterable[T], exc: Union[str, Exception]):
+async def one_or_raise(source: AsyncIterable[T], exc: Union[str, Exception]):
     undefined = object()
-    result = await one_or(self, undefined)
+    result = await one_or(source, undefined)
     if result is undefined:
         if isinstance(exc, str):
             raise Exception(exc)
@@ -235,9 +280,9 @@ async def one_or_raise(self: AsyncIterable[T], exc: Union[str, Exception]):
         return result
 
 
-async def first_or_raise(self: AsyncIterable[T], exc: Union[str, Exception]):
+async def first_or_raise(source: AsyncIterable[T], exc: Union[str, Exception]):
     undefined = object()
-    result = await first_or(self, undefined)
+    result = await first_or(source, undefined)
     if result is undefined:
         if isinstance(exc, str):
             raise Exception(exc)
@@ -247,9 +292,9 @@ async def first_or_raise(self: AsyncIterable[T], exc: Union[str, Exception]):
         return result
 
 
-async def last_or_raise(self: AsyncIterable[T], exc: Union[str, Exception]):
+async def last_or_raise(source: AsyncIterable[T], exc: Union[str, Exception]):
     undefined = object()
-    result = await last_or(self, undefined)
+    result = await last_or(source, undefined)
     if result is undefined:
         if isinstance(exc, str):
             raise Exception(exc)

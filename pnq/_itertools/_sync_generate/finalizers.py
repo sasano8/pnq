@@ -13,8 +13,8 @@ def diter():
     ...
 
 
-# async def to(source, finalizer):
-#     return finalizer(await Listable(source, None))
+def to(source, finalizer):
+    return finalizer(source)
 
 
 @name_as("len")
@@ -85,7 +85,7 @@ def _max(source: Iterable[T], selector=None, default=NoReturn):
 
 
 def average(
-    self: Iterable[T],
+    source: Iterable[T],
     selector=lambda x: x,
     exp: float = 0.00001,
     round: TH_ROUND = "ROUND_HALF_UP",
@@ -97,7 +97,7 @@ def average(
     i = 0
     val = 0
 
-    for val in Listable(self, selector):
+    for val in Listable(source, selector):
         i += 1
         # val = selector(val)
         try:
@@ -120,25 +120,66 @@ def average(
 
 
 def reduce(
-    self: Iterable[T],
-    seed: T,
+    source: Iterable[T],
+    seed: Union[T, None],
     op: Union[TH_ASSIGN_OP, Callable[[Any, Any], Any]] = "+=",
     selector=lambda x: x,
 ) -> T:
-    if callable(op):
-        binary_op = op
-    else:
+    if isinstance(op, str):
         binary_op = MAP_ASSIGN_OP[op]
+    else:
+        binary_op = op
 
-    for val in Listable(self, selector):
+    it = Listable(source, selector).__iter__()
+
+    if seed is None:
+        for val in it:
+            seed = val
+            break
+        else:
+            raise TypeError("empty sequence with no seed.")
+
+    for val in Listable(source, selector):
         seed = binary_op(seed, val)
 
-    return seed
+    return seed  # type: ignore
 
 
-def concat(self, selector=None, delimiter: str = ""):
+def accumulate(
+    source: Iterable[T],
+    seed: Union[T, None],
+    op: Union[TH_ASSIGN_OP, Callable[[Any, Any], Any]] = "+=",
+    selector=lambda x: x,
+):
+    if isinstance(op, str):
+        binary_op = MAP_ASSIGN_OP[op]
+    else:
+        binary_op = op
+
+    it = Listable(source, selector).__iter__()
+
+    results = []
+
+    if seed is None:
+        for val in it:
+            seed = val
+            results.append(seed)
+            break
+        else:
+            return results
+    else:
+        results.append(seed)
+
+    for val in it:
+        seed = binary_op(seed, val)
+        results.append(seed)
+
+    return results
+
+
+def concat(source: Iterable[T], selector=None, delimiter: str = ""):
     to_str = lambda x: "" if x is None else str(x)  # noqa
-    return delimiter.join(Listable(Listable(self, selector), to_str))
+    return delimiter.join(Listable(Listable(source, selector), to_str))
 
 
 def each(source: Iterable[T], func=lambda x: x, unpack=""):
@@ -160,8 +201,12 @@ def each(source: Iterable[T], func=lambda x: x, unpack=""):
                 func(elm)
 
 
-def one(self: Iterable[T]):
-    it = self.__iter__()
+def each_unpack(source: Iterable[T], func):
+    return each(source, func, unpack="*")
+
+
+def one(source: Iterable[T]):
+    it = source.__iter__()
     try:
         result = it.__next__()
     except StopIteration:
@@ -176,24 +221,24 @@ def one(self: Iterable[T]):
     return result
 
 
-def first(self: Iterable[T]):
-    it = self.__iter__()
+def first(source: Iterable[T]):
+    it = source.__iter__()
     try:
         return it.__next__()
     except StopIteration:
         raise NoElementError()
 
 
-def last(self: Iterable[T]):
-    if isinstance(self, Sequence):
+def last(source: Iterable[T]):
+    if isinstance(source, Sequence):
         try:
-            return self[-1]
+            return source[-1]
         except IndexError:
             raise NoElementError()
 
     undefined = object()
     last = undefined
-    for elm in self:
+    for elm in source:
         last = elm
 
     if last is undefined:
@@ -202,30 +247,30 @@ def last(self: Iterable[T]):
         return last
 
 
-def one_or(self: Iterable[T], default):
+def one_or(source: Iterable[T], default):
     try:
-        return one(self)
+        return one(source)
     except NoElementError:
         return default
 
 
-def first_or(self: Iterable[T], default):
+def first_or(source: Iterable[T], default):
     try:
-        return first(self)
+        return first(source)
     except NoElementError:
         return default
 
 
-def last_or(self: Iterable[T], default):
+def last_or(source: Iterable[T], default):
     try:
-        return last(self)
+        return last(source)
     except NoElementError:
         return default
 
 
-def one_or_raise(self: Iterable[T], exc: Union[str, Exception]):
+def one_or_raise(source: Iterable[T], exc: Union[str, Exception]):
     undefined = object()
-    result = one_or(self, undefined)
+    result = one_or(source, undefined)
     if result is undefined:
         if isinstance(exc, str):
             raise Exception(exc)
@@ -235,9 +280,9 @@ def one_or_raise(self: Iterable[T], exc: Union[str, Exception]):
         return result
 
 
-def first_or_raise(self: Iterable[T], exc: Union[str, Exception]):
+def first_or_raise(source: Iterable[T], exc: Union[str, Exception]):
     undefined = object()
-    result = first_or(self, undefined)
+    result = first_or(source, undefined)
     if result is undefined:
         if isinstance(exc, str):
             raise Exception(exc)
@@ -247,9 +292,9 @@ def first_or_raise(self: Iterable[T], exc: Union[str, Exception]):
         return result
 
 
-def last_or_raise(self: Iterable[T], exc: Union[str, Exception]):
+def last_or_raise(source: Iterable[T], exc: Union[str, Exception]):
     undefined = object()
-    result = last_or(self, undefined)
+    result = last_or(source, undefined)
     if result is undefined:
         if isinstance(exc, str):
             raise Exception(exc)

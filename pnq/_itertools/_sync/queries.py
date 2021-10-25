@@ -1,4 +1,5 @@
 import time
+from itertools import product as _product
 
 from .._sync_generate.queries import *  # noqa
 from .._sync_generate.queries import _enumerate, _filter, _map
@@ -33,3 +34,6 @@ def sleep(source, seconds: float):  # type: ignore
     for v in source:
         yield v
         sleep(seconds)
+
+
+cartesian = _product

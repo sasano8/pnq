@@ -1,9 +1,12 @@
 from typing import (
     TYPE_CHECKING,
+    AbstractSet,
     AsyncIterable,
     Callable,
     Iterable,
+    Mapping,
     NoReturn,
+    Sequence,
     TypeVar,
     Union,
 )
@@ -15,6 +18,8 @@ from . import _async as A
 from . import _sync as S
 from .core import IterType
 from .core import Query as QueryBase
+from .core import QueryDict, QuerySeq, QuerySet
+from .exceptions import NotFoundError
 
 
 def no_implement(*args, **kwargs):
@@ -51,11 +56,11 @@ class Query(QueryBase[T]):
     def __init__(self, source: Union[Iterable[T], AsyncIterable[T]]):
         super().__init__(source)
 
-    def __iter__(self):
-        return self._impl_iter()
+    # def __iter__(self):
+    #     return self._impl_iter()
 
-    def __aiter__(self):
-        return self._impl_aiter()
+    # def __aiter__(self):
+    #     return self._impl_aiter()
 
     def __args__(self):
         return tuple(), {}
@@ -389,6 +394,13 @@ class Cartesian(Query):
     _ait = sm | A.queries.cartesian
     _sit = sm | S.queries.cartesian
 
+    def __init__(self, source, *iterables):
+        super().__init__(source)
+        self.iterables = iterables
+
+    def __args__(self):
+        return self.iterables, {}
+
 
 @export
 class Filter(Query):
@@ -470,16 +482,147 @@ class MustUnique(Query):
         return (self.selector,), {}
 
 
+def get_many_for_mapping(query_dict, keys):
+    """"""
+    undefined = object()
+    for key in keys:
+        obj = query_dict.get(key, undefined)
+        if obj is not undefined:
+            yield key, obj
+
+
+def get_many_for_sequence(query_seq, keys):
+    """"""
+    for key in keys:
+        try:
+            yield query_seq[key]
+        except IndexError:
+            ...
+
+
+def get_many_for_set(query_set, keys):
+    """"""
+    for key in keys:
+        if key in query_set:
+            yield key
+
+
 @export
 class FilterKeys(Query):
     _ait = sm | A.queries.filter_keys
     _sit = sm | S.queries.filter_keys
+
+    def __init__(self, source, *keys):
+        super().__init__(source)
+        self.keys = dict.fromkeys(keys, None)  # use dict. because set has no order.
+
+        if isinstance(self.source, (QuerySeq, QueryDict, QuerySet)):
+            source = self.source.source
+        else:
+            source = self.source
+        if isinstance(source, Mapping):
+            filter = get_many_for_mapping
+        elif isinstance(source, Sequence):
+            filter = get_many_for_sequence
+        elif isinstance(source, AbstractSet):
+            filter = get_many_for_set
+        else:
+            raise TypeError(f"{source} is not QuerySeq, QueryDict or QuerySet")
+
+        self._ref = source
+        self._filter = filter
+
+    def __args__(self):
+        return self.keys, {}
+
+    def _impl_iter(self):
+        return self._filter(self._ref, self.keys)
+
+    async def _impl_aiter(self):
+        for x in self._impl_iter():
+            yield x
+
+
+def get_for_dict(obj: dict, k, default):
+    return obj.get(k, default)
+
+
+def get_for_seq(obj: list, k, default):
+    try:
+        return obj[k]
+    except IndexError:
+        return default
+
+
+def get_for_set(obj: set, k, default):
+    if k in obj:
+        return k
+    else:
+        return default
 
 
 @export
 class MustKeys(Query):
     _ait = sm | A.queries.must_keys
     _sit = sm | S.queries.must_keys
+
+    def __init__(self, source, *keys, typ: str):
+        # TODO: remove typ
+
+        super().__init__(source)
+        self.keys = dict.fromkeys(keys, None)  # use dict. because set has no order.
+
+        if isinstance(self.source, (QuerySeq, QueryDict, QuerySet)):
+            source = self.source.source
+        else:
+            source = self.source
+        if isinstance(source, Mapping):
+            getter = get_for_dict
+        elif isinstance(source, Sequence):
+            getter = get_for_seq
+        elif isinstance(source, AbstractSet):
+            getter = get_for_set
+        else:
+            raise TypeError(f"{source} is not QuerySeq, QueryDict or QuerySet")
+
+        self._ref = source
+        self._getter = getter
+
+    def __args__(self):
+        return self.keys, {}
+
+    def _impl_iter(self):
+        source = self._ref
+        not_exists = set()
+        key_values = []
+        undefined = object()
+        getter = self._getter
+
+        for k in self.keys:
+            val = getter(source, k, undefined)
+            if val is undefined:
+                not_exists.add(k)
+            else:
+                key_values.append((k, val))
+
+        if not_exists:
+            raise NotFoundError(str(not_exists))
+
+        if getter is get_for_dict:
+            for k, v in key_values:
+                yield k, v
+        elif getter == get_for_seq:
+            for k, v in key_values:
+                yield v
+        elif getter == get_for_set:
+            for k, v in key_values:
+                yield k
+        else:
+            raise TypeError(f"unknown type")
+
+    async def _impl_aiter(self):
+        for x in self._impl_iter():
+            yield x
 
 
 @export
@@ -490,18 +633,26 @@ class Take(Query):
     def __init__(self, source, count_or_range: Union[int, range]):
         super().__init__(source)
         if isinstance(count_or_range, range):
-            r = count_or_range
+            # r = count_or_range
+            r = range(
+                max(count_or_range.start, 0),
+                max(count_or_range.stop, 0),
+                max(count_or_range.step, 1),
+            )
         else:
+            if count_or_range < 0:
+                raise ValueError(f"count_or_range must be >= 0, got {count_or_range}")
+
             r = range(count_or_range)
 
-        if r.start < 0:
-            raise ValueError()
+        # if r.start < 0:
+        #     raise ValueError()
 
-        if r.stop < 0:
-            raise ValueError()
+        # if r.stop < 0:
+        #     raise ValueError()
 
-        if r.step < 1:
-            raise ValueError()
+        # if r.step < 1:
+        #     raise ValueError()
 
         self.r = r
 
@@ -521,10 +672,11 @@ class TakePage(Take):
     _sit = sm | S.queries.take
 
     def __init__(self, source, page: int, size: int):
-        if not page >= 1:
-            raise ValueError("page must be >= 1")
-        if size < 0:
-            raise ValueError("size must be >= 0")
+        # TODO: 検証を有効化する
+        # if not page >= 1:
+        #     raise ValueError("page must be >= 1")
+        # if size < 0:
+        #     raise ValueError("size must be >= 0")
         start = (page - 1) * size
         stop = start + size
         super().__init__(source, range(start, stop))
@@ -550,7 +702,7 @@ class SkipWhile(TakeWhile):
 
 
 @export
-class OrderBy(Query):
+class OrderByMap(Query):
     _ait = sm | A.queries.order_by
     _sit = sm | S.queries.order_by
 
@@ -558,6 +710,25 @@ class OrderBy(Query):
         super().__init__(source)
         self.selector = selector
         self.desc = desc
+
+    def __args__(self):
+        return (self.selector, self.desc), {}
+
+
+@export
+class OrderBy(OrderByMap):
+    _ait = sm | A.queries.order_by
+    _sit = sm | S.queries.order_by
+
+    def __init__(self, source, *fields, desc: bool = False, attr: bool = False):
+        if not len(fields):
+            selector = None
+        else:
+            if attr:
+                selector = selectors.select_from_attr(*fields)
+            else:
+                selector = selectors.select_from_item(*fields)
+        super().__init__(source, selector, desc)
 
     def __args__(self):
         return (self.selector, self.desc), {}
@@ -618,6 +789,7 @@ class FinalizerBase:
     max = S.finalizers._max
     average = S.finalizers.average
     reduce = S.finalizers.reduce
+    accumulate = S.finalizers.accumulate
     contains = S.finalizers.contains
     concat = S.finalizers.concat
     one = S.finalizers.one
@@ -630,6 +802,7 @@ class FinalizerBase:
     last_or = S.finalizers.last_or
     last_or_raise = S.finalizers.last_or_raise
     each = S.finalizers.each
+    # each_unpack = S.finalizers.each_unpack
 
 
 class AsyncFinalizerBase:
@@ -642,6 +815,7 @@ class AsyncFinalizerBase:
     max = A.finalizers._max
     average = A.finalizers.average
     reduce = A.finalizers.reduce
+    accumulate = A.finalizers.accumulate
     contains = A.finalizers.contains
     concat = A.finalizers.concat
     one = A.finalizers.one
@@ -654,6 +828,7 @@ class AsyncFinalizerBase:
     last_or = A.finalizers.last_or
     last_or_raise = A.finalizers.last_or_raise
     each = A.finalizers.each
+    each_unpack = A.finalizers.each_unpack
 
 
 class Finalizer(FinalizerBase):

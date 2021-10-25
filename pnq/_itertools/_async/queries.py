@@ -257,28 +257,32 @@ async def compress(source: AsyncIterable[T]):
     return itertools.compress(self, *iterables)
 
 
-async def cartesian(source: AsyncIterable[T], *iterables):
-    return itertools.product(self.source, *self.iterables)
+async def cartesian(*iterables: AsyncIterable[T]):
+    # FIXME: no implemented
+    import itertools
+
+    for x in itertools.product(*iterables):  # type: ignore
+        yield x
 
 
 @name_as("filter")
 def _filter(source: AsyncIterable[T], predicate=None, unpack=""):
     if predicate is None:
-        return source
+        return source.__aiter__()
     else:
         if unpack == "":
-            return (predicate(x) async for x in source)
+            return (x async for x in source if predicate(x))
         elif unpack == "*":
-            return (predicate(*x) async for x in source)
+            return (x async for x in source if predicate(*x))
         elif unpack == "**":
-            return (predicate(**x) async for x in source)
+            return (x async for x in source if predicate(**x))
         elif unpack == "***":
-            return (predicate(*x.args, **x.kwargs) async for x in source)  # type: ignore
+            return (x async for x in source if predicate(*x.args, **x.kwargs))  # type: ignore
         else:
             raise ValueError("unpack must be one of '', '*', '**', '***'")
 
 
-async def must(source: AsyncIterable[T], predicate):
+async def must(source: AsyncIterable[T], predicate, msg=""):
     async for elm in source:
         if not predicate(elm):
             raise MustError(f"{msg} {elm}")
@@ -308,7 +312,7 @@ async def must_keys(source: AsyncIterable[T], *keys):
 
 async def filter_unique(source: AsyncIterable[T], selector=None):
     duplidate = set()
-    async for value in source:
+    async for value in _map(source, selector):
         if value in duplidate:
             pass
         else:
@@ -318,12 +322,11 @@ async def filter_unique(source: AsyncIterable[T], selector=None):
 
 async def must_unique(source: AsyncIterable[T], selector=None):
     duplidate = set()
-    async for value in source:
-        target = selector(value)
-        if target in duplidate:
+    async for value in _map(source, selector):
+        if value in duplidate:
             raise DuplicateElementError(value)
         else:
-            duplidate.add(target)
+            duplidate.add(value)
             yield value
 
 
