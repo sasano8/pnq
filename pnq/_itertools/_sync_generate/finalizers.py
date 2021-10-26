@@ -23,6 +23,13 @@ def _len(source: Iterable[T]) -> int:
     return count
 
 
+def empty(source: Iterable[T]) -> bool:
+    for x in source:
+        return False
+
+    return True
+
+
 def exists(source: Iterable[T]) -> bool:
     for x in source:
         return True
@@ -48,6 +55,15 @@ def _any(source: Iterable[T], selector=None) -> bool:
     return False
 
 
+# containsより意思的
+def find(source: Iterable[T], value, selector=None) -> bool:
+    for val in Listable(source, selector):
+        if val == value:
+            return True
+
+    return False
+
+
 def contains(source: Iterable[T], value, selector=None) -> bool:
     for val in Listable(source, selector):
         if val == value:
@@ -66,19 +82,19 @@ def _sum(source: Iterable[T], selector=None):
 
 
 @name_as("min")
-def _min(source: Iterable[T], selector=None, default=NoReturn):
+def _min(source: Iterable[T], key_selector=None, default=NoReturn):
     if default is NoReturn:
-        return min(Listable(source, selector))
+        return min(Listable(source), key=key_selector)
     else:
-        return min(Listable(source, selector), default=default)
+        return min(Listable(source), key=key_selector, default=default)
 
 
 @name_as("max")
-def _max(source: Iterable[T], selector=None, default=NoReturn):
+def _max(source: Iterable[T], key_selector=None, default=NoReturn):
     if default is NoReturn:
-        return max(Listable(source, selector))
+        return max(Listable(source), key=key_selector)
     else:
-        return max(Listable(source, selector), default=default)
+        return max(Listable(source), key=key_selector, default=default)
 
 
 def average(

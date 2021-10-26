@@ -5,22 +5,13 @@ from concurrent.futures import Future
 from concurrent.futures import ProcessPoolExecutor as _ProcessPoolExecutor
 from concurrent.futures import ThreadPoolExecutor as _ThreadPoolExecutor
 from contextlib import AsyncExitStack, ExitStack
-from functools import lru_cache, partial
+from functools import partial
 from typing import TYPE_CHECKING, Union
+
+from pnq.inspect import is_coroutine_function
 
 from . import tools
 from .protocols import Executor, PExecutable, PExecutor
-
-
-@lru_cache(32)
-def is_coroutine_function(func):
-    # TODO: python3.8からはpartialが自動でasync functionを認識するので削除する
-    if isinstance(func, partial):
-        target = func.func
-    else:
-        target = func
-
-    return asyncio.iscoroutinefunction(target)
 
 
 class OverrideExecutor:

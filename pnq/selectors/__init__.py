@@ -1,5 +1,6 @@
 import asyncio
 from concurrent.futures import Future as ConcurrentFuture
+from functools import cmp_to_key
 from functools import partial as _partial
 from operator import attrgetter, itemgetter
 from typing import Any, Awaitable, NoReturn
@@ -16,6 +17,7 @@ __all__ = [
     "select_as_awaitable",
     "reflect",
     "flat_recursive",
+    "cmp_to_key",
 ]
 
 

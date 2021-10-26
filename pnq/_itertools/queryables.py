@@ -721,6 +721,7 @@ class Lazy(Query):
 # finalizer
 #################################
 class FinalizerBase:
+    empty = S.finalizers.empty
     exists = S.finalizers.exists
     len = S.finalizers._len
     all = S.finalizers._all
@@ -731,7 +732,8 @@ class FinalizerBase:
     average = S.finalizers.average
     reduce = S.finalizers.reduce
     accumulate = S.finalizers.accumulate
-    contains = S.finalizers.contains
+    find = S.finalizers.find
+    contains = S.finalizers.contains  # TODO: findかどっちかに統一する
     concat = S.finalizers.concat
     one = S.finalizers.one
     one_or = S.finalizers.one_or
@@ -752,6 +754,7 @@ class FinalizerBase:
 
 
 class AsyncFinalizerBase:
+    empty = A.finalizers.empty
     exists = A.finalizers.exists
     len = A.finalizers._len
     all = A.finalizers._all
@@ -762,6 +765,7 @@ class AsyncFinalizerBase:
     average = A.finalizers.average
     reduce = A.finalizers.reduce
     accumulate = A.finalizers.accumulate
+    find = A.finalizers.find
     contains = A.finalizers.contains
     concat = A.finalizers.concat
     one = A.finalizers.one

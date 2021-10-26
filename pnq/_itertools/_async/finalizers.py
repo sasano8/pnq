@@ -23,6 +23,13 @@ async def _len(source: AsyncIterable[T]) -> int:
     return count
 
 
+async def empty(source: AsyncIterable[T]) -> bool:
+    async for x in source:
+        return False
+
+    return True
+
+
 async def exists(source: AsyncIterable[T]) -> bool:
     async for x in source:
         return True
@@ -48,6 +55,15 @@ async def _any(source: AsyncIterable[T], selector=None) -> bool:
     return False
 
 
+# containsより意思的
+async def find(source: AsyncIterable[T], value, selector=None) -> bool:
+    async for val in Listable(source, selector):
+        if val == value:
+            return True
+
+    return False
+
+
 async def contains(source: AsyncIterable[T], value, selector=None) -> bool:
     async for val in Listable(source, selector):
         if val == value:
@@ -66,19 +82,19 @@ async def _sum(source: AsyncIterable[T], selector=None):
 
 
 @name_as("min")
-async def _min(source: AsyncIterable[T], selector=None, default=NoReturn):
+async def _min(source: AsyncIterable[T], key_selector=None, default=NoReturn):
     if default is NoReturn:
-        return min(await Listable(source, selector))
+        return min(await Listable(source), key=key_selector)
     else:
-        return min(await Listable(source, selector), default=default)
+        return min(await Listable(source), key=key_selector, default=default)
 
 
 @name_as("max")
-async def _max(source: AsyncIterable[T], selector=None, default=NoReturn):
+async def _max(source: AsyncIterable[T], key_selector=None, default=NoReturn):
     if default is NoReturn:
-        return max(await Listable(source, selector))
+        return max(await Listable(source), key=key_selector)
     else:
-        return max(await Listable(source, selector), default=default)
+        return max(await Listable(source), key=key_selector, default=default)
 
 
 async def average(

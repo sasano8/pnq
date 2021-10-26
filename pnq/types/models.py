@@ -1,5 +1,6 @@
 import asyncio
 from contextlib import AsyncExitStack, ExitStack
+from functools import partial
 from typing import TYPE_CHECKING, Iterable
 
 from .protocols import PArguments
@@ -43,6 +44,9 @@ class Arguments(PArguments):
 
     def items(self):
         return self.kwargs.items()
+
+    def partial(self, func):
+        return partial(func, *self.args, **self.kwargs)
 
 
 class PnqExitStack:

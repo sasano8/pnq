@@ -1,4 +1,5 @@
 import asyncio
+import random
 from typing import AsyncIterable, TypeVar
 
 from pnq.exceptions import DuplicateElementError, MustError, MustTypeError
@@ -434,8 +435,18 @@ def _take_page_calc(page: int, size: int):
     return range(start, stop)
 
 
-async def order_by(source: AsyncIterable[T], selector=None, desc: bool = False):
-    for x in sorted(await Listable(source), key=selector, reverse=desc):
+async def order_by(source: AsyncIterable[T], key_selector=None, desc: bool = False):
+    for x in sorted(await Listable(source), key=key_selector, reverse=desc):
+        yield x
+
+
+async def min_by(source: AsyncIterable[T], key_selector=None):
+    for x in sorted(await Listable(source), key=key_selector, reverse=False):
+        yield x
+
+
+async def max_by(source: AsyncIterable[T], key_selector=None):
+    for x in sorted(await Listable(source), key=key_selector, reverse=True):
         yield x
 
 
@@ -443,11 +454,20 @@ async def order_by_reverse(source: AsyncIterable[T]):
     return reversed(await Listable(source))
 
 
-async def order_by_shuffle(source: AsyncIterable[T]):
-    import random
+async def order_by_shuffle(source: AsyncIterable[T], seed_or_func=None):
+    if seed_or_func is None:
+        seed_or_func = lambda k: random.random()  # noqa
 
-    for x in sorted(await Listable(source), key=lambda k: random.random()):
-        yield x
+    if seed_or_func is float:
+        # TODO: 並列でシャッフルした場合、新たな乱数が払い出されてしまうため再現性を失う
+        random.seed(seed_or_func)
+        result = await Listable(source)
+        random.shuffle(result)
+        for x in result:
+            yield x
+    else:
+        for x in sorted(await Listable(source), key=seed_or_func):
+            yield x
 
 
 async def sleep(source: AsyncIterable[T], seconds: float):

@@ -521,11 +521,11 @@ class Test010_Finalizer:
             assert q.contains(10, selector=lambda x: x[0]) == False
             assert q.contains(10, selector=lambda x: x[1])
 
-            assert q.min(selector=lambda x: x[0]) == 0
-            assert q.min(selector=lambda x: x[1]) == 10
+            assert q.min(key_selector=lambda x: x[0]) == (0, 10)
+            assert q.min(key_selector=lambda x: x[1]) == (0, 10)
 
-            assert q.max(selector=lambda x: x[0]) == 0
-            assert q.max(selector=lambda x: x[1]) == 10
+            assert q.max(key_selector=lambda x: x[0]) == (0, 10)
+            assert q.max(key_selector=lambda x: x[1]) == (0, 10)
 
             assert q.sum(selector=lambda x: x[0]) == 0
             assert q.sum(selector=lambda x: x[1]) == 10

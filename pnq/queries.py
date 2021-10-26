@@ -103,22 +103,22 @@ class Query(Generic[T]):
         ...
 
     @overload
-    def min(self, selector: Callable[[T], R] = lambda x: x, default=NoReturn) -> R:
+    def min(self, key_selector: Callable[[T], R] = lambda x: x, default=NoReturn) -> R:
         ...
 
-    def min(self, selector: Callable[[T], R] = lambda x: x, default=NoReturn) -> R:
-        return Finalizer.min(self, selector, default)
+    def min(self, key_selector: Callable[[T], R] = lambda x: x, default=NoReturn) -> R:
+        return Finalizer.min(self, key_selector, default)
 
     @overload
     def max(self, *, default=NoReturn) -> Union[T, NoReturn]:
         ...
 
     @overload
-    def max(self, selector: Callable[[T], R] = lambda x: x, default=NoReturn) -> R:
+    def max(self, key_selector: Callable[[T], R] = lambda x: x, default=NoReturn) -> R:
         ...
 
-    def max(self, selector: Callable[[T], R] = lambda x: x, default=NoReturn) -> R:
-        return Finalizer.max(self, selector, default)
+    def max(self, key_selector: Callable[[T], R] = lambda x: x, default=NoReturn) -> R:
+        return Finalizer.max(self, key_selector, default)
 
     @overload
     def sum(self) -> T:
@@ -496,14 +496,14 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
 
     @overload
     def min(
-        self, selector: Callable[[Tuple[K, V]], R] = lambda x: x, default=NoReturn
+        self, key_selector: Callable[[Tuple[K, V]], R] = lambda x: x, default=NoReturn
     ) -> R:
         ...
 
     def min(
-        self, selector: Callable[[Tuple[K, V]], R] = lambda x: x, default=NoReturn
+        self, key_selector: Callable[[Tuple[K, V]], R] = lambda x: x, default=NoReturn
     ) -> R:
-        return Finalizer.min(self, selector, default)
+        return Finalizer.min(self, key_selector, default)
 
     @overload
     def max(self, *, default=NoReturn) -> Union[Tuple[K, V], NoReturn]:
@@ -511,14 +511,14 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
 
     @overload
     def max(
-        self, selector: Callable[[Tuple[K, V]], R] = lambda x: x, default=NoReturn
+        self, key_selector: Callable[[Tuple[K, V]], R] = lambda x: x, default=NoReturn
     ) -> R:
         ...
 
     def max(
-        self, selector: Callable[[Tuple[K, V]], R] = lambda x: x, default=NoReturn
+        self, key_selector: Callable[[Tuple[K, V]], R] = lambda x: x, default=NoReturn
     ) -> R:
-        return Finalizer.max(self, selector, default)
+        return Finalizer.max(self, key_selector, default)
 
     @overload
     def sum(self) -> Tuple[K, V]:

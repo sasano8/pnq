@@ -102,6 +102,7 @@ def test_async_func():
     assert [x.result() for x in futures] == [1, 2, 3]
 
 
+@pytest.mark.slow
 def test_sync_pool_wait_all_tasks():
     """一度スケジュールされたタスクは全て実行されるべき"""
     futures = []

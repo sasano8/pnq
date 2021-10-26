@@ -1,8 +1,8 @@
 import asyncio
-from asyncio import futures
 from functools import partial
 from typing import AsyncIterable, TypeVar
 
+from pnq.inspect import is_coroutine_function
 from pnq.protocols import PExecutor
 from pnq.selectors import starmap
 
@@ -71,3 +71,76 @@ async def dispatch(
             future = submit(new_func, x)
             future.add_done_callback(cb)
             await asyncio.sleep(0)
+
+
+def exec_request(func, *args, **kwargs):
+    from ..requests import Response, StopWatch
+
+    with StopWatch() as sw:
+        err = None
+        result = None
+        try:
+            result = func(*args, **kwargs)
+        except Exception as e:
+            err = e
+
+    if isinstance(func, partial):
+        func = func.func
+
+    return Response(
+        func,
+        args,
+        kwargs,
+        err=err,
+        result=result,
+        start=sw.start,
+        end=sw.end,
+    )
+
+
+async def exec_request_async(func, *args, **kwargs):
+    from ..requests import Response, StopWatch
+
+    with StopWatch() as sw:
+        err = None
+        result = None
+        try:
+            result = await func(*args, **kwargs)
+        except Exception as e:
+            err = e
+
+    if isinstance(func, partial):
+        func = func.func
+
+    return Response(
+        func,
+        args,
+        kwargs,
+        err=err,
+        result=result,
+        start=sw.start,
+        end=sw.end,
+    )
+
+
+async def request(
+    source: AsyncIterable[T],
+    func,
+    executor: PExecutor,
+    *,
+    unpack="",
+    chunksize=1,
+    retry: int = None,
+    timeout: float = None
+):
+    new_func = starmap(func, unpack)
+
+    if is_coroutine_function(func):
+        wrapped = partial(exec_request_async, new_func)
+    else:
+        wrapped = partial(exec_request, new_func)
+
+    async for x in parallel(
+        source, wrapped, executor, unpack=unpack, chunksize=chunksize
+    ):
+        yield x

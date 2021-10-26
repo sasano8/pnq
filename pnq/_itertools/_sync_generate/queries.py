@@ -1,4 +1,5 @@
 import asyncio
+import random
 from typing import Iterable, TypeVar
 
 from pnq.exceptions import DuplicateElementError, MustError, MustTypeError
@@ -428,8 +429,18 @@ def _take_page_calc(page: int, size: int):
     return range(start, stop)
 
 
-def order_by(source: Iterable[T], selector=None, desc: bool = False):
-    for x in sorted(Listable(source), key=selector, reverse=desc):
+def order_by(source: Iterable[T], key_selector=None, desc: bool = False):
+    for x in sorted(Listable(source), key=key_selector, reverse=desc):
+        yield x
+
+
+def min_by(source: Iterable[T], key_selector=None):
+    for x in sorted(Listable(source), key=key_selector, reverse=False):
+        yield x
+
+
+def max_by(source: Iterable[T], key_selector=None):
+    for x in sorted(Listable(source), key=key_selector, reverse=True):
         yield x
 
 
@@ -437,11 +448,19 @@ def order_by_reverse(source: Iterable[T]):
     return reversed(Listable(source))
 
 
-def order_by_shuffle(source: Iterable[T]):
-    import random
+def order_by_shuffle(source: Iterable[T], seed_or_func=None):
+    if seed_or_func is None:
+        seed_or_func = lambda k: random.random()  # noqa
 
-    for x in sorted(Listable(source), key=lambda k: random.random()):
-        yield x
+    if seed_or_func is float:
+        random.seed(seed_or_func)
+        result = Listable(source)
+        random.shuffle(result)
+        for x in result:
+            yield x
+    else:
+        for x in sorted(Listable(source), key=seed_or_func):
+            yield x
 
 
 def sleep(source: Iterable[T], seconds: float):
