@@ -1,4 +1,3 @@
-import sys
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -31,20 +30,12 @@ try:
 except:
     from typing_extensions import Literal
 
-from pnq.exceptions import NoElementError, NotFoundError, NotOneElementError
+from pnq.exceptions import NotFoundError
 
 from ._itertools import actions, builder, core, finalizers
 from ._itertools import queryables as queries
 from ._itertools.op import TH_ASSIGN_OP
 from ._itertools.requests import Response
-
-# from . import actions, core, builder, queries
-# from .base.exceptions import NoElementError, NotFoundError, NotOneElementError
-# from .base.op import TH_ASSIGN_OP
-# from .base.requests import Response
-
-# from .base import finalizers
-
 
 T = TypeVar("T")
 K = TypeVar("K")

@@ -1474,7 +1474,7 @@ def save(self):
 @mark
 def result(self):
     """`save`と同じですが、`concurrent.futures.Future`互換にするために実装されています。
-    これにより、`map_await`で複数のクエリを一括で評価するような使い方ができます。
+    これにより、`gather`で複数のクエリを一括で評価するような使い方ができます。
     """
 
 
