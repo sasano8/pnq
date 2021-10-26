@@ -224,6 +224,9 @@ class {{query.CLS}}:
     async def each_async_unpack(self, func: Callable = lambda x: x):
         return await Finalizer.each_async_unpack(self, func)
 
+    def dispatch(self, func, executor: "PExecutor", *, unpack="", chunksize=1, callback=None):
+        return Finalizer.dispatch(self, func, executor, unpack=unpack, chunksize=chunksize, callback=callback)
+
     def one(self) -> {{query.T}}:
         return Finalizer.one(self)
 

@@ -40,7 +40,9 @@ class OverrideExecutor:
         return result
 
     async def __aexit__(self, *args, **kwargs):
-        return super().__exit__(*args, **kwargs)
+        result = super().__exit__(*args, **kwargs)
+        await asyncio.sleep(0.01)
+        return result
 
     if TYPE_CHECKING:
 
@@ -195,7 +197,9 @@ class PoolContext:
         return self.executor.__exit__(*args, **kwargs)
 
     async def __aexit__(self, *args, **kwargs):
-        return await self.executor.__aexit__(*args, **kwargs)
+        result = await self.executor.__aexit__(*args, **kwargs)
+        await asyncio.sleep(0.01)
+        return result
 
     @property
     def is_async_only(self):
@@ -210,7 +214,9 @@ class ProcessPoolExecutor(PoolContext):
         return self.__enter__()
 
     async def __aexit__(self, *args, **kwargs):
-        return self.__exit__(*args, **kwargs)
+        result = self.__exit__(*args, **kwargs)
+        await asyncio.sleep(0.01)
+        return result
 
 
 class ThreadPoolExecutor(PoolContext):
@@ -221,7 +227,9 @@ class ThreadPoolExecutor(PoolContext):
         return self.__enter__()
 
     async def __aexit__(self, *args, **kwargs):
-        return self.__exit__(*args, **kwargs)
+        result = self.__exit__(*args, **kwargs)
+        await asyncio.sleep(0.01)
+        return result
 
 
 class NestedFuture(asyncio.Future):

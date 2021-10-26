@@ -216,6 +216,13 @@ class Query(Generic[T]):
     async def each_async_unpack(self, func: Callable = lambda x: x):
         return await Finalizer.each_async_unpack(self, func)
 
+    def dispatch(
+        self, func, executor: "PExecutor", *, unpack="", chunksize=1, callback=None
+    ):
+        return Finalizer.dispatch(
+            self, func, executor, unpack=unpack, chunksize=chunksize, callback=callback
+        )
+
     def one(self) -> T:
         return Finalizer.one(self)
 
@@ -618,6 +625,13 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
 
     async def each_async_unpack(self, func: Callable = lambda x: x):
         return await Finalizer.each_async_unpack(self, func)
+
+    def dispatch(
+        self, func, executor: "PExecutor", *, unpack="", chunksize=1, callback=None
+    ):
+        return Finalizer.dispatch(
+            self, func, executor, unpack=unpack, chunksize=chunksize, callback=callback
+        )
 
     def one(self) -> Tuple[K, V]:
         return Finalizer.one(self)
