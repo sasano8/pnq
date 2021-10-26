@@ -453,6 +453,7 @@ def order_by_shuffle(source: Iterable[T], seed_or_func=None):
         seed_or_func = lambda k: random.random()  # noqa
 
     if seed_or_func is float:
+        # TODO: 並列でシャッフルした場合、新たな乱数が払い出されてしまうため再現性を失う
         random.seed(seed_or_func)
         result = Listable(source)
         random.shuffle(result)
