@@ -32,8 +32,7 @@ except:
 
 from pnq.exceptions import NotFoundError
 
-from ._itertools import builder, core
-from ._itertools import queryables as queries
+from ._itertools import builder, core, queryables
 from ._itertools.op import TH_ASSIGN_OP
 from ._itertools.queryables import AsyncFinalizer, Finalizer
 from ._itertools.requests import Response
@@ -47,8 +46,6 @@ R = TypeVar("R")
 
 
 __all__ = ["Query", "PairQuery", "query"]
-
-
 
 
 {% for query in queries %}
@@ -266,7 +263,7 @@ class {{query.CLS}}:
         return self
 
     def enumerate(self, start: int = 0, step: int = 1) -> "{{pair.SELF__}}[int, {{query.T}}]":
-        return queries.Enumerate(self, start, step)
+        return queryables.Enumerate(self, start, step)
 
     @overload
     def map(self, selector: Callable[[{{query.T}}], Tuple[K2, V2]]) -> "{{pair.SELF__}}[K2, V2]":
@@ -277,7 +274,7 @@ class {{query.CLS}}:
         pass
 
     def map(self, selector):
-        return queries.MapNullable(self, selector)
+        return queryables.MapNullable(self, selector)
 
     {% if query.is_pair %}
 
@@ -304,52 +301,52 @@ class {{query.CLS}}:
         ...
 
     def select(self, *fields, attr: bool = False) -> "Query[Any]":
-        return queries.Select(self, *fields, attr=attr)
+        return queryables.Select(self, *fields, attr=attr)
 
     def select_as_tuple(self, *fields, attr: bool = False) -> "Query[Tuple]":
-        return queries.SelectAsTuple(self, *fields, attr=attr)
+        return queryables.SelectAsTuple(self, *fields, attr=attr)
 
     def select_as_dict(self, *fields, attr: bool = False, default=NoReturn) -> "Query[Dict]":
-        return queries.SelectAsDict(self, *fields, attr=attr, default=default)
+        return queryables.SelectAsDict(self, *fields, attr=attr, default=default)
 
     def reflect(self, mapping, default=NoReturn, attr: bool = False):
-        return queries.Reflect(self, mapping, attr=attr)
+        return queryables.Reflect(self, mapping, attr=attr)
 
     def flat(self, selector: Callable[..., Iterable[R]] = None) -> "{{sequence.SELF__}}[R]":
-        return queries.Flat(self, selector)
+        return queryables.Flat(self, selector)
 
     def flat_recursive(self, selector: Callable[[{{query.T}}], Iterable[{{query.T}}]]) -> "{{sequence.SELF__}}[{{query.T}}]":
-        return queries.FlatRecursive(self, selector)
+        return queryables.FlatRecursive(self, selector)
 
     def unpack_pos(self, selector: Callable[..., R]) -> "{{sequence.SELF__}}[R]":
-        return queries.UnpackPos(self, selector=selector)
+        return queryables.UnpackPos(self, selector=selector)
 
     def unpack_kw(self, selector: Callable[..., R]) -> "{{sequence.SELF__}}[R]":
-        return queries.UnpackKw(self, selector=selector)
+        return queryables.UnpackKw(self, selector=selector)
 
     def pivot_unstack(self, default=None) -> "PairQuery[Any, List]":
-        return queries.PivotUnstack(self, default=default)
+        return queryables.PivotUnstack(self, default=default)
 
     def pivot_stack(self) -> "Query[Dict]":
-        return queries.PivotStack(self)
+        return queryables.PivotStack(self)
 
     def group_by(self, selector: Callable[[{{query.T}}], Tuple[K2, V2]] = lambda x: x) -> "{{pair.SELF__}}[K2, List[V2]]":
-        return queries.GroupBy(self, selector=selector)
+        return queryables.GroupBy(self, selector=selector)
 
     def chunked(self, size: int) -> "Query[List[{{query.T}}]]":
-        return queries.Chunked(self, size=size)
+        return queryables.Chunked(self, size=size)
 
     def tee(self, size: int):
-        return queries.Tee(self, size=size)
+        return queryables.Tee(self, size=size)
 
     def join(self, right, on: Callable[[Tuple[list, list]], Callable], select):
-        return queries.Join(self, right, on=on, select=select)
+        return queryables.Join(self, right, on=on, select=select)
 
     def request(self, func, retry: int = None) -> "Query[Response]":
-        return queries.Request(self, func, retry)
+        return queryables.Request(self, func, retry)
 
     def request_async(self, func, retry: int = None, timeout=None) -> "Query[Response]":
-        return queries.RequestAsync(self, func, retry=retry, timeout=None)
+        return queryables.RequestAsync(self, func, retry=retry, timeout=None)
 
     @overload
     def parallel(self, func: Callable[..., Awaitable[R]], executor=None, *, unpack="", chunksize=1) -> "Query[R]":
@@ -360,19 +357,19 @@ class {{query.CLS}}:
         ...
 
     def parallel(self, func, executor=None, *, unpack="", chunksize=1) -> "Query[R]":
-        return queries.Parallel(self, func, executor, unpack=unpack, chunksize=chunksize)
+        return queryables.Parallel(self, func, executor, unpack=unpack, chunksize=chunksize)
 
     def debug(self, breakpoint=lambda x: x, printer=print) -> "{{query.SELF_T}}":
-        return queries.Debug(self, breakpoint=breakpoint, printer=printer)
+        return queryables.Debug(self, breakpoint=breakpoint, printer=printer)
 
     def debug_path(self, selector_sync=lambda x: -10, selector_async=lambda x: 10) -> "{{query.SELF_T}}":
-        return queries.DebugPath(self, selector_sync, selector_async)
+        return queryables.DebugPath(self, selector_sync, selector_async)
 
     def filter(self, predicate: Callable[[{{query.T}}], bool]) -> "{{query.SELF_T}}":
-        return queries.Filter(self, predicate)
+        return queryables.Filter(self, predicate)
 
     def filter_type(self, *types: Type[R]) -> "{{query.SELF_T}}":
-        return queries.FilterType(self, *types)
+        return queryables.FilterType(self, *types)
 
     @overload
     def filter_unique(self) -> "{{query.SELF_T}}":
@@ -387,55 +384,52 @@ class {{query.CLS}}:
         ...
 
     def filter_unique(self, selector=None):
-        return queries.FilterUnique(self, selector=selector)
+        return queryables.FilterUnique(self, selector=selector)
 
     def distinct(self, selector: Callable[[{{query.T}}], Any]) -> "{{query.SELF_T}}":
-        return queries.FilterUnique(self, selector=selector)
+        return queryables.FilterUnique(self, selector=selector)
 
     def must(self, predicate: Callable[[{{query.T}}], bool], msg: str="") -> "{{query.SELF_T}}":
-        return queries.Must(self, predicate, msg)
+        return queryables.Must(self, predicate, msg)
 
     def must_type(self, type, *types: Type) -> "{{query.SELF_T}}":
-        return queries.MustType(self, type, *types)
+        return queryables.MustType(self, type, *types)
 
     def must_unique(self, selector: Callable[[T], R] = None):
-        return queries.MustUnique(self, selector=selector)
+        return queryables.MustUnique(self, selector=selector)
 
     def take(self, count_or_range: Union[int, range]) -> "{{query.SELF_T}}":
-        return queries.Take(self, count_or_range)
+        return queryables.Take(self, count_or_range)
 
     def take_while(self, predicate) -> "{{query.SELF_T}}":
-        return queries.TakeWhile(self, predicate)
+        return queryables.TakeWhile(self, predicate)
 
     def skip(self, count_or_range: Union[int, range]) -> "{{query.SELF_T}}":
-        return queries.Skip(self, count_or_range)
+        return queryables.Skip(self, count_or_range)
 
     def take_page(self, page: int, size: int) -> "{{query.SELF_T}}":
-        return queries.TakePage(self, page=page, size=size)
+        return queryables.TakePage(self, page=page, size=size)
 
     def order_by(self, *fields, desc: bool = False, attr: bool = False) -> "{{query.SELF_T}}":
-        return queries.OrderBy(self, *fields, desc=desc, attr=attr)
+        return queryables.OrderBy(self, *fields, desc=desc, attr=attr)
 
     def order_by_map(self, selector=None, *, desc: bool = False) -> "{{query.SELF_T}}":
-        return queries.OrderByMap(self, selector=selector, desc=desc)
+        return queryables.OrderByMap(self, selector=selector, desc=desc)
 
     def order_by_reverse(self) -> "{{query.SELF_T}}":
-        return queries.OrderByReverse(self)
+        return queryables.OrderByReverse(self)
 
     def order_by_shuffle(self) -> "{{query.SELF_T}}":
-        return queries.OrderByShuffle(self)
+        return queryables.OrderByShuffle(self)
 
     def sleep(self, seconds: float) -> "{{query.SELF_T}}":
-        return queries.Sleep(self, seconds)
-
-    # def sleep_async(self, seconds: float) -> "{{query.SELF_T}}":
-    #     return queries.Sleep(self, seconds)
+        return queryables.Sleep(self, seconds)
 
     def zip(self):
-        raise NotImplementedError()
+        return queryables.Zip(self)
 
     def cartesian(self, *iterables) -> "Query[Tuple]":
-        return queries.Cartesian(self, *iterables)
+        return queryables.Cartesian(self, *iterables)
 
 {% endfor %}
 
@@ -446,19 +440,17 @@ if not TYPE_CHECKING:
     class Queries:
         pass
 
-    # from .base import queries
-
-    from ._itertools import queryables as queries
+    from ._itertools import queryables
 
     classess = Queries()
 
-    for cls in queries.exports:
+    for cls in queryables.exports:
         baseclasses = (cls, Query[T])
         created = types.new_class(cls.__name__, baseclasses)
 
         setattr(classess, cls.__name__, created)
 
-    queries = classess
+    queryables = classess
 
 
 class QueryBase(Query[T], core.Query[T]):
@@ -475,11 +467,11 @@ class QueryNormal(Query[T], core.QueryNormal[T]):
 
 class QueryDict(PairQuery[K, V], core.QueryDict[K, V]):
     def filter_keys(self, *keys) -> "PairQuery[K, V]":
-        return queries.FilterKeys(self, *keys)
+        return queryables.FilterKeys(self, *keys)
 
     # @no_type_check
     def must_keys(self, *keys) -> "PairQuery[K, V]":
-        return queries.MustKeys(self, *keys, typ="map")
+        return queryables.MustKeys(self, *keys, typ="map")
 
     def get(self, key) -> V:
         try:
@@ -507,10 +499,10 @@ class QueryDict(PairQuery[K, V], core.QueryDict[K, V]):
 
 class QuerySeq(Query[T], core.QuerySeq[T]):
     def filter_keys(self, *keys) -> "Query[T]":
-        return queries.FilterKeys(self, *keys)
+        return queryables.FilterKeys(self, *keys)
 
     def must_keys(self, *keys) -> "Query[T]":
-        return queries.MustKeys(self, *keys, typ="seq")
+        return queryables.MustKeys(self, *keys, typ="seq")
 
     def get(self, key) -> T:
         try:
@@ -550,10 +542,10 @@ class PnqList(Query[T], List[T]):
         return result
 
     def filter_keys(self, *keys) -> "Query[T]":
-        return queries.FilterKeys(self, *keys)
+        return queryables.FilterKeys(self, *keys)
 
     def must_keys(self, *keys) -> "Query[T]":
-        return queries.MustKeys(self, *keys, typ="seq")
+        return queryables.MustKeys(self, *keys, typ="seq")
 
     def get(self, key) -> T:
         try:
@@ -581,10 +573,10 @@ class PnqList(Query[T], List[T]):
 
 class QuerySet(Query[T], core.QuerySet[T]):
     def filter_keys(self, *keys) -> "Query[T]":
-        return queries.FilterKeys(self, *keys)
+        return queryables.FilterKeys(self, *keys)
 
     def must_keys(self, *keys) -> "Query[T]":
-        return queries.MustKeys(self, *keys, typ="set")
+        return queryables.MustKeys(self, *keys, typ="set")
 
     def get(self, key) -> T:
         if key in self.source:
