@@ -34,17 +34,19 @@ async def do_heavy_async(x):
 async def test_base_spec():
     import pnq.concurrent.testtool as testtool
 
-    assert await testtool.ExecutorSpec.test_capability(
-        ProcessPool, is_async_only=False, submit_sync=True
+    spectest = testtool.ExecutorSpec.test_capability
+
+    assert await spectest(
+        ProcessPool, is_async_only=False, submit_sync=True, submit_async=True
     )
-    assert await testtool.ExecutorSpec.test_capability(
-        ThreadPool, is_async_only=False, submit_sync=True
+    assert await spectest(
+        ThreadPool, is_async_only=False, submit_sync=True, submit_async=True
     )
-    assert await testtool.ExecutorSpec.test_capability(
-        AsyncPool, is_async_only=True, submit_sync=False
+    assert await spectest(
+        AsyncPool, is_async_only=True, submit_sync=False, submit_async=False
     )
-    assert await testtool.ExecutorSpec.test_capability(
-        DummyPool, is_async_only=True, submit_sync=True
+    assert await spectest(
+        DummyPool, is_async_only=False, submit_sync=True, submit_async=True
     )
 
 
@@ -78,7 +80,7 @@ def test_sync_func():
         future = pool.submit(do, 3)
         futures.append(future)
 
-    assert [x.result() for x in futures] == [1, 2]
+    assert [x.result() for x in futures] == [1, 2, 3]
 
 
 def test_async_func():
@@ -93,11 +95,11 @@ def test_async_func():
         futures.append(future)
 
     # with pytest.raises(TypeError, match="async function cannot be submitted"):
-    #     with DummyPool(1) as pool:
-    #         future = pool.submit(do_async, 3)
-    #         futures.append(future)
+    with DummyPool(1) as pool:
+        future = pool.submit(do_async, 3)
+        futures.append(future)
 
-    assert [x.result() for x in futures] == [1, 2]
+    assert [x.result() for x in futures] == [1, 2, 3]
 
 
 def test_sync_pool_wait_all_tasks():
@@ -120,15 +122,15 @@ def test_sync_pool_wait_all_tasks():
         future = pool.submit(do_heavy_async, 6)
         futures.append(future)
 
-    # with DummyPool(1) as pool:
-    #     future = pool.submit(do_heavy, 7)
-    #     futures.append(future)
-    #     future = pool.submit(do_heavy, 8)
-    #     futures.append(future)
-    #     future = pool.submit(do_heavy, 9)
-    #     futures.append(future)
+    with DummyPool(1) as pool:
+        future = pool.submit(do_heavy, 7)
+        futures.append(future)
+        future = pool.submit(do_heavy, 8)
+        futures.append(future)
+        future = pool.submit(do_heavy, 9)
+        futures.append(future)
 
-    assert [x.result() for x in futures] == [1, 2, 3, 4, 5, 6]
+    assert [x.result() for x in futures] == [1, 2, 3, 4, 5, 6, 7, 8, 9]
 
 
 async def to_result(futures):

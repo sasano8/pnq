@@ -455,33 +455,45 @@ class AsyncPoolExecutor(PExecutor, PExecutable):
         return False
 
 
-# class DummyPoolExecutor(OverrideExecutor, _Executor):
+async def exec_func(loop, func):
+    return await loop.run_in_executor(None, func)
+
+
+async def exec_func_async(sem, func):
+    while sem._value == 0:
+        await asyncio.sleep(0)
+
+    with sem:
+        return await func()
+
+
 class DummyPoolExecutor(OverrideExecutor):
     def __init__(self, limit):
-        from threading import Lock
+        import threading
 
         self.max_workers = limit
         self._shutdown = False
-        # self._shutdownLock = Lock()
+        self._sem = threading.Semaphore(limit)
 
     def __executor__(self) -> PExecutor:
         return self  # type: ignore
 
     @property
     def is_async_only(self):
-        return True
+        return False
 
     def submit(self, func, *args, **kwargs):
         if self._shutdown:
             raise RuntimeError("cannot schedule new futures after shutdown")
 
-        if asyncio.iscoroutinefunction(func):
-            raise TypeError(f"async function cannot be submitted. Got {func}")
-
-        # with self._shutdownLock:
         f = Future()
+
         try:
-            result = func(*args, **kwargs)
+            if is_coroutine_function(func):
+                result = asyncio.run(func(*args, **kwargs))
+            else:
+                result = func(*args, **kwargs)
+
         except BaseException as e:
             f.set_exception(e)
         else:
@@ -493,21 +505,22 @@ class DummyPoolExecutor(OverrideExecutor):
         if self._shutdown:
             raise RuntimeError("cannot schedule new futures after shutdown")
 
-        if asyncio.iscoroutinefunction(func):
-            coro = func(*args, **kwargs)
-            return asyncio.create_task(coro)
+        if is_coroutine_function(func):
+            async_func = partial(func, *args, **kwargs)
         else:
-            _future = self.submit(func, *args, **kwargs)
-            return asyncio.wrap_future(_future)
+            async_func = partial(
+                exec_func, asyncio.get_running_loop(), partial(func, *args, **kwargs)
+            )
+        return asyncio.create_task(exec_func_async(self._sem, async_func))
 
     def shutdown(self, wait=True):
         self._shutdown = True
 
     def __enter__(self):
-        raise NotImplementedError()
+        return self
 
     def __exit__(self, *args, **kwargs):
-        raise NotImplementedError()
+        ...
 
     async def __aenter__(self):
         return self
@@ -518,3 +531,8 @@ class DummyPoolExecutor(OverrideExecutor):
     @property
     def is_cpubound(self):
         return False
+
+
+async def main():
+    loop = asyncio.get_event_loop()
+    loop.run_in_executor

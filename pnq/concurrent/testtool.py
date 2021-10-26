@@ -40,7 +40,9 @@ class ExecutorSpec:
     asubmit_partial_async: bool = undefined
 
     @classmethod
-    async def test_capability(cls, factory, is_async_only, submit_sync=True):
+    async def test_capability(
+        cls, factory, is_async_only, submit_sync=True, submit_async=True
+    ):
         _is_async_only, spec = await test_executor_spec(factory)
         # required
         assert spec.is_cpubound
@@ -60,8 +62,14 @@ class ExecutorSpec:
                 assert isinstance(spec.submit_partial_sync, NotImplementedError)
             else:
                 assert spec.submit_sync
-            assert isinstance(spec.submit_async, NotImplementedError)
-            assert isinstance(spec.submit_partial_async, NotImplementedError)
+                assert spec.submit_partial_sync
+
+            if not submit_async:
+                assert isinstance(spec.submit_async, NotImplementedError)
+                assert isinstance(spec.submit_partial_async, NotImplementedError)
+            else:
+                assert spec.submit_async
+                assert spec.submit_partial_async
 
         else:
             assert submit_sync
