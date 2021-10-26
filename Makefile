@@ -19,14 +19,13 @@ test-full: test-mypy
 	@echo [pytest] && poetry run pytest . -sv
 
 doc-build:
-	@poetry run mkdocs build
+	@poetry run mkdocs build -v
 	@cat docs/index.md > README.md
 	@echo "" >> README.md
 	@echo "" >> README.md
 	@cat CHANGELOG.md >> README.md
 
 doc-serve: doc-build
-	# @poetry run mkdocs build
 	@poetry run mkdocs serve -a localhost:8001
 
 

@@ -21,6 +21,9 @@
 ::: pnq.actions.reflect
     :docstring:
 
+::: pnq.actions.gather
+    :docstring:
+
 ::: pnq.actions.flat
     :docstring:
 
@@ -39,12 +42,6 @@
 ::: pnq.actions.enumerate
     :docstring:
 
-::: pnq.actions.request
-    :docstring:
-
-::: pnq.actions.request_async
-    :docstring:
-
 ::: pnq.actions.group_by
     :docstring:
 
@@ -52,6 +49,15 @@
     :docstring:
 
 ::: pnq.actions.join
+    :docstring:
+
+::: pnq.actions.request
+    :docstring:
+
+::: pnq.actions.request_async
+    :docstring:
+
+::: pnq.actions.parallel
     :docstring:
 
 ## Filtering
@@ -135,6 +141,9 @@
     :docstring:
 
 ## Finalizing - Executing
+
+::: pnq.actions.save
+    :docstring:
 
 ::: pnq.actions.to
     :docstring:
@@ -234,10 +243,7 @@
 ::: pnq.actions.last_or_raise
     :docstring:
 
-## Generating
-
-<!-- ::: pnq.actions.query
-    :docstring: -->
+<!-- ## Generating
 
 ::: pnq.actions.infinite
     :docstring:
@@ -255,4 +261,4 @@
     :docstring:
 
 ::: pnq.actions.range
-    :docstring:
+    :docstring: -->

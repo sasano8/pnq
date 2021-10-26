@@ -478,10 +478,6 @@ class DummyPoolExecutor(OverrideExecutor):
     def __executor__(self) -> PExecutor:
         return self  # type: ignore
 
-    @property
-    def is_async_only(self):
-        return False
-
     def submit(self, func, *args, **kwargs):
         if self._shutdown:
             raise RuntimeError("cannot schedule new futures after shutdown")
@@ -532,7 +528,17 @@ class DummyPoolExecutor(OverrideExecutor):
     def is_cpubound(self):
         return False
 
+    @property
+    def is_async_only(self):
+        return False
 
-async def main():
-    loop = asyncio.get_event_loop()
-    loop.run_in_executor
+
+defaultpool = None
+
+
+def get_default_pool():
+    global defaultpool
+    if defaultpool is None:
+        defaultpool = DummyPoolExecutor(10)
+
+    return defaultpool

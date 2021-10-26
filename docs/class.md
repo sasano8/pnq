@@ -1,6 +1,6 @@
-::: pnq.base.requests.Response
+::: pnq._itertools.requests.Response
     :docstring:
 
-::: pnq.base.requests.StopWatch
+::: pnq._itertools.requests.StopWatch
     :docstring:
     :members: to_dict

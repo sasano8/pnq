@@ -5,6 +5,7 @@ from typing import (
     AsyncGenerator,
     AsyncIterable,
     AsyncIterator,
+    Awaitable,
     Callable,
     Dict,
     FrozenSet,
@@ -364,8 +365,16 @@ class {{query.CLS}}:
     def request_async(self, func, retry: int = None, timeout=None) -> "Query[Response]":
         return queries.RequestAsync(self, func, retry=retry, timeout=None)
 
-    def parallel(self, func, size: int = sys.maxsize):
-        return queries.Parallel(self, func, size)
+    @overload
+    def parallel(self, func: Callable[..., Awaitable[R]], executor=None, *, unpack="", chunksize=1) -> "Query[R]":
+        ...
+
+    @overload
+    def parallel(self, func: Callable[..., R], executor=None, *, unpack="", chunksize=1) -> "Query[R]":
+        ...
+
+    def parallel(self, func, executor=None, *, unpack="", chunksize=1) -> "Query[R]":
+        return queries.Parallel(self, func, executor, unpack=unpack, chunksize=chunksize)
 
     def debug(self, breakpoint=lambda x: x, printer=print) -> "{{query.SELF_T}}":
         return queries.Debug(self, breakpoint=breakpoint, printer=printer)

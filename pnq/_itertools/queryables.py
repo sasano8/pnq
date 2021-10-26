@@ -12,6 +12,7 @@ from typing import (
 )
 
 from pnq._itertools.common import name_as
+from pnq.concurrent import get_default_pool
 from pnq.exceptions import NotFoundError
 from pnq.types import Arguments
 
@@ -260,6 +261,8 @@ class Parallel(Query):
 
     def __init__(self, source, func, executor=None, *, unpack="", chunksize=1):
         super().__init__(source)
+        if executor is None:
+            executor = get_default_pool()
         self._args = Arguments(func, executor, unpack=unpack, chunksize=chunksize)
 
 

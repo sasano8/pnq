@@ -59,7 +59,7 @@ for x in pnq.query([1, 2, 3]).map(lambda x: x * 2):
 pnq.query([1, 2, 3]).map(lambda x: x * 2).save()
 # => [2, 4, 6]
 
-pnq.query([1]).map(lambda x: x * 2).first()
+pnq.query([1, 2, 3]).filter(lambda x: x == 3).one()
 # => 2
 ```
 
@@ -80,7 +80,7 @@ async def main():
     await pnq.query(aiter()).map(lambda x: x * 2)
     # => [2, 4, 6]
 
-    await pnq.query(aiter()).filter(lambda x: x == 3)._.first()
+    await pnq.query(aiter()).filter(lambda x: x == 3)._.one()
     # => 3
 
 asyncio.run(main())
