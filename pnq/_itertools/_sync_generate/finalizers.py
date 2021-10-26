@@ -192,6 +192,14 @@ def each_unpack(source: Iterable[T], func):
     return each(source, func, unpack="*")
 
 
+def each_async(*args, **kwargs):
+    ...
+
+
+def each_async_unpack(*args, **kwargs):
+    ...
+
+
 def one(source: Iterable[T]):
     it = source.__iter__()
     try:

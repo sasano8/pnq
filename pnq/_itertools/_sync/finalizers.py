@@ -9,6 +9,8 @@ from .._sync_generate.finalizers import (  # _all,; _any,; _sum,; each,; each,; 
     average,
     concat,
     contains,
+    each_async,
+    each_async_unpack,
     exists,
     first,
     first_or,

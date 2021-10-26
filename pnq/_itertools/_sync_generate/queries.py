@@ -167,7 +167,15 @@ def tee(source: Iterable[T], size: int):
 
 
 def join(source: Iterable[T], size: int):
-    ...
+    [].join(
+        [],
+        lambda left, right: left.name == right.name,
+        lambda left, right: (left.name, right.age),
+    )
+
+    table(User).join(Item, on=User.id == Item.id).select(User.id, Item.id)
+
+    pass
 
 
 def group_join(source: Iterable[T], size: int):

@@ -47,7 +47,9 @@ def dispatch(source: Iterable[T], func, executor: PExecutor, *, unpack="", chunk
 
         for chunck in chunked(source, chunksize):
             submit(runner, chunck)
+            asyncio.sleep(0)
 
     else:
         for x in source:
             submit(new_func, x)
+            asyncio.sleep(0)

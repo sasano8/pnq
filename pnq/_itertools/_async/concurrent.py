@@ -51,7 +51,9 @@ async def dispatch(
 
         async for chunck in chunked(source, chunksize):
             submit(runner, chunck)
+            await asyncio.sleep(0)
 
     else:
         async for x in source:
             submit(new_func, x)
+            await asyncio.sleep(0)

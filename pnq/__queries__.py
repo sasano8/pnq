@@ -32,9 +32,10 @@ except:
 
 from pnq.exceptions import NotFoundError
 
-from ._itertools import actions, builder, core, finalizers
+from ._itertools import builder, core
 from ._itertools import queryables as queries
 from ._itertools.op import TH_ASSIGN_OP
+from ._itertools.queryables import AsyncFinalizer, Finalizer
 from ._itertools.requests import Response
 
 T = TypeVar("T")
@@ -60,15 +61,20 @@ class {{query.CLS}}:
         def __aiter__(self) -> AsyncIterator[{{query.T}}]:
             ...
 
-    def as_iter(self) -> "finalizers.SyncFinalizer[{{query.T}}]":
-        return finalizers.SyncFinalizer(self)
+    def as_iter(self) -> "Finalizer[{{query.T}}]":
+        # return finalizers.SyncFinalizer(self)
+        return Finalizer(self)
 
-    def as_aiter(self) -> "finalizers.AsyncFinalizer[{{query.T}}]":
-        return finalizers.AsyncFinalizer(self)
+    def as_aiter(self) -> "Finalizer[{{query.T}}]":
+        # return finalizers.AsyncFinalizer(self)
+        return AsyncFinalizer(self)
 
     @property
-    def _(self) -> "finalizers.AsyncFinalizer[{{query.T}}]":
-        return finalizers.AsyncFinalizer(self)
+    def _(self) -> "Finalizer[{{query.T}}]":
+        # TODO: queryables.Finalizerを使うこと
+        # return finalizers.AsyncFinalizer(self)
+        return AsyncFinalizer(self)
+
 
     async def _call(self):
         return await PnqList.from_aiter(self)
@@ -97,19 +103,19 @@ class {{query.CLS}}:
     {% endif %}
 
     def len(self) -> int:
-        return actions.len(self)
+        return Finalizer.len(self)
 
     def exists(self) -> bool:
-        return actions.exists(self)
+        return Finalizer.exists(self)
 
     def all(self, selector: Callable[[{{query.T}}], Any]=lambda x: x) -> bool:
-        return actions.all(self, selector)
+        return Finalizer.all(self, selector)
 
     def any(self, selector: Callable[[{{query.T}}], Any]=lambda x: x) -> bool:
-        return actions.any(self, selector)
+        return Finalizer.any(self, selector)
 
     def contains(self, value, selector: Callable[[{{query.T}}], Any]=lambda x: x) -> bool:
-        return actions.contains(self, value, selector)
+        return Finalizer.contains(self, value, selector)
 
     @overload
     def min(self, *, default=NoReturn) -> Union[{{query.T}}, NoReturn]: ...
@@ -117,34 +123,34 @@ class {{query.CLS}}:
     @overload
     def min(self, selector: Callable[[{{query.T}}], R]=lambda x: x, default=NoReturn) -> R: ...
     def min(self, selector: Callable[[{{query.T}}], R]=lambda x: x, default=NoReturn) -> R:
-        return actions.min(self, selector, default)
+        return Finalizer.min(self, selector, default)
 
     @overload
     def max(self, *, default=NoReturn) -> Union[{{query.T}}, NoReturn]: ...
     @overload
     def max(self, selector: Callable[[{{query.T}}], R]=lambda x: x, default=NoReturn) -> R: ...
     def max(self, selector: Callable[[{{query.T}}], R]=lambda x: x, default=NoReturn) -> R:
-        return actions.max(self, selector, default)
+        return Finalizer.max(self, selector, default)
 
     @overload
     def sum(self) -> {{query.T}}: ...
     @overload
     def sum(self, selector: Callable[[{{query.T}}], R]=lambda x: x) -> R: ...
     def sum(self, selector: Callable[[{{query.T}}], R]=lambda x: x) -> R:
-        return actions.sum(self, selector)
+        return Finalizer.sum(self, selector)
 
     @overload
     def average(self) -> {{query.T}}: ...
     @overload
     def average(self, selector: Callable[[{{query.T}}], R]=lambda x: x) -> R: ...
     def average(self, selector: Callable[[{{query.T}}], R]=lambda x: x) -> R:
-        return actions.average(self, selector)
+        return Finalizer.average(self, selector)
 
     def reduce(self, seed: T, op: Union[TH_ASSIGN_OP, Callable[[Any, Any], Any]] = "+=", selector=lambda x: x) -> T:
-        return actions.reduce(self, seed, op, selector)
+        return Finalizer.reduce(self, seed, op, selector)
 
     def concat(self, selector=lambda x: x, delimiter: str = "") -> str:
-        return actions.concat(self, selector, delimiter)
+        return Finalizer.concat(self, selector, delimiter)
 
     def test(self, expect):
         """同期イテレータと非同期イテレータを実行し結果を比較し、
@@ -204,49 +210,49 @@ class {{query.CLS}}:
         ...
 
     def to(self, func: Callable[[Iterable[T]], R]) -> R:
-        return actions.to(self, func)
+        return Finalizer.to(self, func)
 
     def lazy(self, func, *args, **kwargs):
-        return queries.Lazy(self, func, *args, **kwargs)
+        return Finalizer.lazy(self, func, *args, **kwargs)
 
     def each(self, func: Callable = lambda x: x):
-        return actions.each(self, func)
+        return Finalizer.each(self, func)
 
     def each_unpack(self, func: Callable = lambda x: x):
-        return actions.each_unpack(self, func)
+        return Finalizer.each_unpack(self, func)
 
     async def each_async(self, func: Callable = lambda x: x):
-        return await actions.each_async(self, func)
+        return await Finalizer.each_async(self, func)
 
     async def each_async_unpack(self, func: Callable = lambda x: x):
-        return await actions.each_async_unpack(self, func)
+        return await Finalizer.each_async_unpack(self, func)
 
     def one(self) -> {{query.T}}:
-        return actions.one(self)
+        return Finalizer.one(self)
 
     def one_or(self, default: R) -> Union[{{query.T}}, R]:
-        return actions.one_or(self, default)
+        return Finalizer.one_or(self, default)
 
     def one_or_raise(self, exc: Union[str, Exception]) -> {{query.T}}:
-        return actions.one_or_raise(self, exc)
+        return Finalizer.one_or_raise(self, exc)
 
     def first(self) -> {{query.T}}:
-        return actions.first(self)
+        return Finalizer.first(self)
 
     def first_or(self, default: R) -> Union[{{query.T}}, R]:
-        return actions.first_or(self, default)
+        return Finalizer.first_or(self, default)
 
     def first_or_raise(self, exc: Union[str, Exception]) -> {{query.T}}:
-        return actions.first_or_raise(self, exc)
+        return Finalizer.first_or_raise(self, exc)
 
     def last(self) -> {{query.T}}:
-        return actions.last(self)
+        return Finalizer.last(self)
 
     def last_or(self, default: R) -> Union[{{query.T}}, R]:
-        return actions.last_or(self, default)
+        return Finalizer.last_or(self, default)
 
     def last_or_raise(self, exc: Union[str, Exception]) -> {{query.T}}:
-        return actions.last_or_raise(self, exc)
+        return Finalizer.last_or_raise(self, exc)
 
     @overload
     def cast(self, type: Type[Tuple[K2, V2]]) -> "{{pair.SELF__}}[K2, V2]":
@@ -337,18 +343,7 @@ class {{query.CLS}}:
         return queries.Tee(self, size=size)
 
     def join(self, right, on: Callable[[Tuple[list, list]], Callable], select):
-        [].join(
-            [],
-            lambda left, right: left.name == right.name,
-            lambda left, right: (left.name, right.age)
-        )
-
-        table(User).join(
-            Item,
-            on=User.id == Item.id
-        ).select(User.id, Item.id)
-
-        pass
+        return queries.Join(self, right, on=on, select=select)
 
     def request(self, func, retry: int = None) -> "Query[Response]":
         return queries.Request(self, func, retry)

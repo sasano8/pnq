@@ -171,7 +171,15 @@ async def tee(source: AsyncIterable[T], size: int):
 
 
 async def join(source: AsyncIterable[T], size: int):
-    ...
+    [].join(
+        [],
+        lambda left, right: left.name == right.name,
+        lambda left, right: (left.name, right.age),
+    )
+
+    table(User).join(Item, on=User.id == Item.id).select(User.id, Item.id)
+
+    pass
 
 
 async def group_join(source: AsyncIterable[T], size: int):

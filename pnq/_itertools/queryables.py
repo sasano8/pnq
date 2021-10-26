@@ -3,7 +3,9 @@ from typing import (
     AbstractSet,
     AsyncIterable,
     Callable,
+    Generic,
     Iterable,
+    List,
     Mapping,
     NoReturn,
     Sequence,
@@ -683,88 +685,6 @@ class Sleep(Query):
         self._args = Arguments(seconds)
 
 
-#################################
-# finalizer
-#################################
-class FinalizerBase:
-    exists = S.finalizers.exists
-    len = S.finalizers._len
-    all = S.finalizers._all
-    any = S.finalizers._any
-    sum = S.finalizers._sum
-    min = S.finalizers._min
-    max = S.finalizers._max
-    average = S.finalizers.average
-    reduce = S.finalizers.reduce
-    accumulate = S.finalizers.accumulate
-    contains = S.finalizers.contains
-    concat = S.finalizers.concat
-    one = S.finalizers.one
-    one_or = S.finalizers.one_or
-    one_or_raise = S.finalizers.one_or_raise
-    first = S.finalizers.first
-    first_or = S.finalizers.first_or
-    first_or_raise = S.finalizers.first_or_raise
-    last = S.finalizers.last
-    last_or = S.finalizers.last_or
-    last_or_raise = S.finalizers.last_or_raise
-    each = S.finalizers.each
-    # each_unpack = S.finalizers.each_unpack
-    dispatch = S.concurrent.dispatch
-
-
-class AsyncFinalizerBase:
-    exists = A.finalizers.exists
-    len = A.finalizers._len
-    all = A.finalizers._all
-    any = A.finalizers._any
-    sum = A.finalizers._sum
-    min = A.finalizers._min
-    max = A.finalizers._max
-    average = A.finalizers.average
-    reduce = A.finalizers.reduce
-    accumulate = A.finalizers.accumulate
-    contains = A.finalizers.contains
-    concat = A.finalizers.concat
-    one = A.finalizers.one
-    one_or = A.finalizers.one_or
-    one_or_raise = A.finalizers.one_or_raise
-    first = A.finalizers.first
-    first_or = A.finalizers.first_or
-    first_or_raise = A.finalizers.first_or_raise
-    last = A.finalizers.last
-    last_or = A.finalizers.last_or
-    last_or_raise = A.finalizers.last_or_raise
-    each = A.finalizers.each
-    each_unpack = A.finalizers.each_unpack
-    dispatch = A.concurrent.dispatch
-
-
-class Finalizer(FinalizerBase):
-    def __init__(self, source):
-        self.source = source
-
-    def __iter__(self):
-        return self.source.__iter__()
-
-    def result(self, timeout: float = None):
-        return list(self.source)
-
-
-class AsyncFinalizer(AsyncFinalizerBase):
-    def __init__(self, source):
-        self.source = source
-
-    def __aiter__(self):
-        return self.source.__aiter__()
-
-    def __await__(self):
-        return self._result_async().__await__()
-
-    async def _result_async(self):
-        return [x async for x in self]
-
-
 # いらない！！！
 @export
 class AsyncMap(Query):
@@ -795,3 +715,93 @@ class Lazy(Query):
     def __await__(self):
         coro = self.finalizer(self.source, *self.args, **self.kwargs)
         return coro.__await__()
+
+
+#################################
+# finalizer
+#################################
+class FinalizerBase:
+    exists = S.finalizers.exists
+    len = S.finalizers._len
+    all = S.finalizers._all
+    any = S.finalizers._any
+    sum = S.finalizers._sum
+    min = S.finalizers._min
+    max = S.finalizers._max
+    average = S.finalizers.average
+    reduce = S.finalizers.reduce
+    accumulate = S.finalizers.accumulate
+    contains = S.finalizers.contains
+    concat = S.finalizers.concat
+    one = S.finalizers.one
+    one_or = S.finalizers.one_or
+    one_or_raise = S.finalizers.one_or_raise
+    first = S.finalizers.first
+    first_or = S.finalizers.first_or
+    first_or_raise = S.finalizers.first_or_raise
+    last = S.finalizers.last
+    last_or = S.finalizers.last_or
+    last_or_raise = S.finalizers.last_or_raise
+    each = S.finalizers.each
+    each_unpack = S.finalizers.each_unpack
+    each_async = S.finalizers.each_async
+    each_async_unpack = S.finalizers.each_async_unpack
+    dispatch = S.concurrent.dispatch
+    to = S.finalizers.to
+    lazy = Lazy
+
+
+class AsyncFinalizerBase:
+    exists = A.finalizers.exists
+    len = A.finalizers._len
+    all = A.finalizers._all
+    any = A.finalizers._any
+    sum = A.finalizers._sum
+    min = A.finalizers._min
+    max = A.finalizers._max
+    average = A.finalizers.average
+    reduce = A.finalizers.reduce
+    accumulate = A.finalizers.accumulate
+    contains = A.finalizers.contains
+    concat = A.finalizers.concat
+    one = A.finalizers.one
+    one_or = A.finalizers.one_or
+    one_or_raise = A.finalizers.one_or_raise
+    first = A.finalizers.first
+    first_or = A.finalizers.first_or
+    first_or_raise = A.finalizers.first_or_raise
+    last = A.finalizers.last
+    last_or = A.finalizers.last_or
+    last_or_raise = A.finalizers.last_or_raise
+    each = A.finalizers.each
+    each_unpack = A.finalizers.each_unpack
+    each_async = A.finalizers.each_async
+    each_async_unpack = A.finalizers.each_async_unpack
+    dispatch = A.concurrent.dispatch
+    to = A.finalizers.to
+    lazy = Lazy
+
+
+class Finalizer(FinalizerBase, Iterable[T]):
+    def __init__(self, source: Iterable[T]):
+        self.source = source
+
+    def __iter__(self):
+        return self.source.__iter__()
+
+    def result(self, timeout: float = None) -> List[T]:
+        return list(self.source)
+
+
+class AsyncFinalizer(AsyncFinalizerBase, AsyncIterable[T]):
+    def __init__(self, source: AsyncIterable[T]):
+        self.source = source
+
+    def __aiter__(self):
+        return self.source.__aiter__()
+
+    def __await__(self):
+        return self._result_async().__await__()
+
+    async def _result_async(self):
+        return [x async for x in self]

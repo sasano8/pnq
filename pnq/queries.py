@@ -32,9 +32,10 @@ except:
 
 from pnq.exceptions import NotFoundError
 
-from ._itertools import actions, builder, core, finalizers
+from ._itertools import builder, core, finalizers
 from ._itertools import queryables as queries
 from ._itertools.op import TH_ASSIGN_OP
+from ._itertools.queryables import AsyncFinalizer, Finalizer
 from ._itertools.requests import Response
 
 T = TypeVar("T")
@@ -57,15 +58,19 @@ class Query(Generic[T]):
         def __aiter__(self) -> AsyncIterator[T]:
             ...
 
-    def as_iter(self) -> "finalizers.SyncFinalizer[T]":
-        return finalizers.SyncFinalizer(self)
+    def as_iter(self) -> "Finalizer[T]":
+        # return finalizers.SyncFinalizer(self)
+        return Finalizer(self)
 
-    def as_aiter(self) -> "finalizers.AsyncFinalizer[T]":
-        return finalizers.AsyncFinalizer(self)
+    def as_aiter(self) -> "Finalizer[T]":
+        # return finalizers.AsyncFinalizer(self)
+        return AsyncFinalizer(self)
 
     @property
-    def _(self) -> "finalizers.AsyncFinalizer[T]":
-        return finalizers.AsyncFinalizer(self)
+    def _(self) -> "Finalizer[T]":
+        # TODO: queryables.Finalizerを使うこと
+        # return finalizers.AsyncFinalizer(self)
+        return AsyncFinalizer(self)
 
     async def _call(self):
         return await PnqList.from_aiter(self)
@@ -80,19 +85,19 @@ class Query(Generic[T]):
         return self._call().__await__()
 
     def len(self) -> int:
-        return actions.len(self)
+        return Finalizer.len(self)
 
     def exists(self) -> bool:
-        return actions.exists(self)
+        return Finalizer.exists(self)
 
     def all(self, selector: Callable[[T], Any] = lambda x: x) -> bool:
-        return actions.all(self, selector)
+        return Finalizer.all(self, selector)
 
     def any(self, selector: Callable[[T], Any] = lambda x: x) -> bool:
-        return actions.any(self, selector)
+        return Finalizer.any(self, selector)
 
     def contains(self, value, selector: Callable[[T], Any] = lambda x: x) -> bool:
-        return actions.contains(self, value, selector)
+        return Finalizer.contains(self, value, selector)
 
     @overload
     def min(self, *, default=NoReturn) -> Union[T, NoReturn]:
@@ -103,7 +108,7 @@ class Query(Generic[T]):
         ...
 
     def min(self, selector: Callable[[T], R] = lambda x: x, default=NoReturn) -> R:
-        return actions.min(self, selector, default)
+        return Finalizer.min(self, selector, default)
 
     @overload
     def max(self, *, default=NoReturn) -> Union[T, NoReturn]:
@@ -114,7 +119,7 @@ class Query(Generic[T]):
         ...
 
     def max(self, selector: Callable[[T], R] = lambda x: x, default=NoReturn) -> R:
-        return actions.max(self, selector, default)
+        return Finalizer.max(self, selector, default)
 
     @overload
     def sum(self) -> T:
@@ -125,7 +130,7 @@ class Query(Generic[T]):
         ...
 
     def sum(self, selector: Callable[[T], R] = lambda x: x) -> R:
-        return actions.sum(self, selector)
+        return Finalizer.sum(self, selector)
 
     @overload
     def average(self) -> T:
@@ -136,7 +141,7 @@ class Query(Generic[T]):
         ...
 
     def average(self, selector: Callable[[T], R] = lambda x: x) -> R:
-        return actions.average(self, selector)
+        return Finalizer.average(self, selector)
 
     def reduce(
         self,
@@ -144,10 +149,10 @@ class Query(Generic[T]):
         op: Union[TH_ASSIGN_OP, Callable[[Any, Any], Any]] = "+=",
         selector=lambda x: x,
     ) -> T:
-        return actions.reduce(self, seed, op, selector)
+        return Finalizer.reduce(self, seed, op, selector)
 
     def concat(self, selector=lambda x: x, delimiter: str = "") -> str:
-        return actions.concat(self, selector, delimiter)
+        return Finalizer.concat(self, selector, delimiter)
 
     def test(self, expect):
         """同期イテレータと非同期イテレータを実行し結果を比較し、
@@ -195,49 +200,49 @@ class Query(Generic[T]):
         ...
 
     def to(self, func: Callable[[Iterable[T]], R]) -> R:
-        return actions.to(self, func)
+        return Finalizer.to(self, func)
 
     def lazy(self, func, *args, **kwargs):
-        return queries.Lazy(self, func, *args, **kwargs)
+        return Finalizer.lazy(self, func, *args, **kwargs)
 
     def each(self, func: Callable = lambda x: x):
-        return actions.each(self, func)
+        return Finalizer.each(self, func)
 
     def each_unpack(self, func: Callable = lambda x: x):
-        return actions.each_unpack(self, func)
+        return Finalizer.each_unpack(self, func)
 
     async def each_async(self, func: Callable = lambda x: x):
-        return await actions.each_async(self, func)
+        return await Finalizer.each_async(self, func)
 
     async def each_async_unpack(self, func: Callable = lambda x: x):
-        return await actions.each_async_unpack(self, func)
+        return await Finalizer.each_async_unpack(self, func)
 
     def one(self) -> T:
-        return actions.one(self)
+        return Finalizer.one(self)
 
     def one_or(self, default: R) -> Union[T, R]:
-        return actions.one_or(self, default)
+        return Finalizer.one_or(self, default)
 
     def one_or_raise(self, exc: Union[str, Exception]) -> T:
-        return actions.one_or_raise(self, exc)
+        return Finalizer.one_or_raise(self, exc)
 
     def first(self) -> T:
-        return actions.first(self)
+        return Finalizer.first(self)
 
     def first_or(self, default: R) -> Union[T, R]:
-        return actions.first_or(self, default)
+        return Finalizer.first_or(self, default)
 
     def first_or_raise(self, exc: Union[str, Exception]) -> T:
-        return actions.first_or_raise(self, exc)
+        return Finalizer.first_or_raise(self, exc)
 
     def last(self) -> T:
-        return actions.last(self)
+        return Finalizer.last(self)
 
     def last_or(self, default: R) -> Union[T, R]:
-        return actions.last_or(self, default)
+        return Finalizer.last_or(self, default)
 
     def last_or_raise(self, exc: Union[str, Exception]) -> T:
-        return actions.last_or_raise(self, exc)
+        return Finalizer.last_or_raise(self, exc)
 
     @overload
     def cast(self, type: Type[Tuple[K2, V2]]) -> "PairQuery[K2, V2]":
@@ -320,15 +325,7 @@ class Query(Generic[T]):
         return queries.Tee(self, size=size)
 
     def join(self, right, on: Callable[[Tuple[list, list]], Callable], select):
-        [].join(
-            [],
-            lambda left, right: left.name == right.name,
-            lambda left, right: (left.name, right.age),
-        )
-
-        table(User).join(Item, on=User.id == Item.id).select(User.id, Item.id)
-
-        pass
+        return queries.Join(self, right, on=on, select=select)
 
     def request(self, func, retry: int = None) -> "Query[Response]":
         return queries.Request(self, func, retry)
@@ -447,15 +444,19 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
         def __aiter__(self) -> AsyncIterator[Tuple[K, V]]:
             ...
 
-    def as_iter(self) -> "finalizers.SyncFinalizer[Tuple[K,V]]":
-        return finalizers.SyncFinalizer(self)
+    def as_iter(self) -> "Finalizer[Tuple[K,V]]":
+        # return finalizers.SyncFinalizer(self)
+        return Finalizer(self)
 
-    def as_aiter(self) -> "finalizers.AsyncFinalizer[Tuple[K,V]]":
-        return finalizers.AsyncFinalizer(self)
+    def as_aiter(self) -> "Finalizer[Tuple[K,V]]":
+        # return finalizers.AsyncFinalizer(self)
+        return AsyncFinalizer(self)
 
     @property
-    def _(self) -> "finalizers.AsyncFinalizer[Tuple[K,V]]":
-        return finalizers.AsyncFinalizer(self)
+    def _(self) -> "Finalizer[Tuple[K,V]]":
+        # TODO: queryables.Finalizerを使うこと
+        # return finalizers.AsyncFinalizer(self)
+        return AsyncFinalizer(self)
 
     async def _call(self):
         return await PnqList.from_aiter(self)
@@ -470,21 +471,21 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
         return self._call().__await__()
 
     def len(self) -> int:
-        return actions.len(self)
+        return Finalizer.len(self)
 
     def exists(self) -> bool:
-        return actions.exists(self)
+        return Finalizer.exists(self)
 
     def all(self, selector: Callable[[Tuple[K, V]], Any] = lambda x: x) -> bool:
-        return actions.all(self, selector)
+        return Finalizer.all(self, selector)
 
     def any(self, selector: Callable[[Tuple[K, V]], Any] = lambda x: x) -> bool:
-        return actions.any(self, selector)
+        return Finalizer.any(self, selector)
 
     def contains(
         self, value, selector: Callable[[Tuple[K, V]], Any] = lambda x: x
     ) -> bool:
-        return actions.contains(self, value, selector)
+        return Finalizer.contains(self, value, selector)
 
     @overload
     def min(self, *, default=NoReturn) -> Union[Tuple[K, V], NoReturn]:
@@ -499,7 +500,7 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
     def min(
         self, selector: Callable[[Tuple[K, V]], R] = lambda x: x, default=NoReturn
     ) -> R:
-        return actions.min(self, selector, default)
+        return Finalizer.min(self, selector, default)
 
     @overload
     def max(self, *, default=NoReturn) -> Union[Tuple[K, V], NoReturn]:
@@ -514,7 +515,7 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
     def max(
         self, selector: Callable[[Tuple[K, V]], R] = lambda x: x, default=NoReturn
     ) -> R:
-        return actions.max(self, selector, default)
+        return Finalizer.max(self, selector, default)
 
     @overload
     def sum(self) -> Tuple[K, V]:
@@ -525,7 +526,7 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
         ...
 
     def sum(self, selector: Callable[[Tuple[K, V]], R] = lambda x: x) -> R:
-        return actions.sum(self, selector)
+        return Finalizer.sum(self, selector)
 
     @overload
     def average(self) -> Tuple[K, V]:
@@ -536,7 +537,7 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
         ...
 
     def average(self, selector: Callable[[Tuple[K, V]], R] = lambda x: x) -> R:
-        return actions.average(self, selector)
+        return Finalizer.average(self, selector)
 
     def reduce(
         self,
@@ -544,10 +545,10 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
         op: Union[TH_ASSIGN_OP, Callable[[Any, Any], Any]] = "+=",
         selector=lambda x: x,
     ) -> T:
-        return actions.reduce(self, seed, op, selector)
+        return Finalizer.reduce(self, seed, op, selector)
 
     def concat(self, selector=lambda x: x, delimiter: str = "") -> str:
-        return actions.concat(self, selector, delimiter)
+        return Finalizer.concat(self, selector, delimiter)
 
     def test(self, expect):
         """同期イテレータと非同期イテレータを実行し結果を比較し、
@@ -605,49 +606,49 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
         ...
 
     def to(self, func: Callable[[Iterable[T]], R]) -> R:
-        return actions.to(self, func)
+        return Finalizer.to(self, func)
 
     def lazy(self, func, *args, **kwargs):
-        return queries.Lazy(self, func, *args, **kwargs)
+        return Finalizer.lazy(self, func, *args, **kwargs)
 
     def each(self, func: Callable = lambda x: x):
-        return actions.each(self, func)
+        return Finalizer.each(self, func)
 
     def each_unpack(self, func: Callable = lambda x: x):
-        return actions.each_unpack(self, func)
+        return Finalizer.each_unpack(self, func)
 
     async def each_async(self, func: Callable = lambda x: x):
-        return await actions.each_async(self, func)
+        return await Finalizer.each_async(self, func)
 
     async def each_async_unpack(self, func: Callable = lambda x: x):
-        return await actions.each_async_unpack(self, func)
+        return await Finalizer.each_async_unpack(self, func)
 
     def one(self) -> Tuple[K, V]:
-        return actions.one(self)
+        return Finalizer.one(self)
 
     def one_or(self, default: R) -> Union[Tuple[K, V], R]:
-        return actions.one_or(self, default)
+        return Finalizer.one_or(self, default)
 
     def one_or_raise(self, exc: Union[str, Exception]) -> Tuple[K, V]:
-        return actions.one_or_raise(self, exc)
+        return Finalizer.one_or_raise(self, exc)
 
     def first(self) -> Tuple[K, V]:
-        return actions.first(self)
+        return Finalizer.first(self)
 
     def first_or(self, default: R) -> Union[Tuple[K, V], R]:
-        return actions.first_or(self, default)
+        return Finalizer.first_or(self, default)
 
     def first_or_raise(self, exc: Union[str, Exception]) -> Tuple[K, V]:
-        return actions.first_or_raise(self, exc)
+        return Finalizer.first_or_raise(self, exc)
 
     def last(self) -> Tuple[K, V]:
-        return actions.last(self)
+        return Finalizer.last(self)
 
     def last_or(self, default: R) -> Union[Tuple[K, V], R]:
-        return actions.last_or(self, default)
+        return Finalizer.last_or(self, default)
 
     def last_or_raise(self, exc: Union[str, Exception]) -> Tuple[K, V]:
-        return actions.last_or_raise(self, exc)
+        return Finalizer.last_or_raise(self, exc)
 
     @overload
     def cast(self, type: Type[Tuple[K2, V2]]) -> "PairQuery[K2, V2]":
@@ -742,15 +743,7 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
         return queries.Tee(self, size=size)
 
     def join(self, right, on: Callable[[Tuple[list, list]], Callable], select):
-        [].join(
-            [],
-            lambda left, right: left.name == right.name,
-            lambda left, right: (left.name, right.age),
-        )
-
-        table(User).join(Item, on=User.id == Item.id).select(User.id, Item.id)
-
-        pass
+        return queries.Join(self, right, on=on, select=select)
 
     def request(self, func, retry: int = None) -> "Query[Response]":
         return queries.Request(self, func, retry)
