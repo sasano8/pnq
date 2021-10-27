@@ -1,3 +1,4 @@
+import asyncio
 from typing import List
 
 import pnq
@@ -60,12 +61,12 @@ def test_request():
         result.append(value)
         return "ok"
 
-    def err(value1, value2):
-        raise Exception("error")
-
     async def ok_async(value):
         result.append(value)
         return "ok"
+
+    def err(value1, value2):
+        raise Exception("error")
 
     async def err_async(value1, value2):
         raise Exception("error")
@@ -101,3 +102,61 @@ def test_request():
 
     assert main(ok, err)
     assert main(ok_async, err_async)
+
+
+def test_dispatch():
+    succeeded = []
+    failed = []
+
+    def ok(x):
+        return x
+
+    async def ok_async(x):
+        return x
+
+    def err(x):
+        raise Exception("error")
+
+    async def err_async(x):
+        raise Exception("error")
+
+    def on_complete(future):
+        try:
+            succeeded.append(future.result())
+        except Exception as e:
+            failed.append(e)
+
+    def main():
+        succeeded.clear()
+
+        pnq.query([1, 2]).map(lambda x: x).dispatch(ok, on_complete=on_complete)
+        pnq.query([3, 4]).map(lambda x: x).dispatch(
+            err, on_complete=on_complete
+        )  # exception unhandle
+        pnq.query([5, 6]).map(lambda x: x).dispatch(ok_async, on_complete=on_complete)
+        pnq.query([7, 8]).map(lambda x: x).dispatch(
+            err_async, on_complete=on_complete
+        )  # exception unhandle
+        assert succeeded == [1, 2, 5, 6]
+
+    async def main_async():
+        succeeded.clear()
+
+        await pnq.query([1, 2]).map(lambda x: x)._.dispatch(ok, on_complete=on_complete)
+        await pnq.query([3, 4]).map(lambda x: x)._.dispatch(
+            err, on_complete=on_complete
+        )  # exception unhandle
+        await pnq.query([5, 6]).map(lambda x: x)._.dispatch(
+            ok_async, on_complete=on_complete
+        )
+        await pnq.query([7, 8]).map(lambda x: x)._.dispatch(
+            err_async, on_complete=on_complete
+        )  # exception unhandle
+        assert succeeded == [1, 2, 5, 6]
+
+    main()
+    asyncio.run(main_async())
+
+
+def test_parallel():
+    ...

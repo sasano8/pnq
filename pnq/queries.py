@@ -61,14 +61,11 @@ class Query(Generic[T]):
         # return finalizers.SyncFinalizer(self)
         return Finalizer(self)
 
-    def as_aiter(self) -> "Finalizer[T]":
-        # return finalizers.AsyncFinalizer(self)
+    def as_aiter(self) -> "AsyncFinalizer[T]":
         return AsyncFinalizer(self)
 
     @property
-    def _(self) -> "Finalizer[T]":
-        # TODO: queryables.Finalizerを使うこと
-        # return finalizers.AsyncFinalizer(self)
+    def _(self) -> "AsyncFinalizer[T]":
         return AsyncFinalizer(self)
 
     async def _call(self):
@@ -217,10 +214,21 @@ class Query(Generic[T]):
         return await Finalizer.each_async_unpack(self, func)
 
     def dispatch(
-        self, func, executor: "PExecutor", *, unpack="", chunksize=1, callback=None
+        self,
+        func,
+        executor: "PExecutor" = None,
+        *,
+        unpack="",
+        chunksize=1,
+        on_complete=None,
     ):
         return Finalizer.dispatch(
-            self, func, executor, unpack=unpack, chunksize=chunksize, callback=callback
+            self,
+            func,
+            executor,
+            unpack=unpack,
+            chunksize=chunksize,
+            on_complete=on_complete,
         )
 
     def one(self) -> T:
@@ -465,14 +473,11 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
         # return finalizers.SyncFinalizer(self)
         return Finalizer(self)
 
-    def as_aiter(self) -> "Finalizer[Tuple[K,V]]":
-        # return finalizers.AsyncFinalizer(self)
+    def as_aiter(self) -> "AsyncFinalizer[Tuple[K,V]]":
         return AsyncFinalizer(self)
 
     @property
-    def _(self) -> "Finalizer[Tuple[K,V]]":
-        # TODO: queryables.Finalizerを使うこと
-        # return finalizers.AsyncFinalizer(self)
+    def _(self) -> "AsyncFinalizer[Tuple[K,V]]":
         return AsyncFinalizer(self)
 
     async def _call(self):
@@ -641,10 +646,21 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
         return await Finalizer.each_async_unpack(self, func)
 
     def dispatch(
-        self, func, executor: "PExecutor", *, unpack="", chunksize=1, callback=None
+        self,
+        func,
+        executor: "PExecutor" = None,
+        *,
+        unpack="",
+        chunksize=1,
+        on_complete=None,
     ):
         return Finalizer.dispatch(
-            self, func, executor, unpack=unpack, chunksize=chunksize, callback=callback
+            self,
+            func,
+            executor,
+            unpack=unpack,
+            chunksize=chunksize,
+            on_complete=on_complete,
         )
 
     def one(self) -> Tuple[K, V]:

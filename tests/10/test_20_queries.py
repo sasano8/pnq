@@ -1519,24 +1519,6 @@ class Test600_Concurrent:
         assert (await pnq([1]).parallel(add_one).parallel(add_two)) == [4]
 
     @to_sync
-    async def test_dispatch_processpool(self):
-        from pnq.concurrent import ProcessPool as Pool
-
-        result = []
-
-        def callback(future):
-            print(future)
-            result.append(future.result())
-            print(result)
-
-        async with Pool(1) as pool:
-            pnq([1]).dispatch(add_val, executor=pool, callback=callback)
-            await pnq([2])._.dispatch(add_val, executor=pool, callback=callback)
-            await pnq([3])._.dispatch(add_val_async, executor=pool, callback=callback)
-
-        assert result == [1, 2, 3]
-
-    @to_sync
     async def test_dispatch_threadpool(self):
         from pnq.concurrent import ThreadPool as Pool
 

@@ -44,11 +44,11 @@ def parallel(source: Iterable[T], func, executor: PExecutor, *, unpack="", chunk
 def dispatch(
     source: Iterable[T],
     func,
-    executor: PExecutor,
+    executor: PExecutor = None,
     *,
     unpack="",
     chunksize=1,
-    callback=None
+    on_complete=None,
 ):
     if executor is None:
         executor = get_default_pool()
@@ -56,10 +56,8 @@ def dispatch(
     new_func = starmap(func, unpack)
     submit = executor.submit
 
-    if callback:
-        cb = lambda x: callback(x)
-    else:
-        cb = lambda x: x
+    if on_complete is None:
+        on_complete = lambda x: x  # noqa
 
     if executor.is_cpubound and chunksize != 1:
         runner = _procceed_async if asyncio.iscoroutine(func) else _procceed
@@ -67,12 +65,12 @@ def dispatch(
 
         for chunck in chunked(source, chunksize):
             future = submit(runner, chunck)
-            future.add_done_callback(cb)
+            future.add_done_callback(on_complete)
 
     else:
         for x in source:
             future = submit(new_func, x)
-            future.add_done_callback(cb)
+            future.add_done_callback(on_complete)
 
 
 def exec_request(func, *args, **kwargs):
@@ -127,7 +125,7 @@ def request(
     unpack="",
     chunksize=1,
     retry: int = None,
-    timeout: float = None
+    timeout: float = None,
 ):
     if executor is None:
         executor = get_default_pool()

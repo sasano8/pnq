@@ -62,16 +62,12 @@ class {{query.CLS}}:
         # return finalizers.SyncFinalizer(self)
         return Finalizer(self)
 
-    def as_aiter(self) -> "Finalizer[{{query.T}}]":
-        # return finalizers.AsyncFinalizer(self)
+    def as_aiter(self) -> "AsyncFinalizer[{{query.T}}]":
         return AsyncFinalizer(self)
 
     @property
-    def _(self) -> "Finalizer[{{query.T}}]":
-        # TODO: queryables.Finalizerを使うこと
-        # return finalizers.AsyncFinalizer(self)
+    def _(self) -> "AsyncFinalizer[{{query.T}}]":
         return AsyncFinalizer(self)
-
 
     async def _call(self):
         return await PnqList.from_aiter(self)
@@ -224,8 +220,8 @@ class {{query.CLS}}:
     async def each_async_unpack(self, func: Callable = lambda x: x):
         return await Finalizer.each_async_unpack(self, func)
 
-    def dispatch(self, func, executor: "PExecutor", *, unpack="", chunksize=1, callback=None):
-        return Finalizer.dispatch(self, func, executor, unpack=unpack, chunksize=chunksize, callback=callback)
+    def dispatch(self, func, executor: "PExecutor" = None, *, unpack="", chunksize=1, on_complete=None):
+        return Finalizer.dispatch(self, func, executor, unpack=unpack, chunksize=chunksize, on_complete=on_complete)
 
     def one(self) -> {{query.T}}:
         return Finalizer.one(self)

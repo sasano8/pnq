@@ -47,22 +47,20 @@ async def parallel(
 async def dispatch(
     source: AsyncIterable[T],
     func,
-    executor: PExecutor,
+    executor: PExecutor = None,
     *,
     unpack="",
     chunksize=1,
-    callback=None
+    on_complete=None
 ):
     if executor is None:
         executor = get_default_pool()
 
+    if on_complete is None:
+        on_complete = lambda x: x  # noqa
+
     new_func = starmap(func, unpack)
     submit = executor.asubmit
-
-    if callback:
-        cb = lambda x: callback(x)
-    else:
-        cb = lambda x: x
 
     if executor.is_cpubound and chunksize != 1:
         runner = _procceed_async if asyncio.iscoroutine(func) else _procceed
@@ -70,13 +68,13 @@ async def dispatch(
 
         async for chunck in chunked(source, chunksize):
             future = submit(runner, chunck)
-            future.add_done_callback(cb)
+            future.add_done_callback(on_complete)
             await asyncio.sleep(0)
 
     else:
         async for x in source:
             future = submit(new_func, x)
-            future.add_done_callback(cb)
+            future.add_done_callback(on_complete)
             await asyncio.sleep(0)
 
 
