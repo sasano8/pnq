@@ -112,12 +112,6 @@ class Reflect(Map):
 
 
 @export
-class Gather(Query):
-    _ait = sm | A.queries.gather
-    _sit = sm | S.queries.gather
-
-
-@export
 class Flat(Query):
     _ait = sm | A.queries.flat
     _sit = sm | S.queries.flat
@@ -210,58 +204,6 @@ class Tee(Query):
             raise ValueError("count must be greater than 0")
 
         self._args = Arguments(size)
-
-
-@export
-class Request(Query):
-    # _ait = sm | A.queries.request
-    # _sit = sm | S.queries.request
-    _ait = sm | A.concurrent.request
-    _sit = sm | S.concurrent.request
-
-    # def __init__(self, source, func, timeout: float = None, retry: int = 0):
-    #     super().__init__(source)
-    #     self._args = Arguments(func, retry)
-
-    def __init__(
-        self,
-        source: AsyncIterable[T],
-        func,
-        executor=None,
-        *,
-        unpack="",
-        chunksize=1,
-        retry: int = None,
-        timeout: float = None,
-    ):
-        super().__init__(source)
-        self._args = Arguments(
-            func,
-            executor,
-            unpack=unpack,
-            chunksize=chunksize,
-            retry=retry,
-            timeout=timeout,
-        )
-
-
-@export
-class Parallel(Query):
-    """
-    PEP 3148
-    I/Oバウンドを効率化するにはchunksizeを1にする。
-    CPUをフル活用するにはchunksizeを大きくする。
-    ProcessPoolのみchunksizeは有効
-    スクレイピングなどの重い処理を並列化する parallel([], func, chunksize=1)
-    簡単な計算を大量に行う処理を並列化する parallel([], func, chunksize=100)
-    """
-
-    _ait = sm | A.concurrent.parallel
-    _sit = sm | S.concurrent.parallel
-
-    def __init__(self, source, func, executor=None, *, unpack="", chunksize=1):
-        super().__init__(source)
-        self._args = Arguments(func, executor, unpack=unpack, chunksize=chunksize)
 
 
 @export
@@ -668,6 +610,64 @@ class Sleep(Query):
     def __init__(self, source, seconds):
         super().__init__(source)
         self._args = Arguments(seconds)
+
+
+@export
+class Gather(Query):
+    _ait = sm | A.concurrent.gather
+    _sit = sm | S.concurrent.gather
+
+
+@export
+class Request(Query):
+    # _ait = sm | A.queries.request
+    # _sit = sm | S.queries.request
+    _ait = sm | A.concurrent.request
+    _sit = sm | S.concurrent.request
+
+    # def __init__(self, source, func, timeout: float = None, retry: int = 0):
+    #     super().__init__(source)
+    #     self._args = Arguments(func, retry)
+
+    def __init__(
+        self,
+        source: AsyncIterable[T],
+        func,
+        executor=None,
+        *,
+        unpack="",
+        chunksize=1,
+        retry: int = None,
+        timeout: float = None,
+    ):
+        super().__init__(source)
+        self._args = Arguments(
+            func,
+            executor,
+            unpack=unpack,
+            chunksize=chunksize,
+            retry=retry,
+            timeout=timeout,
+        )
+
+
+@export
+class Parallel(Query):
+    """
+    PEP 3148
+    I/Oバウンドを効率化するにはchunksizeを1にする。
+    CPUをフル活用するにはchunksizeを大きくする。
+    ProcessPoolのみchunksizeは有効
+    スクレイピングなどの重い処理を並列化する parallel([], func, chunksize=1)
+    簡単な計算を大量に行う処理を並列化する parallel([], func, chunksize=100)
+    """
+
+    _ait = sm | A.concurrent.parallel
+    _sit = sm | S.concurrent.parallel
+
+    def __init__(self, source, func, executor=None, *, unpack="", chunksize=1):
+        super().__init__(source)
+        self._args = Arguments(func, executor, unpack=unpack, chunksize=chunksize)
 
 
 # いらない！！！

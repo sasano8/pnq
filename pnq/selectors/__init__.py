@@ -1,6 +1,7 @@
 import asyncio
 from concurrent.futures import Future as ConcurrentFuture
 from functools import cmp_to_key
+from functools import partial
 from functools import partial as _partial
 from operator import attrgetter, itemgetter
 from typing import Any, Awaitable, NoReturn
@@ -17,6 +18,7 @@ __all__ = [
     "select_as_tuple",
     "select_as_dict",
     "select_as_awaitable",
+    "select_as_future",
     "reflect",
     "flat_recursive",
     "cmp_to_key",
@@ -142,16 +144,6 @@ def select_as_dict(*fields, attr=False, default=NoReturn):
     return selector
 
 
-def select_as_awaitable(target) -> Awaitable:
-    if hasattr(target, "__await__"):
-        return target
-
-    if isinstance(target, ConcurrentFuture):
-        return asyncio.wrap_future(target)
-
-    raise TypeError(f"{target} is not awaitable")
-
-
 def reflect(mapping, attr: bool = False):
     transposed = _transpose(mapping)
     single, multi = _split_single_multi(transposed)
@@ -231,3 +223,17 @@ def flat_recursive(func):
             ...
 
     return wrapper
+
+
+def select_as_awaitable(target) -> Awaitable:
+    if hasattr(target, "__await__"):
+        return target
+
+    if isinstance(target, ConcurrentFuture):
+        return asyncio.wrap_future(target)
+
+    raise TypeError(f"{target} is not awaitable")
+
+
+def select_as_future(target) -> ConcurrentFuture:
+    return target

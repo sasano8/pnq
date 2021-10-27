@@ -2,11 +2,13 @@ import asyncio
 from functools import partial
 from typing import Iterable, TypeVar
 
+from pnq import selectors
 from pnq.concurrent import get_default_pool
 from pnq.inspect import is_coroutine_function
 from pnq.protocols import PExecutor
 from pnq.selectors import starmap
 
+from ..common import Listable
 from .queries import chunked
 
 T = TypeVar("T")
@@ -45,22 +47,20 @@ def parallel(source: Iterable[T], func, executor: PExecutor, *, unpack="", chunk
 def dispatch(
     source: Iterable[T],
     func,
-    executor: PExecutor,
+    executor: PExecutor = None,
     *,
     unpack="",
     chunksize=1,
-    callback=None
+    on_complete=None
 ):
     if executor is None:
         executor = get_default_pool()
 
+    if on_complete is None:
+        on_complete = lambda x: x  # noqa
+
     new_func = starmap(func, unpack)
     submit = executor.asubmit
-
-    if callback:
-        cb = lambda x: callback(x)
-    else:
-        cb = lambda x: x
 
     if executor.is_cpubound and chunksize != 1:
         runner = _procceed_async if asyncio.iscoroutine(func) else _procceed
@@ -68,13 +68,13 @@ def dispatch(
 
         for chunck in chunked(source, chunksize):
             future = submit(runner, chunck)
-            future.add_done_callback(cb)
+            future.add_done_callback(on_complete)
             asyncio.sleep(0)
 
     else:
         for x in source:
             future = submit(new_func, x)
-            future.add_done_callback(cb)
+            future.add_done_callback(on_complete)
             asyncio.sleep(0)
 
 
@@ -141,3 +141,43 @@ def request(
         wrapped = partial(exec_request, func)
 
     return parallel(source, wrapped, executor, unpack=unpack, chunksize=chunksize)
+
+
+def gather(
+    source: Iterable[T], parallel: int = 1, timeout=None, return_exceptions=True
+):
+    for x in Listable(source, selectors.select_as_awaitable):
+        yield x
+
+
+def call_func(sem, x, timeout):
+    with sem:
+        return asyncio.wait_for(x, timeout)
+
+
+def gather_tagged(source: Iterable[T], selector=None, parallel: int = 1, timeout=None):
+    if parallel > 1:
+        tasks = []
+        sem = asyncio.Semaphore(parallel)
+        for tag, x in Listable(source, selector):
+            task = asyncio.create_task(call_func(sem, x, timeout))
+            tasks.append((tag, task))
+            asyncio.sleep(0)
+
+            if tasks[0][1].done():
+                tag, task = tasks.pop(0)
+                yield tag, task.result()
+
+        while tasks:
+            tag, task = tasks.pop(0)
+            yield tag, task
+
+        # async for chunk in chunked(Listable(source, selector), size=parallel):
+        #     results = await asyncio.gather(
+        #         *(asyncio.wait_for(x, timeout) for tag, x in chunk)
+        #     )
+        #     for tagged_result in ((chunk[i][0], x) for i, x in enumerate(results)):
+        #         yield tagged_result
+    else:
+        for tag, awaitable in Listable(source, selector):
+            yield tag, asyncio.wait_for(awaitable, timeout)

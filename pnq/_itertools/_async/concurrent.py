@@ -2,11 +2,13 @@ import asyncio
 from functools import partial
 from typing import AsyncIterable, TypeVar
 
+from pnq import selectors
 from pnq.concurrent import get_default_pool
 from pnq.inspect import is_coroutine_function
 from pnq.protocols import PExecutor
 from pnq.selectors import starmap
 
+from ..common import Listable
 from .queries import chunked
 
 T = TypeVar("T")
@@ -141,3 +143,45 @@ def request(
         wrapped = partial(exec_request, func)
 
     return parallel(source, wrapped, executor, unpack=unpack, chunksize=chunksize)
+
+
+async def gather(
+    source: AsyncIterable[T], parallel: int = 1, timeout=None, return_exceptions=True
+):
+    async for x in Listable(source, selectors.select_as_awaitable):
+        yield await x
+
+
+async def call_func(sem, x, timeout):
+    async with sem:
+        return await asyncio.wait_for(x, timeout)
+
+
+async def gather_tagged(
+    source: AsyncIterable[T], selector=None, parallel: int = 1, timeout=None
+):
+    if parallel > 1:
+        tasks = []
+        sem = asyncio.Semaphore(parallel)
+        async for tag, x in Listable(source, selector):
+            task = asyncio.create_task(call_func(sem, x, timeout))
+            tasks.append((tag, task))
+            await asyncio.sleep(0)
+
+            if tasks[0][1].done():
+                tag, task = tasks.pop(0)
+                yield tag, task.result()
+
+        while tasks:
+            tag, task = tasks.pop(0)
+            yield tag, await task
+
+        # async for chunk in chunked(Listable(source, selector), size=parallel):
+        #     results = await asyncio.gather(
+        #         *(asyncio.wait_for(x, timeout) for tag, x in chunk)
+        #     )
+        #     for tagged_result in ((chunk[i][0], x) for i, x in enumerate(results)):
+        #         yield tagged_result
+    else:
+        async for tag, awaitable in Listable(source, selector):
+            yield tag, await asyncio.wait_for(awaitable, timeout)

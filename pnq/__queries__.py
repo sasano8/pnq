@@ -75,7 +75,7 @@ class {{query.CLS}}:
 
     {% if query.is_pair %}
 
-    def save(self) -> "PnqListPair[{{query.K}}, {{query.V}}]":
+    def save(self, timeout=None) -> "PnqListPair[{{query.K}}, {{query.V}}]":
         return PnqList(self)
 
     result = save
@@ -85,7 +85,7 @@ class {{query.CLS}}:
 
     {% else %}
 
-    def save(self) -> "PnqList[{{query.T}}]":
+    def save(self, timeout=None) -> "PnqList[{{query.T}}]":
         return PnqList(self)
 
     result = save
@@ -182,6 +182,35 @@ class {{query.CLS}}:
 
         return return_sync, return_async
 
+    def gather(self):
+        return queryables.Gather(self)
+
+    def request(
+        self,
+        func,
+        executor=None,
+        *,
+        unpack="",
+        chunksize=1,
+        retry: int = None,
+        timeout: float = None,
+    ) -> "Query[Response]":
+        return queryables.Request(self, func, executor, unpack=unpack, chunksize=chunksize, retry=retry, timeout=timeout)
+
+    @overload
+    def parallel(self, func: Callable[..., Awaitable[R]], executor=None, *, unpack="", chunksize=1) -> "Query[R]":
+        ...
+
+    @overload
+    def parallel(self, func: Callable[..., R], executor=None, *, unpack="", chunksize=1) -> "Query[R]":
+        ...
+
+    def parallel(self, func, executor=None, *, unpack="", chunksize=1) -> "Query[R]":
+        return queryables.Parallel(self, func, executor, unpack=unpack, chunksize=chunksize)
+
+    def dispatch(self, func, executor: "PExecutor" = None, *, unpack="", chunksize=1, on_complete=None):
+        return Finalizer.dispatch(self, func, executor, unpack=unpack, chunksize=chunksize, on_complete=on_complete)
+
     {% if query.is_pair %}
 
     @overload
@@ -210,9 +239,6 @@ class {{query.CLS}}:
 
     def each(self, func: Callable = lambda x: x, unpack=""):
         return Finalizer.each(self, func, unpack)
-
-    def dispatch(self, func, executor: "PExecutor" = None, *, unpack="", chunksize=1, on_complete=None):
-        return Finalizer.dispatch(self, func, executor, unpack=unpack, chunksize=chunksize, on_complete=on_complete)
 
     def one(self) -> {{query.T}}:
         return Finalizer.one(self)
@@ -337,29 +363,6 @@ class {{query.CLS}}:
 
     def join(self, right, on: Callable[[Tuple[list, list]], Callable], select):
         return queryables.Join(self, right, on=on, select=select)
-
-    def request(
-        self,
-        func,
-        executor=None,
-        *,
-        unpack="",
-        chunksize=1,
-        retry: int = None,
-        timeout: float = None,
-    ) -> "Query[Response]":
-        return queryables.Request(self, func, executor, unpack=unpack, chunksize=chunksize, retry=retry, timeout=timeout)
-
-    @overload
-    def parallel(self, func: Callable[..., Awaitable[R]], executor=None, *, unpack="", chunksize=1) -> "Query[R]":
-        ...
-
-    @overload
-    def parallel(self, func: Callable[..., R], executor=None, *, unpack="", chunksize=1) -> "Query[R]":
-        ...
-
-    def parallel(self, func, executor=None, *, unpack="", chunksize=1) -> "Query[R]":
-        return queryables.Parallel(self, func, executor, unpack=unpack, chunksize=chunksize)
 
     def debug(self, breakpoint=lambda x: x, printer=print) -> "{{query.SELF_T}}":
         return queryables.Debug(self, breakpoint=breakpoint, printer=printer)

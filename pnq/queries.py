@@ -72,7 +72,7 @@ class Query(Generic[T]):
         return await PnqList.from_aiter(self)
         # return QuerySeq([x async for x in self])
 
-    def save(self) -> "PnqList[T]":
+    def save(self, timeout=None) -> "PnqList[T]":
         return PnqList(self)
 
     result = save
@@ -187,22 +187,50 @@ class Query(Generic[T]):
 
         return return_sync, return_async
 
+    def gather(self):
+        return queryables.Gather(self)
+
+    def request(
+        self,
+        func,
+        executor=None,
+        *,
+        unpack="",
+        chunksize=1,
+        retry: int = None,
+        timeout: float = None,
+    ) -> "Query[Response]":
+        return queryables.Request(
+            self,
+            func,
+            executor,
+            unpack=unpack,
+            chunksize=chunksize,
+            retry=retry,
+            timeout=timeout,
+        )
+
     @overload
-    def to(self: Iterable[T], func: Type[Iterable[T]]) -> Iterable[T]:
+    def parallel(
+        self,
+        func: Callable[..., Awaitable[R]],
+        executor=None,
+        *,
+        unpack="",
+        chunksize=1,
+    ) -> "Query[R]":
         ...
 
     @overload
-    def to(self: Iterable[T], func: Callable[[Iterable[T]], R]) -> R:
+    def parallel(
+        self, func: Callable[..., R], executor=None, *, unpack="", chunksize=1
+    ) -> "Query[R]":
         ...
 
-    def to(self, func: Callable[[Iterable[T]], R]) -> R:
-        return Finalizer.to(self, func)
-
-    def lazy(self, func, *args, **kwargs):
-        return Finalizer.lazy(self, func, *args, **kwargs)
-
-    def each(self, func: Callable = lambda x: x, unpack=""):
-        return Finalizer.each(self, func, unpack)
+    def parallel(self, func, executor=None, *, unpack="", chunksize=1) -> "Query[R]":
+        return queryables.Parallel(
+            self, func, executor, unpack=unpack, chunksize=chunksize
+        )
 
     def dispatch(
         self,
@@ -221,6 +249,23 @@ class Query(Generic[T]):
             chunksize=chunksize,
             on_complete=on_complete,
         )
+
+    @overload
+    def to(self: Iterable[T], func: Type[Iterable[T]]) -> Iterable[T]:
+        ...
+
+    @overload
+    def to(self: Iterable[T], func: Callable[[Iterable[T]], R]) -> R:
+        ...
+
+    def to(self, func: Callable[[Iterable[T]], R]) -> R:
+        return Finalizer.to(self, func)
+
+    def lazy(self, func, *args, **kwargs):
+        return Finalizer.lazy(self, func, *args, **kwargs)
+
+    def each(self, func: Callable = lambda x: x, unpack=""):
+        return Finalizer.each(self, func, unpack)
 
     def one(self) -> T:
         return Finalizer.one(self)
@@ -340,48 +385,6 @@ class Query(Generic[T]):
     def join(self, right, on: Callable[[Tuple[list, list]], Callable], select):
         return queryables.Join(self, right, on=on, select=select)
 
-    def request(
-        self,
-        func,
-        executor=None,
-        *,
-        unpack="",
-        chunksize=1,
-        retry: int = None,
-        timeout: float = None,
-    ) -> "Query[Response]":
-        return queryables.Request(
-            self,
-            func,
-            executor,
-            unpack=unpack,
-            chunksize=chunksize,
-            retry=retry,
-            timeout=timeout,
-        )
-
-    @overload
-    def parallel(
-        self,
-        func: Callable[..., Awaitable[R]],
-        executor=None,
-        *,
-        unpack="",
-        chunksize=1,
-    ) -> "Query[R]":
-        ...
-
-    @overload
-    def parallel(
-        self, func: Callable[..., R], executor=None, *, unpack="", chunksize=1
-    ) -> "Query[R]":
-        ...
-
-    def parallel(self, func, executor=None, *, unpack="", chunksize=1) -> "Query[R]":
-        return queryables.Parallel(
-            self, func, executor, unpack=unpack, chunksize=chunksize
-        )
-
     def debug(self, breakpoint=lambda x: x, printer=print) -> "Query[T]":
         return queryables.Debug(self, breakpoint=breakpoint, printer=printer)
 
@@ -483,7 +486,7 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
         return await PnqList.from_aiter(self)
         # return QuerySeq([x async for x in self])
 
-    def save(self) -> "PnqListPair[K, V]":
+    def save(self, timeout=None) -> "PnqListPair[K, V]":
         return PnqList(self)
 
     result = save
@@ -608,6 +611,69 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
 
         return return_sync, return_async
 
+    def gather(self):
+        return queryables.Gather(self)
+
+    def request(
+        self,
+        func,
+        executor=None,
+        *,
+        unpack="",
+        chunksize=1,
+        retry: int = None,
+        timeout: float = None,
+    ) -> "Query[Response]":
+        return queryables.Request(
+            self,
+            func,
+            executor,
+            unpack=unpack,
+            chunksize=chunksize,
+            retry=retry,
+            timeout=timeout,
+        )
+
+    @overload
+    def parallel(
+        self,
+        func: Callable[..., Awaitable[R]],
+        executor=None,
+        *,
+        unpack="",
+        chunksize=1,
+    ) -> "Query[R]":
+        ...
+
+    @overload
+    def parallel(
+        self, func: Callable[..., R], executor=None, *, unpack="", chunksize=1
+    ) -> "Query[R]":
+        ...
+
+    def parallel(self, func, executor=None, *, unpack="", chunksize=1) -> "Query[R]":
+        return queryables.Parallel(
+            self, func, executor, unpack=unpack, chunksize=chunksize
+        )
+
+    def dispatch(
+        self,
+        func,
+        executor: "PExecutor" = None,
+        *,
+        unpack="",
+        chunksize=1,
+        on_complete=None,
+    ):
+        return Finalizer.dispatch(
+            self,
+            func,
+            executor,
+            unpack=unpack,
+            chunksize=chunksize,
+            on_complete=on_complete,
+        )
+
     @overload
     def to(self: Iterable[Tuple[K, V]], func: Type[Mapping[K, V]]) -> Mapping[K, V]:
         ...
@@ -634,24 +700,6 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
 
     def each(self, func: Callable = lambda x: x, unpack=""):
         return Finalizer.each(self, func, unpack)
-
-    def dispatch(
-        self,
-        func,
-        executor: "PExecutor" = None,
-        *,
-        unpack="",
-        chunksize=1,
-        on_complete=None,
-    ):
-        return Finalizer.dispatch(
-            self,
-            func,
-            executor,
-            unpack=unpack,
-            chunksize=chunksize,
-            on_complete=on_complete,
-        )
 
     def one(self) -> Tuple[K, V]:
         return Finalizer.one(self)
@@ -780,48 +828,6 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
 
     def join(self, right, on: Callable[[Tuple[list, list]], Callable], select):
         return queryables.Join(self, right, on=on, select=select)
-
-    def request(
-        self,
-        func,
-        executor=None,
-        *,
-        unpack="",
-        chunksize=1,
-        retry: int = None,
-        timeout: float = None,
-    ) -> "Query[Response]":
-        return queryables.Request(
-            self,
-            func,
-            executor,
-            unpack=unpack,
-            chunksize=chunksize,
-            retry=retry,
-            timeout=timeout,
-        )
-
-    @overload
-    def parallel(
-        self,
-        func: Callable[..., Awaitable[R]],
-        executor=None,
-        *,
-        unpack="",
-        chunksize=1,
-    ) -> "Query[R]":
-        ...
-
-    @overload
-    def parallel(
-        self, func: Callable[..., R], executor=None, *, unpack="", chunksize=1
-    ) -> "Query[R]":
-        ...
-
-    def parallel(self, func, executor=None, *, unpack="", chunksize=1) -> "Query[R]":
-        return queryables.Parallel(
-            self, func, executor, unpack=unpack, chunksize=chunksize
-        )
 
     def debug(self, breakpoint=lambda x: x, printer=print) -> "PairQuery[K,V]":
         return queryables.Debug(self, breakpoint=breakpoint, printer=printer)

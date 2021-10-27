@@ -2,9 +2,9 @@ import asyncio
 import random
 from typing import Iterable, TypeVar
 
+from pnq import selectors
 from pnq.exceptions import DuplicateElementError, MustError, MustTypeError
 
-from ...selectors import flat_recursive as _flat_recursive
 from ..common import Listable, name_as
 
 T = TypeVar("T")
@@ -30,46 +30,6 @@ def _map(source: Iterable[T], selector, unpack=""):
             raise ValueError("unpack must be one of '', '*', '**', '***'")
 
 
-def gather(source: Iterable[T], selector=None, parallel: int = 1, timeout=None):
-    for tag, result in gather_tagged(
-        _enumerate(Listable(source, selector)), parallel=parallel, timeout=timeout
-    ):
-        yield result
-
-
-def call_func(sem, x, timeout):
-    with sem:
-        return asyncio.wait_for(x, timeout)
-
-
-def gather_tagged(source: Iterable[T], selector=None, parallel: int = 1, timeout=None):
-    if parallel > 1:
-        tasks = []
-        sem = asyncio.Semaphore(parallel)
-        for tag, x in Listable(source, selector):
-            task = asyncio.create_task(call_func(sem, x, timeout))
-            tasks.append((tag, task))
-            asyncio.sleep(0)
-
-            if tasks[0][1].done():
-                tag, task = tasks.pop(0)
-                yield tag, task.result()
-
-        while tasks:
-            tag, task = tasks.pop(0)
-            yield tag, task
-
-        # async for chunk in chunked(Listable(source, selector), size=parallel):
-        #     results = await asyncio.gather(
-        #         *(asyncio.wait_for(x, timeout) for tag, x in chunk)
-        #     )
-        #     for tagged_result in ((chunk[i][0], x) for i, x in enumerate(results)):
-        #         yield tagged_result
-    else:
-        for tag, awaitable in Listable(source, selector):
-            yield tag, asyncio.wait_for(awaitable, timeout)
-
-
 def flat(source: Iterable[T], selector=None):
     if selector is None:
         return (_ for inner in source for _ in inner)
@@ -78,7 +38,7 @@ def flat(source: Iterable[T], selector=None):
 
 
 def flat_recursive(source: Iterable[T], selector):
-    scanner = _flat_recursive(selector)
+    scanner = selectors.flat_recursive(selector)
     for node in source:
         for x in scanner(node):
             yield x

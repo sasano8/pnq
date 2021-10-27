@@ -370,10 +370,10 @@ def select_single_node(
 
 @mark
 def gather(self):
-    """シーケンスから列挙されるフューチャーオブジェクトから結果を取り出し、新しいフォームに射影します。
-    同期実行の場合は`result`、非同期実行の場合は`\_\_await\_\_`が実装されている場合、フューチャーオブジェクトとみなされます。
+    """シーケンスの要素から結果を取り出し、新しいフォームに射影します。
+    要素は、`concurrent.futures.Future`、または、`awaitable`である必要があります。
 
-    `pnq.query`は、それらのインターフェースを実装しており、本メソッドで実体化可能です。
+    `pnq.query`は、それらのインターフェースを実装しているため、本メソッドで実体化可能です。
 
     Usage:
     ```
@@ -382,7 +382,7 @@ def gather(self):
 
     def main1():
         future = Future()
-        future.set_result(1)
+        future.set_result(0)
         return pnq.query([future]).gather().save()
 
     async def main2():
@@ -393,15 +393,20 @@ def gather(self):
             yield 3
             yield 4
 
+        future = Future()
+        future.set_result(0)
+
         tasks = pnq.query([
+            future,
+            heavy_task(),
             asyncio.create_task(heavy_task()),
             pnq.([1, 2]).map(lambda x: x * 2),
             pnq.(aiter()).map(lambda x: x * 2)
         ])
         return await tasks.gather()
 
-    main()  # => [1]
-    asyncio.run(main2())  # => [[1], [2, 4], [6, 8]]
+    main()  # => [0]
+    asyncio.run(main2())  # => [[0], [1], [1], [2, 4], [6, 8]]
     ```
     """
 
@@ -1533,8 +1538,8 @@ def each(self, func=lambda x: x, unpack=""):
     >>> pnq.query([1,2]).each(print)
     1
     2
-    >>> await pnq.query([1,2])._.each(sync_func)
-    >>> await pnq.query([1,2])._.each(async_func)
+    >>> await pnq.query([1,2]).\_.each(sync_func)
+    >>> await pnq.query([1,2]).\_.each(async_func)
     ```
     """
 

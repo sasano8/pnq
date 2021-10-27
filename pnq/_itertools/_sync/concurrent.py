@@ -2,10 +2,10 @@ import asyncio
 from functools import partial
 from typing import Iterable, TypeVar
 
+from pnq import selectors
 from pnq.concurrent import get_default_pool
 from pnq.inspect import is_coroutine_function
 from pnq.protocols import PExecutor
-from pnq.selectors import starmap
 
 from .queries import chunked
 
@@ -23,7 +23,7 @@ async def _procceed_async(func, iterable):
 def parallel(source: Iterable[T], func, executor: PExecutor, *, unpack="", chunksize=1):
     if executor is None:
         executor = get_default_pool()
-    new_func = starmap(func, unpack)
+    new_func = selectors.starmap(func, unpack)
     submit = executor.submit
 
     if executor.is_cpubound and chunksize != 1:
@@ -53,7 +53,7 @@ def dispatch(
     if executor is None:
         executor = get_default_pool()
 
-    new_func = starmap(func, unpack)
+    new_func = selectors.starmap(func, unpack)
     submit = executor.submit
 
     if on_complete is None:
@@ -136,3 +136,10 @@ def request(
         wrapped = partial(exec_request, func)
 
     return parallel(source, wrapped, executor, unpack=unpack, chunksize=chunksize)
+
+
+def gather(
+    source: Iterable[T], parallel: int = 1, timeout=None, return_exceptions=True
+):
+    for x in map(selectors.select_as_future, source):
+        yield x.result(timeout)

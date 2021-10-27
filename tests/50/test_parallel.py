@@ -1,6 +1,8 @@
 import asyncio
 from typing import List
 
+import pytest
+
 import pnq
 from pnq import concurrent
 from pnq._itertools.requests import Response
@@ -21,6 +23,41 @@ def add_one(x: int):
 
 async def add_two(x: int):
     return x + 2
+
+
+def test_gather():
+    from concurrent.futures import Future
+
+    future1 = Future()
+    future1.set_result(1)
+
+    assert pnq.query([future1]).gather().to(list) == [1]
+    assert pnq.query([pnq.query([3])]).gather().to(list) == [[3]]
+
+    async def return_4():
+        yield 4
+
+    async def return_5():
+        return 5
+
+    async def return_6():
+        return 6
+
+    async def main():
+        future2 = asyncio.Future()
+        future2.set_result(2)
+
+        return6 = asyncio.create_task(return_6())
+
+        assert await pnq.query([future1]).gather() == [1]
+        assert await pnq.query([future2]).gather() == [2]
+        assert await pnq.query([pnq.query([3])]).gather() == [[3]]
+        assert await pnq.query([pnq.query(return_4())]).gather() == [[4]]
+        assert await pnq.query([return_5()]).gather() == [5]
+        assert await pnq.query([return6]).gather() == [6]
+        assert await pnq.query(return6).gather() == []  # FIXME: must be error
+
+    asyncio.run(main())
 
 
 class Test600_Concurrent:
