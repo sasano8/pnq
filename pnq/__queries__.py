@@ -357,9 +357,6 @@ class {{query.CLS}}:
     ) -> "Query[Response]":
         return queryables.Request(self, func, executor, unpack=unpack, chunksize=chunksize, retry=retry, timeout=timeout)
 
-    def request_async(self, func, retry: int = None, timeout=None) -> "Query[Response]":
-        return queryables.RequestAsync(self, func, retry=retry, timeout=None)
-
     @overload
     def parallel(self, func: Callable[..., Awaitable[R]], executor=None, *, unpack="", chunksize=1) -> "Query[R]":
         ...

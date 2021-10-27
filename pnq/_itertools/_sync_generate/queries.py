@@ -183,54 +183,6 @@ def group_join(source: Iterable[T], size: int):
     ...
 
 
-def request(source: Iterable[T], func, retry: int = None):
-    from ..requests import Response, StopWatch
-
-    for v in source:
-
-        with StopWatch() as sw:
-            err = None
-            result = None
-            try:
-                result = func(**v)
-            except Exception as e:
-                err = e
-
-        res = Response(
-            func, kwargs=v, err=err, result=result, start=sw.start, end=sw.end
-        )
-
-        yield res
-
-
-def request_async(source: Iterable[T], func, timeout: float = None, retry: int = None):
-    from ..requests import Response, StopWatch
-
-    for v in source:
-
-        with StopWatch() as sw:
-            err = None
-            result = None
-            try:
-                result = func(**v)
-            except Exception as e:
-                err = e
-
-        res = Response(
-            func, kwargs=v, err=err, result=result, start=sw.start, end=sw.end
-        )
-
-        yield res
-
-
-def _procceed(func, iterable):
-    return [func(x) for x in iterable]
-
-
-def _procceed_async(func, iterable):
-    return [func(x) for x in iterable]
-
-
 def debug(source: Iterable[T], breakpoint=lambda x: x, printer=print):
     for v in source:
         printer(v)
@@ -448,20 +400,17 @@ def order_by_reverse(source: Iterable[T]):
     return reversed(Listable(source))
 
 
-def order_by_shuffle(source: Iterable[T], seed_or_func=None):
-    if seed_or_func is None:
-        seed_or_func = lambda k: random.random()  # noqa
+def order_by_shuffle(source: Iterable[T], seed=None):
+    if seed is None:
+        rand = random.random
+        func = lambda x: rand()  # noqa
 
-    if seed_or_func is float:
-        # TODO: 並列でシャッフルした場合、新たな乱数が払い出されてしまうため再現性を失う
-        random.seed(seed_or_func)
-        result = Listable(source)
-        random.shuffle(result)
-        for x in result:
-            yield x
     else:
-        for x in sorted(Listable(source), key=seed_or_func):
-            yield x
+        rand = random.Random(seed).random
+        func = lambda x: rand()  # noqa
+
+    for x in sorted(Listable(source), key=func):
+        yield x
 
 
 def sleep(source: Iterable[T], seconds: float):

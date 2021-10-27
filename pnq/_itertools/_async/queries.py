@@ -187,56 +187,6 @@ async def group_join(source: AsyncIterable[T], size: int):
     ...
 
 
-async def request(source: AsyncIterable[T], func, retry: int = None):
-    from ..requests import Response, StopWatch
-
-    async for v in source:
-
-        with StopWatch() as sw:
-            err = None
-            result = None
-            try:
-                result = func(**v)
-            except Exception as e:
-                err = e
-
-        res = Response(
-            func, kwargs=v, err=err, result=result, start=sw.start, end=sw.end
-        )
-
-        yield res
-
-
-async def request_async(
-    source: AsyncIterable[T], func, timeout: float = None, retry: int = None
-):
-    from ..requests import Response, StopWatch
-
-    async for v in source:
-
-        with StopWatch() as sw:
-            err = None
-            result = None
-            try:
-                result = await func(**v)
-            except Exception as e:
-                err = e
-
-        res = Response(
-            func, kwargs=v, err=err, result=result, start=sw.start, end=sw.end
-        )
-
-        yield res
-
-
-def _procceed(func, iterable):
-    return [func(x) for x in iterable]
-
-
-async def _procceed_async(func, iterable):
-    return [await func(x) for x in iterable]
-
-
 async def debug(source: AsyncIterable[T], breakpoint=lambda x: x, printer=print):
     async for v in source:
         printer(v)

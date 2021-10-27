@@ -353,10 +353,6 @@ class Query(Generic[T]):
             timeout=timeout,
         )
 
-    def request_async(self, func, retry: int = None, timeout=None) -> "Query[Response]":
-        raise NotImplementedError()
-        return queryables.RequestAsync(self, func, retry=retry, timeout=None)
-
     @overload
     def parallel(
         self,
@@ -792,9 +788,6 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
             retry=retry,
             timeout=timeout,
         )
-
-    def request_async(self, func, retry: int = None, timeout=None) -> "Query[Response]":
-        return queryables.RequestAsync(self, func, retry=retry, timeout=None)
 
     @overload
     def parallel(

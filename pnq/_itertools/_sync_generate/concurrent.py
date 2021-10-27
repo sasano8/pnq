@@ -22,7 +22,7 @@ def _procceed_async(func, iterable):
 
 def parallel(source: Iterable[T], func, executor: PExecutor, *, unpack="", chunksize=1):
     if executor is None:
-        executor = get_default_pool(executor)
+        executor = get_default_pool()
 
     new_func = starmap(func, unpack)
     submit = executor.asubmit
@@ -52,7 +52,7 @@ def dispatch(
     callback=None
 ):
     if executor is None:
-        executor = get_default_pool(executor)
+        executor = get_default_pool()
 
     new_func = starmap(func, unpack)
     submit = executor.asubmit
@@ -89,12 +89,9 @@ def exec_request(func, *args, **kwargs):
         except Exception as e:
             err = e
 
-    if isinstance(func, partial):
-        func = func.func
-
     return Response(
         func,
-        # args,
+        args,
         kwargs,
         err=err,
         result=result,
@@ -114,12 +111,9 @@ def exec_request_async(func, *args, **kwargs):
         except Exception as e:
             err = e
 
-    if isinstance(func, partial):
-        func = func.func
-
     return Response(
         func,
-        # args,
+        args,
         kwargs,
         err=err,
         result=result,
@@ -139,12 +133,11 @@ def request(
     timeout: float = None
 ):
     if executor is None:
-        executor = get_default_pool(executor)
-    new_func = starmap(func, unpack)
+        executor = get_default_pool()
 
     if is_coroutine_function(func):
-        wrapped = partial(exec_request_async, new_func)
+        wrapped = partial(exec_request_async, func)
     else:
-        wrapped = partial(exec_request, new_func)
+        wrapped = partial(exec_request, func)
 
     return parallel(source, wrapped, executor, unpack=unpack, chunksize=chunksize)

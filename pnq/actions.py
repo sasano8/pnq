@@ -757,36 +757,6 @@ def request(self, func, retry: int = None):
     """
 
 
-def request_async(self, func, timeout: float = None, retry: int = None):
-    """シーケンスから流れてくる値を非同期関数に送出するように要求します。
-    例外はキャッチされ、実行結果を返すイテレータを生成します。
-    関数呼び出し時にキーワードアンパックするため、要素は辞書である必要があります。
-
-    Args:
-
-    * self: 辞書を要素とするシーケンス
-    * func: 値の送出先の関数
-
-    Returns: 実行結果
-
-    Usage:
-    ```
-    >>> async def do_something(id, val):
-    >>>   if val:
-    >>>     return 1
-    >>>   else:
-    >>>     raise ValueError(val)
-    >>>
-    >>> params = pnq.query([{"id": 1, "val": True}, {"id": 2, "val": False}])
-    >>> async for res in params.request_async(do_something):
-    >>>   if res.err:
-    >>>     print(f"ERROR: {res.to(dict)}")
-    >>>   else:
-    >>>     print(f"SUCCESS: {res.to(dict)}")
-    ```
-    """
-
-
 def parallel(self, source, func, concurrency: int = sys.maxsize):
     """シーケンスから流れてくる値を関数に送出します。
     （未実装）

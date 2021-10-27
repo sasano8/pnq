@@ -263,16 +263,6 @@ class Request(Query):
 
 
 @export
-class RequestAsync(Query):
-    _ait = sm | A.queries.request_async
-    _sit = sm | S.queries.request_async
-
-    def __init__(self, source, func, timeout: float = None, retry: int = 0):
-        super().__init__(source)
-        self._args = Arguments(func, timeout, retry)
-
-
-@export
 class Parallel(Query):
     """
     PEP 3148
