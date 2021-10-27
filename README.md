@@ -30,6 +30,7 @@ PNQ is a Python implementation like Language Integrated Query (LINQ).
 - [python-linq](https://github.com/jakkes/python-linq)
 - [aioitertools](https://github.com/omnilib/aioitertools)
 - [asyncstdlib](https://github.com/maxfischer2781/asyncstdlib)
+- [asq](https://github.com/sixty-north/asq)
 
 ## Documentation
 

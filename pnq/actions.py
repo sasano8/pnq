@@ -303,13 +303,17 @@ def __range(*args, **kwargs):
 @mark
 def map(self, selector, unpack=""):
     """シーケンスの各要素を新しいフォームに射影します。
-    str関数を渡した場合、利便性のため`None`は`""`を返します（Pythonの標準動作は`"None"`を返します）。
+    str関数を渡した場合、`None`は`""`を返します（Pythonの標準動作は`"None"`を返します）。
 
     Args:
 
     * self: 変換対象のシーケンス
-    * selector(x): 各要素に対する変換関数
-    * unpack: `starmap`を参照ください
+    * selector: 各要素に対する変換関数
+    * unpack: 引数をどのように展開するか指定する
+        - `""`: 展開せずにそのまま値を渡す（デフォルト）
+        - `"\*"`: 位置引数として展開する
+        - `"\*\*"`: キーワード引数として展開する
+        - `"\*\*\*"`: 位置引数とキーワード引数を展開する（pnq.Argumentsインスタンスに対して使用できます）
 
     Usage:
     ```
@@ -317,6 +321,12 @@ def map(self, selector, unpack=""):
     [2]
     >>> pnq.query([None]).map(str).to(list)
     [""]
+    >>> pnq.query([(1, 2)]).map(lambda arg1, arg2: arg1, "*").to(list)
+    [1]
+    >>> pnq.query([{"arg1": 1, "arg2": 2}]).map(lambda arg1, arg2: arg1, "\*\*").to(list)
+    [1]
+    >>> pnq.query([pnq.Arguments(1, 2, name="test", age=20)]).map(lambda arg1, arg2, name, age: name, "\*\*\*").to(list)
+    ["test"]
     ```
     """
 
@@ -392,32 +402,6 @@ def gather(self):
 
     main()  # => [1]
     asyncio.run(main2())  # => [[1], [2, 4], [6, 8]]
-    ```
-    """
-
-
-@mark
-def starmap(self, selector, unpack="*"):
-    """シーケンスの各要素をアンパックし、新しいフォームに射影します。
-
-    Args:
-
-    * self: 変換対象のシーケンス
-    * selector: 各要素に対する変換関数
-    * unpack: 引数をどのように展開するか指定する
-        - `""`: 展開せずにそのまま値を渡す
-        - `"\*"`: 位置引数として展開する（デフォルト）
-        - `"\*\*"`: キーワード引数として展開する
-        - `"\*\*\*"`: 位置引数とキーワード引数を展開する（pnq.Argumentsインスタンスに対して使用できます）
-
-    Usage:
-    ```
-    >>> pnq.query([(1, 2)]).starmap(lambda arg1, arg2: arg1).to(list)
-    [1]
-    >>> pnq.query([{"arg1": 1, "arg2": 2}]).starmap(lambda arg1, arg2: arg1, "\*\*").to(list)
-    [1]
-    >>> pnq.query([pnq.Arguments(1, 2, name="test", age=20)]).starmap(lambda arg1, arg2, name, age: name, "\*\*\*").to(list)
-    ["test"]
     ```
     """
 

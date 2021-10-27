@@ -3,9 +3,6 @@
 ::: pnq.actions.map
     :docstring:
 
-::: pnq.actions.starmap
-    :docstring:
-
 ::: pnq.actions.select
     :docstring:
 

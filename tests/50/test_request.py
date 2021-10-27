@@ -15,6 +15,160 @@ async def mul_async(x):
     return x * 2
 
 
+def add_one(x: int):
+    return x + 1
+
+
+async def add_two(x: int):
+    return x + 2
+
+
+class Test600_Concurrent:
+    @to_sync
+    async def test_parallel_processpool(self):
+        from pnq.concurrent import ProcessPool as Pool
+
+        with Pool(1) as pool:
+            assert (
+                pnq([1])
+                .parallel(add_one, executor=pool)
+                .parallel(add_two, executor=pool)
+                .result()
+            ) == [4]
+
+            assert (
+                await pnq([1])
+                .parallel(add_one, executor=pool)
+                .parallel(add_two, executor=pool)
+            ) == [4]
+
+    @to_sync
+    async def test_parallel_threadpool(self):
+        from pnq.concurrent import ThreadPool as Pool
+
+        with Pool(1) as pool:
+            assert (
+                pnq([1])
+                .parallel(add_one, executor=pool)
+                .parallel(add_two, executor=pool)
+                .result()
+            ) == [4]
+
+            assert (
+                await pnq([1])
+                .parallel(add_one, executor=pool)
+                .parallel(add_two, executor=pool)
+            ) == [4]
+
+    @to_sync
+    async def test_parallel_asyncpool(self):
+        from pnq.concurrent import AsyncPool as Pool
+
+        async with Pool(1) as pool:
+            # assert (
+            #     pnq([1])
+            #     .parallel(add_one, executor=pool)
+            #     .parallel(add_two, executor=pool)
+            #     .result()
+            # ) == [4]
+
+            assert (
+                await pnq([1])
+                .parallel(add_one, executor=pool)
+                .parallel(add_two, executor=pool)
+            ) == [4]
+
+    @to_sync
+    async def test_parallel_dummypool(self):
+        from pnq.concurrent import DummyPool as Pool
+
+        with Pool(1) as pool:
+            assert (
+                pnq([1]).parallel(add_one, executor=pool)
+                # .parallel(add_two, executor=pool)
+                .result()
+            ) == [2]
+
+            assert (
+                await pnq([1])
+                .parallel(add_one, executor=pool)
+                .parallel(add_two, executor=pool)
+            ) == [4]
+
+    @to_sync
+    async def test_parallel_dummypool_default(self):
+        assert (
+            pnq([1]).parallel(add_one)
+            # .parallel(add_two, executor=pool)
+            .result()
+        ) == [2]
+
+        assert (await pnq([1]).parallel(add_one).parallel(add_two)) == [4]
+
+    @to_sync
+    async def test_dispatch_threadpool(self):
+        from pnq.concurrent import ThreadPool as Pool
+
+        with Pool(1) as pool:
+            assert (
+                pnq([1])
+                .parallel(add_one, executor=pool)
+                .parallel(add_two, executor=pool)
+                .result()
+            ) == [4]
+
+            assert (
+                await pnq([1])
+                .parallel(add_one, executor=pool)
+                .parallel(add_two, executor=pool)
+            ) == [4]
+
+    @to_sync
+    async def test_dispatch_asyncpool(self):
+        from pnq.concurrent import AsyncPool as Pool
+
+        async with Pool(1) as pool:
+            # assert (
+            #     pnq([1])
+            #     .parallel(add_one, executor=pool)
+            #     .parallel(add_two, executor=pool)
+            #     .result()
+            # ) == [4]
+
+            assert (
+                await pnq([1])
+                .parallel(add_one, executor=pool)
+                .parallel(add_two, executor=pool)
+            ) == [4]
+
+    @to_sync
+    async def test_dispatch_dummypool(self):
+        from pnq.concurrent import DummyPool as Pool
+
+        with Pool(1) as pool:
+            assert (
+                pnq([1]).parallel(add_one, executor=pool)
+                # .parallel(add_two, executor=pool)
+                .result()
+            ) == [2]
+
+            assert (
+                await pnq([1])
+                .parallel(add_one, executor=pool)
+                .parallel(add_two, executor=pool)
+            ) == [4]
+
+    @to_sync
+    async def test_dispatch_dummypool_default(self):
+        assert (
+            pnq([1]).parallel(add_one)
+            # .parallel(add_two, executor=pool)
+            .result()
+        ) == [2]
+
+        assert (await pnq([1]).parallel(add_one).parallel(add_two)) == [4]
+
+
 @to_sync
 async def test_pool():
     async with concurrent.ProcessPool(1) as pool:
