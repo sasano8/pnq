@@ -142,6 +142,8 @@
 ::: pnq.actions.each
     :docstring:
 
+::: pnq.actions.dispatch
+    :docstring:
 
 <!-- ::: pnq.actions.to_list
     :docstring:

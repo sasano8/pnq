@@ -670,23 +670,43 @@ def group_join(self, right, on, select):
 
 
 @mark
-def parallel(self, source, func, concurrency: int = sys.maxsize):
-    """シーケンスから流れてくる値を関数に送出します。
-    （未実装）
-    """
-    ...
-
-
-@mark
-def request(self, func, retry: int = None):
-    """シーケンスから流れてくる値を同期関数に送出するように要求します。
-    例外はキャッチされ、実行結果を返すイテレータを生成します。
-    関数呼び出し時にキーワードアンパックするため、要素は辞書である必要があります。
+def parallel(self, func, executor=None, *, unpack="", chunksize=1):
+    """シーケンスの要素を任意の関数で並列処理し、新しいフォームに射影します。
+    例外が発生した場合、後続の要素はスケジューリングされません。
+    その場合、実行中の処理とキューに積まれた処理の後処理は、エクゼキュータの挙動に依存します。
+    詳しくは並列処理を参照ください。
 
     Args:
 
-    * self: 辞書を要素とするシーケンス
-    * func: 値の送出先の関数
+    * func: 実行する任意の関数
+    * executor: 処理を実行するエクゼキュータ
+    * unpack: 引数をどのように展開するか指定する
+    * chunksize: cpuバウンドなエクゼキュータで有効です。指定したサイズの要素を一括処理します。
+
+    """
+
+
+@mark
+def request(
+    self,
+    func,
+    executor=None,
+    *,
+    unpack="",
+    chunksize=1,
+    # retry: int = None,
+    # timeout: float = None
+):
+    """シーケンスの要素を任意の関数で並列処理し、新しいフォームに射影します。
+    戻り値または例外は、`asyncio.Future`互換の`Response`オブジェクトに格納されます。
+    詳しくは並列処理を参照ください。
+
+    Args:
+
+    * func: 実行する任意の関数
+    * executor: 処理を実行するエクゼキュータ
+    * unpack: 引数をどのように展開するか指定する
+    * chunksize: cpuバウンドなエクゼキュータで有効です。指定したサイズの要素を一括処理します。
 
     Usage:
     ```
@@ -702,6 +722,25 @@ def request(self, func, retry: int = None):
     >>>   else:
     >>>     print(f"SUCCESS: {res.to(dict)}")
     ```
+    """
+
+
+@mark
+def dispatch(source, func, executor=None, *, unpack="", chunksize=1, on_complete=None):
+    """シーケンスの要素を任意の関数で並列処理します。
+    スケジューリングされた処理はバックグラウンドで実行され、処理結果は`on_complete`に指定した関数で受け取れます。
+    アプリケーションが終了する時、バックグランドの残処理がどのように扱われるかはエクゼキュータの挙動に依存します。
+    `on_complete`が確実に呼び出される保証はありません。
+    詳しくは並列処理を参照ください。
+
+    Args:
+
+    * func: 実行する任意の関数
+    * executor: 処理を実行するエクゼキュータ
+    * unpack: 引数をどのように展開するか指定する
+    * chunksize: cpuバウンドなエクゼキュータで有効です。指定したサイズの要素を一括処理します。
+    * on_complete(x): 処理結果を受け取る関数を指定します
+
     """
 
 
@@ -1474,15 +1513,17 @@ async def to_async(self, cls):
     """
 
 
-def each(self, func=lambda x: x):
-    """イテレーションを実行し、流れてくる要素を関数に送出します。
-    例外はコントロールされません。
+def each(self, func=lambda x: x, unpack=""):
+    """シーケンスの各要素を指定した関数で逐次的に処理します。
+    `for x in iterable: ...`のショートカットとして機能します。
     関数を指定しない場合、単にイテレーションを実行します。
+
+    非同期関数を実行するには、クエリを非同期化する必要があります。
 
     Args:
 
-    * self: フィルタ対象のシーケンス
-    * func: 値の送出先の関数
+    * func: 要素を処理する関数
+    * unpack: 引数をどのように展開するか指定する
 
     Returns: `None`
 
@@ -1492,6 +1533,8 @@ def each(self, func=lambda x: x):
     >>> pnq.query([1,2]).each(print)
     1
     2
+    >>> await pnq.query([1,2])._.each(sync_func)
+    >>> await pnq.query([1,2])._.each(async_func)
     ```
     """
 
