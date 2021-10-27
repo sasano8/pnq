@@ -1,7 +1,8 @@
 import asyncio
-from typing import List
 
-from .._sync_generate.finalizers import (  # _all,; _any,; _sum,; each,; each,; each_unpack,
+from pnq.selectors import starmap
+
+from .._sync_generate.finalizers import (  # _all,; _any,; _sum,; each,; each,
     _len,
     _max,
     _min,
@@ -46,11 +47,9 @@ def _sum(source, selector=None):
 
 def each(source, func=lambda x: x, unpack=""):
     if asyncio.iscoroutinefunction(func):
-        raise TypeError("cannot acceptable async funcition.")
+        raise TypeError(f"cannot acceptable async funcition: {func}")
+
+    func = starmap(func, unpack)
 
     for elm in source:
         func(elm)
-
-
-def each_unpack(source, func):
-    return each(source, func, unpack="*")

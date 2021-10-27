@@ -1579,67 +1579,6 @@ def each(self, func=lambda x: x):
     """
 
 
-def each_unpack(self, func=lambda x: x):
-    """`each`実行時にキーワードアンパックしながら要素を送出します。
-    与える要素は辞書である必要があります。
-    基本的な動作は`each`を参照ください。
-
-    Usage:
-    ```
-    >>> @pnq.query([{"arg1": 1, "arg2": 2}]).each_unpack
-    >>> def print_values(arg1, arg2):
-    >>>   print(arg1, arg2)
-    >>> 1, 2
-    ```
-    """
-
-
-async def async_dummy(*args, **kwargs):
-    ...
-
-
-@mark
-async def each_async(self, func=async_dummy):
-    """シーケンスから流れてくる値を非同期関数に送出します。
-    例外はコントロールされません。
-
-    Args:
-
-    * self: フィルタ対象のシーケンス
-    * func: 値の送出先の関数
-
-    Returns: `None`
-
-    Usage:
-    ```
-    >>> results = []
-    >>> async def append(x):
-    >>>    results.append(x)
-    >>> await pnq.query([1,2]).each_async(append)
-    >>> print(results)
-    [1, 2]
-    ```
-    """
-
-
-@mark
-async def each_async_unpack(self, func=async_dummy):
-    """`each_async`実行時にキーワードアンパックしながら要素を送出します。
-    与える要素は辞書である必要があります。
-    基本的な動作は`each_async`を参照ください。
-
-    Usage:
-    ```
-    >>> results = []
-    >>> async def append(arg1, arg2):
-    >>>    results.append((arg1, arg2))
-    >>> await pnq.query([{"arg1": 1, "arg2": 2}]).each_async_unpack(append)
-    >>> print(results)
-    [(1, 2)]
-    ```
-    """
-
-
 @mark
 def get(self, key, default=NoReturn):
     """リストや辞書などの`__getitem__`を呼び出します。セットでも使用でき、キーが存在する場合そのままキーを返します。

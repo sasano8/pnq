@@ -224,45 +224,25 @@ class Test010_Finalizer:
         assert pnq([1]).to(to_list) == [1]
         assert pnq({1: 2}).to(to_list) == [(1, 2)]
 
-    @pytest.mark.skipif(True, reason="[each_asyncは不要だと思う。除去予定]")
     def test_each(self):
-        import asyncio
-
         assert pnq([]).each() is None
-        assert pnq([]).each_unpack() is None
-        assert asyncio.run(pnq([]).each_async()) is None
-        assert asyncio.run(pnq([]).each_async_unpack()) is None
+        assert asyncio.run(pnq([])._.each()) is None
 
-        result_each = []  # type: ignore
-        result_each_unpack = []
+        async def main():
+            results = []
 
-        def add_result_each_unpack(**kwargs):
-            result_each_unpack.append(kwargs)
+            async def append_async(x):
+                results.append(x)
 
-        async def async_add_result_each(x):
-            result_each.append(x)
+            pnq([1]).each(results.append)
+            with pytest.raises(TypeError, match="cannot acceptable async funcition"):
+                pnq([2]).each(append_async)
+            await pnq([3])._.each(results.append)
+            await pnq([4])._.each(append_async)
 
-        async def async_add_result_each_unpack(**kwargs):
-            result_each_unpack.append(kwargs)
+            assert results == [1, 3, 4]
 
-        pnq([1]).each(result_each.append)
-        assert result_each == [1]
-
-        pnq([{"name": "test", "age": 20}]).each_unpack(add_result_each_unpack)
-        assert result_each_unpack == [{"name": "test", "age": 20}]
-
-        asyncio.run(pnq([2]).each_async(async_add_result_each))
-        assert result_each == [1, 2]
-
-        asyncio.run(
-            pnq([{"name": "test2", "age": 50}]).each_async_unpack(
-                async_add_result_each_unpack
-            )
-        )
-        assert result_each_unpack == [
-            {"name": "test", "age": 20},
-            {"name": "test2", "age": 50},
-        ]
+        asyncio.run(main())
 
     @pytest.mark.parametrize(
         "src, expect",

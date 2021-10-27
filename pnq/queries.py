@@ -204,15 +204,6 @@ class Query(Generic[T]):
     def each(self, func: Callable = lambda x: x):
         return Finalizer.each(self, func)
 
-    def each_unpack(self, func: Callable = lambda x: x):
-        return Finalizer.each_unpack(self, func)
-
-    async def each_async(self, func: Callable = lambda x: x):
-        return await Finalizer.each_async(self, func)
-
-    async def each_async_unpack(self, func: Callable = lambda x: x):
-        return await Finalizer.each_async_unpack(self, func)
-
     def dispatch(
         self,
         func,
@@ -635,15 +626,6 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
 
     def each(self, func: Callable = lambda x: x):
         return Finalizer.each(self, func)
-
-    def each_unpack(self, func: Callable = lambda x: x):
-        return Finalizer.each_unpack(self, func)
-
-    async def each_async(self, func: Callable = lambda x: x):
-        return await Finalizer.each_async(self, func)
-
-    async def each_async_unpack(self, func: Callable = lambda x: x):
-        return await Finalizer.each_async_unpack(self, func)
 
     def dispatch(
         self,

@@ -211,15 +211,6 @@ class {{query.CLS}}:
     def each(self, func: Callable = lambda x: x):
         return Finalizer.each(self, func)
 
-    def each_unpack(self, func: Callable = lambda x: x):
-        return Finalizer.each_unpack(self, func)
-
-    async def each_async(self, func: Callable = lambda x: x):
-        return await Finalizer.each_async(self, func)
-
-    async def each_async_unpack(self, func: Callable = lambda x: x):
-        return await Finalizer.each_async_unpack(self, func)
-
     def dispatch(self, func, executor: "PExecutor" = None, *, unpack="", chunksize=1, on_complete=None):
         return Finalizer.dispatch(self, func, executor, unpack=unpack, chunksize=chunksize, on_complete=on_complete)
 

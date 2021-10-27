@@ -80,6 +80,7 @@ def test_request():
         assert result == [1]
         res = response[0]
         assert res.func == ok
+        assert res.args == tuple()
         assert res.kwargs == {"value": 1}
         assert res.err is None
         assert res.result == "ok"
@@ -92,6 +93,7 @@ def test_request():
         assert result == [1]
         res = response[0]
         assert res.func == err
+        assert res.args == tuple()
         assert res.kwargs == {"value1": 1, "value2": 2}
         assert str(res.err) == "error"
         assert res.result is None

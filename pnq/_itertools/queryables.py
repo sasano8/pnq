@@ -747,9 +747,6 @@ class FinalizerBase:
     last_or = S.finalizers.last_or
     last_or_raise = S.finalizers.last_or_raise
     each = S.finalizers.each
-    each_unpack = S.finalizers.each_unpack
-    each_async = S.finalizers.each_async
-    each_async_unpack = S.finalizers.each_async_unpack
     dispatch = S.concurrent.dispatch
     to = S.finalizers.to
     lazy = Lazy
@@ -780,9 +777,6 @@ class AsyncFinalizerBase:
     last_or = A.finalizers.last_or
     last_or_raise = A.finalizers.last_or_raise
     each = A.finalizers.each
-    each_unpack = A.finalizers.each_unpack
-    each_async = A.finalizers.each_async
-    each_async_unpack = A.finalizers.each_async_unpack
     dispatch = A.concurrent.dispatch
     to = A.finalizers.to
     lazy = Lazy
