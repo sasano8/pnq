@@ -301,7 +301,7 @@ def __range(*args, **kwargs):
 
 
 @mark
-def map(self, selector):
+def map(self, selector, unpack=""):
     """シーケンスの各要素を新しいフォームに射影します。
     str関数を渡した場合、利便性のため`None`は`""`を返します（Pythonの標準動作は`"None"`を返します）。
 
@@ -309,8 +309,7 @@ def map(self, selector):
 
     * self: 変換対象のシーケンス
     * selector(x): 各要素に対する変換関数
-
-    Returns: 変換関数で得られた要素を含むクエリ
+    * unpack: `starmap`を参照ください
 
     Usage:
     ```
@@ -398,46 +397,27 @@ def gather(self):
 
 
 @mark
-def unpack_pos(self, selector):
+def starmap(self, selector, unpack="*"):
     """シーケンスの各要素をアンパックし、新しいフォームに射影します。
 
     Args:
 
     * self: 変換対象のシーケンス
     * selector: 各要素に対する変換関数
-
-    Returns: 変換関数で得られた要素を返すクエリ
+    * unpack: 引数をどのように展開するか指定する
+        - `""`: 展開せずにそのまま値を渡す
+        - `"\*"`: 位置引数として展開する（デフォルト）
+        - `"\*\*"`: キーワード引数として展開する
+        - `"\*\*\*"`: 位置引数とキーワード引数を展開する（pnq.Argumentsインスタンスに対して使用できます）
 
     Usage:
     ```
-    >>> pnq.query([(1, 2)]).unpack_pos(lambda arg1, arg2: arg1)).to(list)
+    >>> pnq.query([(1, 2)]).starmap(lambda arg1, arg2: arg1).to(list)
     [1]
-    >>> pnq.query([(1, 2, 3, 4, 5)]).unpack_pos(lambda arg1, arg2, *args: args).to(list)
-    [(3, 4, 5)]
-    ```
-    """
-
-
-starmap = unpack_pos
-
-
-@mark
-def unpack_kw(self, selector):
-    """シーケンスの各要素をキーワードアンパックし、新しいフォームに射影します。
-
-    Args:
-
-    * self: 変換対象のシーケンス
-    * selector(kwargs): 各要素に対する変換関数
-
-    Returns: 変換関数で得られた要素を返すクエリ
-
-    Usage:
-    ```
-    >>> pnq.query([{"id": 1, "name": "bob"}]).unpack_kw(lambda id, name: name)).to(list)
-    ["bob"]
-    >>> pnq.query([{"id": 1, "name": "bob", "age": 20}]).unpack_kw(lambda id, name, **kwargs: kwargs)).to(list)
-    [{"age": 20}]
+    >>> pnq.query([{"arg1": 1, "arg2": 2}]).starmap(lambda arg1, arg2: arg1, "\*\*").to(list)
+    [1]
+    >>> pnq.query([pnq.Arguments(1, 2, name="test", age=20)]).starmap(lambda arg1, arg2, name, age: name, "\*\*\*").to(list)
+    ["test"]
     ```
     """
 
@@ -453,8 +433,6 @@ def select(self, field, *fields, attr: bool = False):
     * field: 各要素から選択するアイテム
     * fields: 各要素から選択する追加のアイテム
     * attr: 要素の属性から取得する場合はTrue
-
-    Returns: 選択したアイテムまたは複数のアイテム（タプル）を返すクエリ
 
     Usage:
     ```
@@ -479,8 +457,6 @@ def select_as_tuple(self, *fields, attr: bool = False):
     * fields: 選択するアイテムまたは属性
     * attr: 属性から取得する場合はTrueとする
 
-    Returns: 選択したアイテムを含む辞書を返すクエリ
-
     Usage:
     ```
     >>> pnq.query([(1, 2)]).select_as_tuple(0).to(list)
@@ -500,8 +476,6 @@ def select_as_dict(self, *fields, attr: bool = False):
     * self: 変換対象のシーケンス
     * fields: 選択するアイテムまたは属性
     * attr: 属性から取得する場合はTrueとする
-
-    Returns: 選択したアイテムを含む辞書を返すクエリ
 
     Usage:
     ```
@@ -523,8 +497,6 @@ def reflect(self, mapping, *, default=NoReturn, attr: bool = False):
     * mapping: 元の要素のフィールドと射影先のフィールドの対応表
     * default: フィールドを取得できない場合のデフォルト値
     * attr: 属性から取得する場合はTrueとする
-
-    Returns: 参照したシーケンスをそのまま返す
 
     Usage:
     ```
@@ -548,8 +520,6 @@ def flat(self, selector=None):
 
     * self: 変換対象のシーケンス
     * selector: 各要素から平坦化する要素を選択する関数
-
-    Returns: 参照したシーケンスをそのまま返す
 
     Usage:
     ```
@@ -576,8 +546,6 @@ def flat_recursive(self, selector):
     * self: 変換対象のシーケンス
     * selector: 各要素から平坦化する要素を再帰的に選択する関数（戻り値はリスト等に含めて返す必要があります）
 
-    Returns: 参照したシーケンスをそのまま返す
-
     Usage:
     ```
     >>> pnq.query(
@@ -595,8 +563,6 @@ def pivot_unstack(self, default=None):
 
     * self: 変換対象のシーケンス
     * default: フィールドが存在しない場合のデフォルト値
-
-    Returns: 参照したシーケンスをそのまま返す
 
     Usage:
     ```
@@ -617,8 +583,6 @@ def pivot_stack(self):
     Args:
 
     * self: 変換対象のシーケンス
-
-    Returns: 参照したシーケンスをそのまま返す
 
     Usage:
     ```
@@ -643,8 +607,6 @@ def cast(self, type):
     * self: 変換対象のシーケンス
     * type: 新しい型注釈
 
-    Returns: 参照したシーケンスをそのまま返す
-
     Usage:
     ```
     >>> pnq.query([1]).cast(float)
@@ -661,8 +623,6 @@ def enumerate(self, start: int = 0, step: int = 1):
     * self: 変換対象のシーケンス
     * start: 開始インデックス
     * step: 増分
-
-    Returns: インデックスと要素（タプル）を返すクエリ
 
     Usage:
     ```
@@ -685,8 +645,6 @@ def group_by(self, selector=lambda x: x):
 
     * self: 変換対象のシーケンス
     * selector: キーとバリューを選択する関数
-
-    Returns: キーと要素（タプル）を返すクエリ
 
     Usage:
     ```
@@ -728,6 +686,14 @@ def group_join(self, right, on, select):
 
 
 @mark
+def parallel(self, source, func, concurrency: int = sys.maxsize):
+    """シーケンスから流れてくる値を関数に送出します。
+    （未実装）
+    """
+    ...
+
+
+@mark
 def request(self, func, retry: int = None):
     """シーケンスから流れてくる値を同期関数に送出するように要求します。
     例外はキャッチされ、実行結果を返すイテレータを生成します。
@@ -737,8 +703,6 @@ def request(self, func, retry: int = None):
 
     * self: 辞書を要素とするシーケンス
     * func: 値の送出先の関数
-
-    Returns: 実行結果
 
     Usage:
     ```
@@ -755,13 +719,6 @@ def request(self, func, retry: int = None):
     >>>     print(f"SUCCESS: {res.to(dict)}")
     ```
     """
-
-
-def parallel(self, source, func, concurrency: int = sys.maxsize):
-    """シーケンスから流れてくる値を関数に送出します。
-    （未実装）
-    """
-    ...
 
 
 def debug(self, breakpoint=lambda x: x, printer=print):
@@ -856,8 +813,6 @@ def filter(self, predicate):
     * self: フィルタ対象のシーケンス
     * predicate: 条件を満たすか検証する関数
 
-    Returns: 条件を満たす要素を返すクエリ
-
     Usage:
     ```
     >>> pnq.query([1, 2]).filter(lambda x: x == 1).to(list)
@@ -878,8 +833,6 @@ def must(self, predicate, msg=""):
     * self: フィルタ対象のシーケンス
     * predicate: 条件を満たすか検証する関数
 
-    Returns: 全要素を返すクエリ（例外が発生しない限り）
-
     Usage:
     ```
     >>> pnq.query([1, 2]).must(lambda x: x == 1).to(list)
@@ -899,8 +852,6 @@ def filter_type(self, *types):
 
     * self: フィルタ対象のシーケンス
     * types: フィルタする型
-
-    Returns: 指定した型の要素を返すクエリ
 
     Usage:
     ```
@@ -923,8 +874,6 @@ def must_type(self, types):
     * self: フィルタ対象のシーケンス
     * types: フィルタする型
 
-    Returns: 全要素を返すクエリ（例外が発生しない限り）
-
     Usage:
     ```
     >>> pnq.query([1, 2]).must_type(str, int).to(list)
@@ -946,8 +895,6 @@ def filter_keys(self, *keys):
 
     * self: フィルタ対象のシーケンス
     * keys: フィルタするキー
-
-    Returns: 指定したキーの要素のみ返すクエリ
 
     Usage:
     ```
@@ -978,8 +925,6 @@ def filter_unique(self, selector=None):
     * self: フィルタ対象のシーケンス
     * selector: 重複を検証する値（複数の値を検証する場合はタプル）
 
-    Returns: 重複を含まない要素を返すクエリ
-
     Usage:
     ```
     >>> pnq.query([1, 2, 1]).filter_unique().to(list)
@@ -1002,8 +947,6 @@ def must_unique(self, selector=None):
     * self: フィルタ対象のシーケンス
     * selector: 検証する値を選択する関数
     * immediate: 即時に例外を発生させる
-
-    Returns: 全要素を返すクエリ（例外が発生しない限り）
 
     Usage:
     ```
@@ -1028,8 +971,6 @@ def take(self, count_or_range: int):
     * self: 取得対象のシーケンス
     * count_or_range: シーケンスの先頭から取得する要素数または取得する範囲
 
-    Returns: 取得された要素を返すクエリ
-
     Usage:
     ```
     >>> pnq.query([1, 2, 3]).take(2).to(list)
@@ -1050,8 +991,6 @@ def take_while(self, predicate):
     * self: バイパス対象のシーケンス
     * predicate: 条件を検証する関数
 
-    Returns: 取得された要素を返すクエリ
-
     Usage:
     ```
     >>> pnq.query([1, 2, 3]).enumerate().take_while(lambda v: v[0] < 2).select(1).to(list)
@@ -1068,8 +1007,6 @@ def skip(self, count_or_range: int):
 
     * self: バイパス対象のシーケンス
     * count_or_range: シーケンスの先頭からバイパスする要素数またはバイパスする範囲
-
-    Returns: 取得された要素を返すクエリ
 
     Usage:
     ```
@@ -1090,8 +1027,6 @@ def skip_while(self, predicate):
     * self: バイパス対象のシーケンス
     * predicate: 条件を検証する関数
 
-    Returns: 取得された要素を返すクエリ
-
     Usage:
     ```
     >>> pnq.query([1, 2, 3]).enumerate().skip_while(lambda v: v[0] < 1).select(1).to(list)
@@ -1111,8 +1046,6 @@ def take_page(self, page: int, size: int):
     * page: 取得対象のページ（1始まり）
     * size: １ページあたりの要素数
 
-    Returns: 取得された要素を返すクエリ
-
     Usage:
     ```
     >>> pnq.query([0, 1, 2, 3, 4, 5]).take_page(page=1, size=2).to(list)
@@ -1129,7 +1062,7 @@ def take_page(self, page: int, size: int):
 
 
 @mark
-def order_by(self, selector=None, desc: bool = False):
+def order_by(self, key_selector=None, desc: bool = False):
     """シーケンスの要素を昇順でソートします。
 
     Args:

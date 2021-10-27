@@ -3,10 +3,7 @@
 ::: pnq.actions.map
     :docstring:
 
-::: pnq.actions.unpack_pos
-    :docstring:
-
-::: pnq.actions.unpack_kw
+::: pnq.actions.starmap
     :docstring:
 
 ::: pnq.actions.select
@@ -52,9 +49,6 @@
     :docstring:
 
 ::: pnq.actions.request
-    :docstring:
-
-::: pnq.actions.request_async
     :docstring:
 
 ::: pnq.actions.parallel
@@ -151,14 +145,6 @@
 ::: pnq.actions.each
     :docstring:
 
-::: pnq.actions.each_unpack
-    :docstring:
-
-::: pnq.actions.each_async
-    :docstring:
-
-::: pnq.actions.each_async_unpack
-    :docstring:
 
 <!-- ::: pnq.actions.to_list
     :docstring:
