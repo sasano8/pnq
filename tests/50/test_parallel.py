@@ -30,14 +30,14 @@ class Test600_Concurrent:
 
         with Pool(1) as pool:
             assert (
-                pnq([1])
+                pnq.query([1])
                 .parallel(add_one, executor=pool)
                 .parallel(add_two, executor=pool)
                 .result()
             ) == [4]
 
             assert (
-                await pnq([1])
+                await pnq.query([1])
                 .parallel(add_one, executor=pool)
                 .parallel(add_two, executor=pool)
             ) == [4]
@@ -48,14 +48,14 @@ class Test600_Concurrent:
 
         with Pool(1) as pool:
             assert (
-                pnq([1])
+                pnq.query([1])
                 .parallel(add_one, executor=pool)
                 .parallel(add_two, executor=pool)
                 .result()
             ) == [4]
 
             assert (
-                await pnq([1])
+                await pnq.query([1])
                 .parallel(add_one, executor=pool)
                 .parallel(add_two, executor=pool)
             ) == [4]
@@ -73,7 +73,7 @@ class Test600_Concurrent:
             # ) == [4]
 
             assert (
-                await pnq([1])
+                await pnq.query([1])
                 .parallel(add_one, executor=pool)
                 .parallel(add_two, executor=pool)
             ) == [4]
@@ -84,13 +84,13 @@ class Test600_Concurrent:
 
         with Pool(1) as pool:
             assert (
-                pnq([1]).parallel(add_one, executor=pool)
+                pnq.query([1]).parallel(add_one, executor=pool)
                 # .parallel(add_two, executor=pool)
                 .result()
             ) == [2]
 
             assert (
-                await pnq([1])
+                await pnq.query([1])
                 .parallel(add_one, executor=pool)
                 .parallel(add_two, executor=pool)
             ) == [4]
@@ -98,12 +98,12 @@ class Test600_Concurrent:
     @to_sync
     async def test_parallel_dummypool_default(self):
         assert (
-            pnq([1]).parallel(add_one)
+            pnq.query([1]).parallel(add_one)
             # .parallel(add_two, executor=pool)
             .result()
         ) == [2]
 
-        assert (await pnq([1]).parallel(add_one).parallel(add_two)) == [4]
+        assert (await pnq.query([1]).parallel(add_one).parallel(add_two)) == [4]
 
     @to_sync
     async def test_dispatch_threadpool(self):
@@ -111,14 +111,14 @@ class Test600_Concurrent:
 
         with Pool(1) as pool:
             assert (
-                pnq([1])
+                pnq.query([1])
                 .parallel(add_one, executor=pool)
                 .parallel(add_two, executor=pool)
                 .result()
             ) == [4]
 
             assert (
-                await pnq([1])
+                await pnq.query([1])
                 .parallel(add_one, executor=pool)
                 .parallel(add_two, executor=pool)
             ) == [4]
@@ -136,7 +136,7 @@ class Test600_Concurrent:
             # ) == [4]
 
             assert (
-                await pnq([1])
+                await pnq.query([1])
                 .parallel(add_one, executor=pool)
                 .parallel(add_two, executor=pool)
             ) == [4]
@@ -147,13 +147,13 @@ class Test600_Concurrent:
 
         with Pool(1) as pool:
             assert (
-                pnq([1]).parallel(add_one, executor=pool)
+                pnq.query([1]).parallel(add_one, executor=pool)
                 # .parallel(add_two, executor=pool)
                 .result()
             ) == [2]
 
             assert (
-                await pnq([1])
+                await pnq.query([1])
                 .parallel(add_one, executor=pool)
                 .parallel(add_two, executor=pool)
             ) == [4]
@@ -161,12 +161,12 @@ class Test600_Concurrent:
     @to_sync
     async def test_dispatch_dummypool_default(self):
         assert (
-            pnq([1]).parallel(add_one)
+            pnq.query([1]).parallel(add_one)
             # .parallel(add_two, executor=pool)
             .result()
         ) == [2]
 
-        assert (await pnq([1]).parallel(add_one).parallel(add_two)) == [4]
+        assert (await pnq.query([1]).parallel(add_one).parallel(add_two)) == [4]
 
 
 @to_sync
@@ -312,7 +312,3 @@ def test_dispatch():
 
     main()
     asyncio.run(main_async())
-
-
-def test_parallel():
-    ...
