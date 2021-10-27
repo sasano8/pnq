@@ -1,3 +1,4 @@
+import asyncio
 from functools import partial, wraps
 from typing import List
 
@@ -932,7 +933,6 @@ class Test020_Transform:
     def test_request(self):
         from datetime import datetime
 
-        # from pnq.base.requests import Response
         from pnq._itertools.requests import Response
 
         result = []
@@ -944,49 +944,19 @@ class Test020_Transform:
         def err(value1, value2):
             raise Exception("error")
 
-        response: List[Response] = pnq([{"value": 1}]).request(ok).to(list)
-        assert result == [1]
-        res = response[0]
-        assert res.func == ok
-        assert res.kwargs == {"value": 1}
-        assert res.err is None
-        assert res.result == "ok"
-        assert isinstance(res.start, datetime)
-        assert isinstance(res.end, datetime)
+        async def ok_async(value):
+            result.append(value)
+            return "ok"
 
-        response: List[Response] = (
-            pnq([{"value1": 1, "value2": 2}]).request(err).to(list)
-        )
-        assert result == [1]
-        res = response[0]
-        assert res.func == err
-        assert res.kwargs == {"value1": 1, "value2": 2}
-        assert str(res.err) == "error"
-        assert res.result is None
-        assert isinstance(res.start, datetime)
-        assert isinstance(res.end, datetime)
+        async def err_async(value1, value2):
+            raise Exception("error")
 
-    def test_request_async(self):
-        import asyncio
+        def main(ok, err):
+            result.clear()
 
-        async def main():
-            from datetime import datetime
-
-            # from pnq.base.requests import Response
-            from pnq._itertools.requests import Response
-
-            result = []
-
-            async def ok(value):
-                result.append(value)
-                return "ok"
-
-            async def err(value1, value2):
-                raise Exception("error")
-
-            q = pnq([{"value": 1}]).request_async(ok)
-            response: List[Response] = [x async for x in q]
-
+            response: List[Response] = (
+                pnq([{"value": 1}]).request(ok, unpack="**").to(list)
+            )
             assert result == [1]
             res = response[0]
             assert res.func == ok
@@ -996,9 +966,9 @@ class Test020_Transform:
             assert isinstance(res.start, datetime)
             assert isinstance(res.end, datetime)
 
-            q = pnq([{"value1": 1, "value2": 2}]).request_async(err)
-            response: List[Response] = [x async for x in q]
-
+            response: List[Response] = (
+                pnq([{"value1": 1, "value2": 2}]).request(err, unpack="**").to(list)
+            )
             assert result == [1]
             res = response[0]
             assert res.func == err
@@ -1008,7 +978,10 @@ class Test020_Transform:
             assert isinstance(res.start, datetime)
             assert isinstance(res.end, datetime)
 
-        asyncio.run(main())
+            return True
+
+        assert main(ok, err)
+        assert main(ok_async, err_async)
 
 
 class Test030_Filter:
@@ -1253,17 +1226,20 @@ class Test050_Partition:
 
         q = pnq(arr)
 
-        assert q.take_page(0, 0).to(list) == []
+        with pytest.raises(ValueError, match="page must be >= 1"):
+            q.take_page(0, 0).to(list) == []
+
+        with pytest.raises(ValueError, match="size must be >= 0"):
+            q.take_page(1, -1).to(list) == []
+
         assert q.take_page(1, 0).to(list) == []
         assert q.take_page(2, 0).to(list) == []
         assert q.take_page(3, 0).to(list) == []
 
-        assert q.take_page(0, 1).to(list) == []
         assert q.take_page(1, 1).to(list) == [1]
         assert q.take_page(2, 1).to(list) == [2]
         assert q.take_page(3, 1).to(list) == [3]
 
-        assert q.take_page(0, 2).to(list) == []
         assert q.take_page(1, 2).to(list) == [1, 2]
         assert q.take_page(2, 2).to(list) == [3, 4]
         assert q.take_page(3, 2).to(list) == [5, 6]

@@ -2,6 +2,7 @@ import asyncio
 from functools import partial
 from typing import AsyncIterable, TypeVar
 
+from pnq.concurrent import get_default_pool
 from pnq.inspect import is_coroutine_function
 from pnq.protocols import PExecutor
 from pnq.selectors import starmap
@@ -22,6 +23,9 @@ async def _procceed_async(func, iterable):
 async def parallel(
     source: AsyncIterable[T], func, executor: PExecutor, *, unpack="", chunksize=1
 ):
+    if executor is None:
+        executor = get_default_pool()
+
     new_func = starmap(func, unpack)
     submit = executor.asubmit
 
@@ -49,6 +53,9 @@ async def dispatch(
     chunksize=1,
     callback=None
 ):
+    if executor is None:
+        executor = get_default_pool()
+
     new_func = starmap(func, unpack)
     submit = executor.asubmit
 
@@ -84,9 +91,6 @@ def exec_request(func, *args, **kwargs):
         except Exception as e:
             err = e
 
-    if isinstance(func, partial):
-        func = func.func
-
     return Response(
         func,
         args,
@@ -109,9 +113,6 @@ async def exec_request_async(func, *args, **kwargs):
         except Exception as e:
             err = e
 
-    if isinstance(func, partial):
-        func = func.func
-
     return Response(
         func,
         args,
@@ -123,7 +124,7 @@ async def exec_request_async(func, *args, **kwargs):
     )
 
 
-async def request(
+def request(
     source: AsyncIterable[T],
     func,
     executor: PExecutor,
@@ -133,14 +134,12 @@ async def request(
     retry: int = None,
     timeout: float = None
 ):
-    new_func = starmap(func, unpack)
+    if executor is None:
+        executor = get_default_pool()
 
     if is_coroutine_function(func):
-        wrapped = partial(exec_request_async, new_func)
+        wrapped = partial(exec_request_async, func)
     else:
-        wrapped = partial(exec_request, new_func)
+        wrapped = partial(exec_request, func)
 
-    async for x in parallel(
-        source, wrapped, executor, unpack=unpack, chunksize=chunksize
-    ):
-        yield x
+    return parallel(source, wrapped, executor, unpack=unpack, chunksize=chunksize)

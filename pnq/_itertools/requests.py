@@ -26,6 +26,7 @@ class Request:
 
 class Response(NamedTuple):
     func: Any
+    args: Tuple
     kwargs: Dict
     err: Union[Exception, None]
     result: Any
@@ -61,6 +62,7 @@ class Response(NamedTuple):
 
         return {
             "func": self.func.__name__,
+            "args": self.args,
             "kwargs": self.kwargs,
             "result": self.result,
             "start": self.start.isoformat(),

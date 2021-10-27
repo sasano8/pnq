@@ -7,6 +7,8 @@ from typing import Any, Awaitable, NoReturn
 
 from typing_extensions import Literal
 
+from pnq.inspect import is_coroutine_function
+
 __all__ = [
     "starmap",
     "select",
@@ -37,16 +39,37 @@ def _star3map(func, val):
     return func(*val.args, **val.kwargs)
 
 
+async def _star1map_async(func, val):
+    return await func(*val)
+
+
+async def _star2map_async(func, val):
+    return await func(**val)
+
+
+async def _star3map_async(func, val):
+    return await func(*val.args, **val.kwargs)
+
+
 def star1map(func):
-    return _partial(_star1map, func)
+    if is_coroutine_function(func):
+        return _partial(_star1map_async, func)
+    else:
+        return _partial(_star1map, func)
 
 
 def star2map(func):
-    return _partial(_star2map, func)
+    if is_coroutine_function(func):
+        return _partial(_star2map_async, func)
+    else:
+        return _partial(_star2map, func)
 
 
 def star3map(func):
-    return _partial(_star3map, func)
+    if is_coroutine_function(func):
+        return _partial(_star3map_async, func)
+    else:
+        return _partial(_star3map, func)
 
 
 def starmap(func, unpack: Literal["", "*", "**", "***"] = "*"):

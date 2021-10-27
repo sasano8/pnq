@@ -2,6 +2,7 @@ import asyncio
 from functools import partial
 from typing import Iterable, TypeVar
 
+from pnq.concurrent import get_default_pool
 from pnq.inspect import is_coroutine_function
 from pnq.protocols import PExecutor
 from pnq.selectors import starmap
@@ -20,6 +21,9 @@ def _procceed_async(func, iterable):
 
 
 def parallel(source: Iterable[T], func, executor: PExecutor, *, unpack="", chunksize=1):
+    if executor is None:
+        executor = get_default_pool(executor)
+
     new_func = starmap(func, unpack)
     submit = executor.asubmit
 
@@ -47,6 +51,9 @@ def dispatch(
     chunksize=1,
     callback=None
 ):
+    if executor is None:
+        executor = get_default_pool(executor)
+
     new_func = starmap(func, unpack)
     submit = executor.asubmit
 
@@ -87,7 +94,7 @@ def exec_request(func, *args, **kwargs):
 
     return Response(
         func,
-        args,
+        # args,
         kwargs,
         err=err,
         result=result,
@@ -112,7 +119,7 @@ def exec_request_async(func, *args, **kwargs):
 
     return Response(
         func,
-        args,
+        # args,
         kwargs,
         err=err,
         result=result,
@@ -131,6 +138,8 @@ def request(
     retry: int = None,
     timeout: float = None
 ):
+    if executor is None:
+        executor = get_default_pool(executor)
     new_func = starmap(func, unpack)
 
     if is_coroutine_function(func):
@@ -138,5 +147,4 @@ def request(
     else:
         wrapped = partial(exec_request, new_func)
 
-    for x in parallel(source, wrapped, executor, unpack=unpack, chunksize=chunksize):
-        yield x
+    return parallel(source, wrapped, executor, unpack=unpack, chunksize=chunksize)

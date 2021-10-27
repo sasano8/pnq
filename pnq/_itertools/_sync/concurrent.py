@@ -2,6 +2,8 @@ import asyncio
 from functools import partial
 from typing import Iterable, TypeVar
 
+from pnq.concurrent import get_default_pool
+from pnq.inspect import is_coroutine_function
 from pnq.protocols import PExecutor
 from pnq.selectors import starmap
 
@@ -19,6 +21,8 @@ async def _procceed_async(func, iterable):
 
 
 def parallel(source: Iterable[T], func, executor: PExecutor, *, unpack="", chunksize=1):
+    if executor is None:
+        executor = get_default_pool()
     new_func = starmap(func, unpack)
     submit = executor.submit
 
@@ -46,6 +50,9 @@ def dispatch(
     chunksize=1,
     callback=None
 ):
+    if executor is None:
+        executor = get_default_pool()
+
     new_func = starmap(func, unpack)
     submit = executor.submit
 
@@ -66,3 +73,68 @@ def dispatch(
         for x in source:
             future = submit(new_func, x)
             future.add_done_callback(cb)
+
+
+def exec_request(func, *args, **kwargs):
+    from ..requests import Response, StopWatch
+
+    with StopWatch() as sw:
+        err = None
+        result = None
+        try:
+            result = func(*args, **kwargs)
+        except Exception as e:
+            err = e
+
+    return Response(
+        func,
+        args,
+        kwargs,
+        err=err,
+        result=result,
+        start=sw.start,
+        end=sw.end,
+    )
+
+
+async def exec_request_async(func, *args, **kwargs):
+    from ..requests import Response, StopWatch
+
+    with StopWatch() as sw:
+        err = None
+        result = None
+        try:
+            result = await func(*args, **kwargs)
+        except Exception as e:
+            err = e
+
+    return Response(
+        func,
+        args,
+        kwargs,
+        err=err,
+        result=result,
+        start=sw.start,
+        end=sw.end,
+    )
+
+
+def request(
+    source: Iterable[T],
+    func,
+    executor: PExecutor,
+    *,
+    unpack="",
+    chunksize=1,
+    retry: int = None,
+    timeout: float = None
+):
+    if executor is None:
+        executor = get_default_pool()
+
+    if is_coroutine_function(func):
+        wrapped = partial(exec_request_async, func)
+    else:
+        wrapped = partial(exec_request, func)
+
+    return parallel(source, wrapped, executor, unpack=unpack, chunksize=chunksize)

@@ -454,20 +454,17 @@ async def order_by_reverse(source: AsyncIterable[T]):
     return reversed(await Listable(source))
 
 
-async def order_by_shuffle(source: AsyncIterable[T], seed_or_func=None):
-    if seed_or_func is None:
-        seed_or_func = lambda k: random.random()  # noqa
+async def order_by_shuffle(source: AsyncIterable[T], seed=None):
+    if seed is None:
+        rand = random.random
+        func = lambda x: rand()  # noqa
 
-    if seed_or_func is float:
-        # TODO: 並列でシャッフルした場合、新たな乱数が払い出されてしまうため再現性を失う
-        random.seed(seed_or_func)
-        result = await Listable(source)
-        random.shuffle(result)
-        for x in result:
-            yield x
     else:
-        for x in sorted(await Listable(source), key=seed_or_func):
-            yield x
+        rand = random.Random(seed).random
+        func = lambda x: rand()  # noqa
+
+    for x in sorted(await Listable(source), key=func):
+        yield x
 
 
 async def sleep(source: AsyncIterable[T], seconds: float):

@@ -14,7 +14,6 @@ from typing import (
 )
 
 from pnq._itertools.common import name_as
-from pnq.concurrent import get_default_pool
 from pnq.exceptions import NotFoundError
 from pnq.types import Arguments
 
@@ -30,9 +29,12 @@ def no_implement(*args, **kwargs):
     raise NotImplementedError()
 
 
+F = TypeVar("F", bound=Callable)
+
+
 class Staticmethod:
-    def __or__(self, other):
-        return staticmethod(other)
+    def __or__(self, other: F) -> F:
+        return staticmethod(other)  # type: ignore
 
 
 exports = []
@@ -229,12 +231,35 @@ class Tee(Query):
 
 @export
 class Request(Query):
-    _ait = sm | A.queries.request
-    _sit = sm | S.queries.request
+    # _ait = sm | A.queries.request
+    # _sit = sm | S.queries.request
+    _ait = sm | A.concurrent.request
+    _sit = sm | S.concurrent.request
 
-    def __init__(self, source, func, timeout: float = None, retry: int = 0):
+    # def __init__(self, source, func, timeout: float = None, retry: int = 0):
+    #     super().__init__(source)
+    #     self._args = Arguments(func, retry)
+
+    def __init__(
+        self,
+        source: AsyncIterable[T],
+        func,
+        executor=None,
+        *,
+        unpack="",
+        chunksize=1,
+        retry: int = None,
+        timeout: float = None,
+    ):
         super().__init__(source)
-        self._args = Arguments(func, retry)
+        self._args = Arguments(
+            func,
+            executor,
+            unpack=unpack,
+            chunksize=chunksize,
+            retry=retry,
+            timeout=timeout,
+        )
 
 
 @export
@@ -263,8 +288,6 @@ class Parallel(Query):
 
     def __init__(self, source, func, executor=None, *, unpack="", chunksize=1):
         super().__init__(source)
-        if executor is None:
-            executor = get_default_pool()
         self._args = Arguments(func, executor, unpack=unpack, chunksize=chunksize)
 
 
@@ -558,7 +581,6 @@ class Take(Query):
     def __init__(self, source, count_or_range: Union[int, range]):
         super().__init__(source)
         if isinstance(count_or_range, range):
-            # r = count_or_range
             r = range(
                 max(count_or_range.start, 0),
                 max(count_or_range.stop, 0),
@@ -566,18 +588,9 @@ class Take(Query):
             )
         else:
             if count_or_range < 0:
-                raise ValueError(f"count_or_range must be >= 0, got {count_or_range}")
+                count_or_range = 0
 
             r = range(count_or_range)
-
-        # if r.start < 0:
-        #     raise ValueError()
-
-        # if r.stop < 0:
-        #     raise ValueError()
-
-        # if r.step < 1:
-        #     raise ValueError()
 
         self._args = Arguments(r)
 
@@ -594,11 +607,10 @@ class TakePage(Take):
     _sit = sm | S.queries.take
 
     def __init__(self, source, page: int, size: int):
-        # TODO: 検証を有効化する
-        # if not page >= 1:
-        #     raise ValueError("page must be >= 1")
-        # if size < 0:
-        #     raise ValueError("size must be >= 0")
+        if page < 1:
+            raise ValueError("page must be >= 1")
+        if size < 0:
+            raise ValueError("size must be >= 0")
         start = (page - 1) * size
         stop = start + size
         super().__init__(source, range(start, stop))

@@ -6,8 +6,9 @@ from functools import lru_cache, partial
 def is_coroutine_function(func):
     # TODO: python3.8からはpartialが自動でasync functionを認識するので削除する
     if isinstance(func, partial):
-        target = func.func
+        return is_coroutine_function(func.func)
+        # target = func.func
     else:
-        target = func
+        # target = func
 
-    return asyncio.iscoroutinefunction(target)
+        return asyncio.iscoroutinefunction(func)

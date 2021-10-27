@@ -345,8 +345,17 @@ class {{query.CLS}}:
     def join(self, right, on: Callable[[Tuple[list, list]], Callable], select):
         return queryables.Join(self, right, on=on, select=select)
 
-    def request(self, func, retry: int = None) -> "Query[Response]":
-        return queryables.Request(self, func, retry)
+    def request(
+        self,
+        func,
+        executor=None,
+        *,
+        unpack="",
+        chunksize=1,
+        retry: int = None,
+        timeout: float = None,
+    ) -> "Query[Response]":
+        return queryables.Request(self, func, executor, unpack=unpack, chunksize=chunksize, retry=retry, timeout=timeout)
 
     def request_async(self, func, retry: int = None, timeout=None) -> "Query[Response]":
         return queryables.RequestAsync(self, func, retry=retry, timeout=None)
