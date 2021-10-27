@@ -84,23 +84,6 @@ class Map(Query):
 
 
 @export
-class MapNullable(Map):
-    ...
-
-
-@export
-class UnpackPos(Map):
-    def __init__(self, source, selector):
-        super().__init__(source, selector, unpack="*")
-
-
-@export
-class UnpackKw(Map):
-    def __init__(self, source, selector):
-        super().__init__(source, selector, unpack="**")
-
-
-@export
 class Select(Map):
     def __init__(self, source, *args, attr=False):
         selector = selectors.select(*args, attr=attr)

@@ -208,8 +208,8 @@ class {{query.CLS}}:
     def lazy(self, func, *args, **kwargs):
         return Finalizer.lazy(self, func, *args, **kwargs)
 
-    def each(self, func: Callable = lambda x: x):
-        return Finalizer.each(self, func)
+    def each(self, func: Callable = lambda x: x, unpack=""):
+        return Finalizer.each(self, func, unpack)
 
     def dispatch(self, func, executor: "PExecutor" = None, *, unpack="", chunksize=1, on_complete=None):
         return Finalizer.dispatch(self, func, executor, unpack=unpack, chunksize=chunksize, on_complete=on_complete)
@@ -256,15 +256,27 @@ class {{query.CLS}}:
         return queryables.Enumerate(self, start, step)
 
     @overload
-    def map(self, selector: Callable[[{{query.T}}], Tuple[K2, V2]]) -> "{{pair.SELF__}}[K2, V2]":
+    def map(self, selector: Callable[[{{query.T}}], Tuple[K2, V2]], unpack="") -> "{{pair.SELF__}}[K2, V2]":
         pass
 
     @overload
-    def map(self, selector: Callable[[{{query.T}}], R]) -> "{{sequence.SELF__}}[R]":
+    def map(self, selector: Callable[[{{query.T}}], R], unpack="") -> "{{sequence.SELF__}}[R]":
         pass
 
-    def map(self, selector):
-        return queryables.MapNullable(self, selector)
+    @overload
+    def map(self, selector: Callable[..., R], unpack="*") -> "{{sequence.SELF__}}[R]":
+        pass
+
+    @overload
+    def map(self, selector: Callable[..., R], unpack="**") -> "{{sequence.SELF__}}[R]":
+        pass
+
+    @overload
+    def map(self, selector: Callable[..., R], unpack="***") -> "{{sequence.SELF__}}[R]":
+        pass
+
+    def map(self, selector, unpack=""):
+        return queryables.Map(self, selector, unpack)
 
     {% if query.is_pair %}
 
@@ -307,12 +319,6 @@ class {{query.CLS}}:
 
     def flat_recursive(self, selector: Callable[[{{query.T}}], Iterable[{{query.T}}]]) -> "{{sequence.SELF__}}[{{query.T}}]":
         return queryables.FlatRecursive(self, selector)
-
-    def unpack_pos(self, selector: Callable[..., R]) -> "{{sequence.SELF__}}[R]":
-        return queryables.UnpackPos(self, selector=selector)
-
-    def unpack_kw(self, selector: Callable[..., R]) -> "{{sequence.SELF__}}[R]":
-        return queryables.UnpackKw(self, selector=selector)
 
     def pivot_unstack(self, default=None) -> "PairQuery[Any, List]":
         return queryables.PivotUnstack(self, default=default)

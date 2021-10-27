@@ -644,20 +644,24 @@ class Test020_Transform:
 
         assert pnq([]).map(None).to(list) == []
 
-    def test_unpack_pos(self):
-        assert pnq([(1, 2)]).unpack_pos(lambda k, v: k).to(list) == [1]
-
-    def test_unpack_kw(self):
-        assert pnq([{"name": "test", "age": 20}]).unpack_kw(lambda name, age: name).to(
-            list
-        ) == ["test"]
-
-    def test_unpack(self):
         # mapはアンパックできないこと
         with pytest.raises(
             TypeError, match="missing 1 required positional argument: 'v'"
         ):
             pnq([(1, 2)]).map(lambda k, v: k).to(list)
+
+    def test_starmap(self):
+        class Arg:
+            def __init__(self, *args, **kwargs) -> None:
+                self.args = args
+                self.kwargs = kwargs
+
+        assert pnq([1]).map(lambda x: x * 2).to(list) == [2]
+        assert pnq([(1,)]).map(lambda x: x * 2, "*").to(list) == [2]
+        assert pnq([{"x": 1}]).map(lambda x: x * 2, "**").to(list) == [2]
+        assert pnq([Arg(1, 2, c=3, d=4)]).map(
+            lambda a, b, c, d: a + b + c + d, "***"
+        ).to(list) == [10]
 
     def test_select(self):
         assert pnq([{"name": "a"}]).select("name").to(list) == ["a"]

@@ -201,8 +201,8 @@ class Query(Generic[T]):
     def lazy(self, func, *args, **kwargs):
         return Finalizer.lazy(self, func, *args, **kwargs)
 
-    def each(self, func: Callable = lambda x: x):
-        return Finalizer.each(self, func)
+    def each(self, func: Callable = lambda x: x, unpack=""):
+        return Finalizer.each(self, func, unpack)
 
     def dispatch(
         self,
@@ -264,15 +264,29 @@ class Query(Generic[T]):
         return queryables.Enumerate(self, start, step)
 
     @overload
-    def map(self, selector: Callable[[T], Tuple[K2, V2]]) -> "PairQuery[K2, V2]":
+    def map(
+        self, selector: Callable[[T], Tuple[K2, V2]], unpack=""
+    ) -> "PairQuery[K2, V2]":
         pass
 
     @overload
-    def map(self, selector: Callable[[T], R]) -> "Query[R]":
+    def map(self, selector: Callable[[T], R], unpack="") -> "Query[R]":
         pass
 
-    def map(self, selector):
-        return queryables.MapNullable(self, selector)
+    @overload
+    def map(self, selector: Callable[..., R], unpack="*") -> "Query[R]":
+        pass
+
+    @overload
+    def map(self, selector: Callable[..., R], unpack="**") -> "Query[R]":
+        pass
+
+    @overload
+    def map(self, selector: Callable[..., R], unpack="***") -> "Query[R]":
+        pass
+
+    def map(self, selector, unpack=""):
+        return queryables.Map(self, selector, unpack)
 
     @overload
     def select(self, field) -> "Query[Any]":
@@ -305,12 +319,6 @@ class Query(Generic[T]):
 
     def flat_recursive(self, selector: Callable[[T], Iterable[T]]) -> "Query[T]":
         return queryables.FlatRecursive(self, selector)
-
-    def unpack_pos(self, selector: Callable[..., R]) -> "Query[R]":
-        return queryables.UnpackPos(self, selector=selector)
-
-    def unpack_kw(self, selector: Callable[..., R]) -> "Query[R]":
-        return queryables.UnpackKw(self, selector=selector)
 
     def pivot_unstack(self, default=None) -> "PairQuery[Any, List]":
         return queryables.PivotUnstack(self, default=default)
@@ -624,8 +632,8 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
     def lazy(self, func, *args, **kwargs):
         return Finalizer.lazy(self, func, *args, **kwargs)
 
-    def each(self, func: Callable = lambda x: x):
-        return Finalizer.each(self, func)
+    def each(self, func: Callable = lambda x: x, unpack=""):
+        return Finalizer.each(self, func, unpack)
 
     def dispatch(
         self,
@@ -688,16 +696,28 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
 
     @overload
     def map(
-        self, selector: Callable[[Tuple[K, V]], Tuple[K2, V2]]
+        self, selector: Callable[[Tuple[K, V]], Tuple[K2, V2]], unpack=""
     ) -> "PairQuery[K2, V2]":
         pass
 
     @overload
-    def map(self, selector: Callable[[Tuple[K, V]], R]) -> "Query[R]":
+    def map(self, selector: Callable[[Tuple[K, V]], R], unpack="") -> "Query[R]":
         pass
 
-    def map(self, selector):
-        return queryables.MapNullable(self, selector)
+    @overload
+    def map(self, selector: Callable[..., R], unpack="*") -> "Query[R]":
+        pass
+
+    @overload
+    def map(self, selector: Callable[..., R], unpack="**") -> "Query[R]":
+        pass
+
+    @overload
+    def map(self, selector: Callable[..., R], unpack="***") -> "Query[R]":
+        pass
+
+    def map(self, selector, unpack=""):
+        return queryables.Map(self, selector, unpack)
 
     @overload
     def select(self, item: Literal[0]) -> "Query[K]":
@@ -740,12 +760,6 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
         self, selector: Callable[[Tuple[K, V]], Iterable[Tuple[K, V]]]
     ) -> "Query[Tuple[K,V]]":
         return queryables.FlatRecursive(self, selector)
-
-    def unpack_pos(self, selector: Callable[..., R]) -> "Query[R]":
-        return queryables.UnpackPos(self, selector=selector)
-
-    def unpack_kw(self, selector: Callable[..., R]) -> "Query[R]":
-        return queryables.UnpackKw(self, selector=selector)
 
     def pivot_unstack(self, default=None) -> "PairQuery[Any, List]":
         return queryables.PivotUnstack(self, default=default)
