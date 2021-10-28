@@ -68,9 +68,8 @@ class Query(Generic[T]):
     def _(self) -> "AsyncFinalizer[T]":
         return AsyncFinalizer(self)
 
-    async def _call(self):
+    async def __aresult__(self):
         return await PnqList.from_aiter(self)
-        # return QuerySeq([x async for x in self])
 
     def save(self, timeout=None) -> "PnqList[T]":
         return PnqList(self)
@@ -78,7 +77,7 @@ class Query(Generic[T]):
     result = save
 
     def __await__(self) -> Generator[Any, Any, "PnqList[T]"]:
-        return self._call().__await__()
+        return self.__aresult__().__await__()
 
     def len(self) -> int:
         return Finalizer.len(self)
@@ -482,9 +481,8 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
     def _(self) -> "AsyncFinalizer[Tuple[K,V]]":
         return AsyncFinalizer(self)
 
-    async def _call(self):
+    async def __aresult__(self):
         return await PnqList.from_aiter(self)
-        # return QuerySeq([x async for x in self])
 
     def save(self, timeout=None) -> "PnqListPair[K, V]":
         return PnqList(self)
@@ -492,7 +490,7 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
     result = save
 
     def __await__(self) -> Generator[Any, Any, "PnqListPair[K, V]"]:
-        return self._call().__await__()
+        return self.__aresult__().__await__()
 
     def len(self) -> int:
         return Finalizer.len(self)
@@ -921,7 +919,7 @@ if not TYPE_CHECKING:
     classess = Queries()
 
     for cls in queryables.exports:
-        baseclasses = (cls, Query[T])
+        baseclasses = (Query[T], cls)
         created = types.new_class(cls.__name__, baseclasses)
 
         setattr(classess, cls.__name__, created)

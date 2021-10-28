@@ -26,13 +26,6 @@ K = TypeVar("K")
 V = TypeVar("V")
 
 
-# class IterType(Flag):
-#     IMPOSSIBLE = 0
-#     NORMAL = 1
-#     ASYNC = 2
-#     BOTH = NORMAL | ASYNC
-
-
 def get_iter_type(source):
     run_iter_type = getattr(source, "run_iter_type", None)
     if run_iter_type:
@@ -75,22 +68,6 @@ class Query(PQuery[T]):
     def __init__(self, source: Union[Iterable[T], AsyncIterable[T]]):
         self.source = source
         set_iter_type(self, source)
-        # source_iter_type = get_iter_type(source)
-
-        # # ソースの属性を継承し、クエリでタイプが強制された時はそのタイプを使う
-        # if self.iter_type == IterType.BOTH:
-        #     self.run_iter_type = source_iter_type
-        # else:
-        #     if self.iter_type == IterType.ASYNC:
-        #         self.run_iter_type = self.iter_type
-
-        #         if source_iter_type & IterType.ASYNC:
-        #             pass
-        #         else:
-        #             # aiterのみ実行可能にする
-        #             self.source = QuerySyncToAsync(self.source)
-        #     else:
-        #         raise TypeError("can not convert sync iterator to any iteraotr.")
 
     def __iter__(self) -> Iterator[T]:
         if not (self.run_iter_type & IterType.NORMAL):
@@ -111,19 +88,6 @@ class Query(PQuery[T]):
 
     def _impl_aiter(self):
         return self.source.__aiter__()
-
-    def result(self, timeout=None):
-        return list(self)
-
-    async def _result_async(self, timeout=None):
-        return [x async for x in self]
-
-    def __await__(self):
-        return self._result_async().__await__()
-
-    # to = finalizers.to
-    def to(self, finalizer):
-        return finalizer(self)
 
 
 class QueryNormal(Query[T]):

@@ -1,4 +1,6 @@
 import asyncio
+from collections import deque
+from concurrent.futures import Future
 from functools import partial
 from typing import Iterable, TypeVar
 
@@ -141,5 +143,29 @@ def request(
 def gather(
     source: Iterable[T], parallel: int = 1, timeout=None, return_exceptions=True
 ):
-    for x in map(selectors.select_as_future, source):
-        yield x.result(timeout)
+    import time
+
+    tasks = {}
+    queue = deque()  # type: ignore
+
+    def set_result(i, future):
+        del tasks[i]
+        queue.append(future)
+
+    for i, concurrent_future in enumerate(source):
+        if isinstance(concurrent_future, Future):
+            tasks[i] = concurrent_future
+            concurrent_future.add_done_callback(partial(set_result, i))
+        else:
+            yield concurrent_future.result()  # type: ignore
+
+        while queue:
+            yield queue.popleft().result()
+
+    while tasks:
+        while queue:
+            yield queue.popleft().result()
+        time.sleep(0.01)
+
+    while queue:
+        yield queue.popleft().result()

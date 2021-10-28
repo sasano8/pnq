@@ -225,15 +225,21 @@ def flat_recursive(func):
     return wrapper
 
 
-def select_as_awaitable(target) -> Awaitable:
+async def _awaitable_wrapper(awaitable):
+    return await awaitable
+
+
+def _select_future_with_schedule(target) -> asyncio.Future:
     if hasattr(target, "__await__"):
-        return target
+        if asyncio.isfuture(target):
+            return target
+        elif asyncio.iscoroutine(target):
+            return asyncio.create_task(target)
+        else:
+            aw = _awaitable_wrapper(target)
+            return asyncio.create_task(aw)
 
     if isinstance(target, ConcurrentFuture):
         return asyncio.wrap_future(target)
 
     raise TypeError(f"{target} is not awaitable")
-
-
-def select_as_future(target) -> ConcurrentFuture:
-    return target

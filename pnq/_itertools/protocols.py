@@ -40,12 +40,12 @@ class PExecutor(Protocol):
 
 class PResult(Protocol[T]):
     def result(self, timeout=None) -> List[T]:
-        ...
+        raise NotImplementedError()
 
 
 class PAsyncResult(Awaitable[List[T]], Generic[T]):
     def __await__(self) -> Generator[Any, Any, List[T]]:
-        ...
+        raise NotImplementedError()
 
 
 class IterType(Flag):

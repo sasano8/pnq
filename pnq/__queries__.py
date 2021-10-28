@@ -69,9 +69,8 @@ class {{query.CLS}}:
     def _(self) -> "AsyncFinalizer[{{query.T}}]":
         return AsyncFinalizer(self)
 
-    async def _call(self):
+    async def __aresult__(self):
         return await PnqList.from_aiter(self)
-        # return QuerySeq([x async for x in self])
 
     {% if query.is_pair %}
 
@@ -81,7 +80,7 @@ class {{query.CLS}}:
     result = save
 
     def __await__(self) -> Generator[Any, Any, "PnqListPair[{{query.K}}, {{query.V}}]"]:
-        return self._call().__await__()
+        return self.__aresult__().__await__()
 
     {% else %}
 
@@ -91,7 +90,7 @@ class {{query.CLS}}:
     result = save
 
     def __await__(self) -> Generator[Any, Any, "PnqList[{{query.T}}]"]:
-        return self._call().__await__()
+        return self.__aresult__().__await__()
 
     {% endif %}
 
@@ -450,7 +449,7 @@ if not TYPE_CHECKING:
     classess = Queries()
 
     for cls in queryables.exports:
-        baseclasses = (cls, Query[T])
+        baseclasses = (Query[T], cls)
         created = types.new_class(cls.__name__, baseclasses)
 
         setattr(classess, cls.__name__, created)

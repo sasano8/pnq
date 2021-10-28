@@ -1,4 +1,5 @@
 import asyncio
+from collections import deque
 from functools import partial
 from typing import AsyncIterable, TypeVar
 
@@ -9,7 +10,7 @@ from pnq.protocols import PExecutor
 from pnq.selectors import starmap
 
 from ..common import Listable
-from .queries import chunked
+from .queries import _enumerate, chunked
 
 T = TypeVar("T")
 
@@ -148,8 +149,28 @@ def request(
 async def gather(
     source: AsyncIterable[T], parallel: int = 1, timeout=None, return_exceptions=True
 ):
-    async for x in Listable(source, selectors.select_as_awaitable):
-        yield await x
+    tasks = {}
+    results = deque()
+
+    def set_result(i, future):
+        del tasks[i]
+        results.append(future)
+
+    async for i, x in _enumerate(
+        Listable(source, selectors._select_future_with_schedule)
+    ):
+        x.add_done_callback(partial(set_result, i))
+        tasks[i] = x
+        while results:
+            yield results.popleft().result()
+
+    while tasks:
+        while results:
+            yield results.popleft().result()
+        await asyncio.sleep(0.01)
+
+    while results:
+        yield results.popleft().result()
 
 
 async def call_func(sem, x, timeout):

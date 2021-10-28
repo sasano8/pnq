@@ -88,7 +88,7 @@ def test_select_as_dict():
 
 
 @to_sync
-async def test_select_as_awaitable():
+async def test_select_future_with_schedule():
     from concurrent.futures import ThreadPoolExecutor
 
     def return_1():
@@ -99,13 +99,18 @@ async def test_select_as_awaitable():
 
     with ThreadPoolExecutor(1) as pool:
         future = pool.submit(return_1)
-        assert await selectors.select_as_awaitable(future) == 1
+        f1 = selectors._select_future_with_schedule(future)
 
-    assert await selectors.select_as_awaitable(return_2()) == 2
-    assert await selectors.select_as_awaitable(asyncio.create_task(return_2())) == 2
+    f2 = selectors._select_future_with_schedule(return_2())
+    f3 = selectors._select_future_with_schedule(asyncio.create_task(return_2()))
+
+    tasks = [f1, f2, f3]
+
+    assert len([x for x in tasks if isinstance(x, asyncio.Future)]) == 3
+    assert await asyncio.gather(*tasks) == [1, 2, 2]
 
     with pytest.raises(TypeError, match="is not awaitable"):
-        selectors.select_as_awaitable("")
+        selectors._select_future_with_schedule("")
 
 
 def test_reflect():
