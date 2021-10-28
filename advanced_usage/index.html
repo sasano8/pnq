@@ -319,6 +319,47 @@
       
         <li class="md-nav__item">
   <a href="#_1" class="md-nav__link">
+    並列処理
+  </a>
+  
+    <nav class="md-nav" aria-label="並列処理">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#processpool" class="md-nav__link">
+    ProcessPool
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#threadpool" class="md-nav__link">
+    ThreadPool
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#asyncpool" class="md-nav__link">
+    AsyncPool
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dummypool" class="md-nav__link">
+    DummyPool
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
     非同期処理
   </a>
   
@@ -326,28 +367,28 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
+  <a href="#_3" class="md-nav__link">
     実行
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#_3" class="md-nav__link">
+  <a href="#_4" class="md-nav__link">
     キャンセル管理
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#_4" class="md-nav__link">
+  <a href="#_5" class="md-nav__link">
     例外処理
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#_5" class="md-nav__link">
+  <a href="#_6" class="md-nav__link">
     実装例
   </a>
   
@@ -406,6 +447,47 @@
       
         <li class="md-nav__item">
   <a href="#_1" class="md-nav__link">
+    並列処理
+  </a>
+  
+    <nav class="md-nav" aria-label="並列処理">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#processpool" class="md-nav__link">
+    ProcessPool
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#threadpool" class="md-nav__link">
+    ThreadPool
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#asyncpool" class="md-nav__link">
+    AsyncPool
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dummypool" class="md-nav__link">
+    DummyPool
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
     非同期処理
   </a>
   
@@ -413,28 +495,28 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
+  <a href="#_3" class="md-nav__link">
     実行
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#_3" class="md-nav__link">
+  <a href="#_4" class="md-nav__link">
     キャンセル管理
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#_4" class="md-nav__link">
+  <a href="#_5" class="md-nav__link">
     例外処理
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#_5" class="md-nav__link">
+  <a href="#_6" class="md-nav__link">
     実装例
   </a>
   
@@ -460,13 +542,96 @@
                 
                   <h1>高度な使用方法</h1>
                 
-                <h2 id="_1">非同期処理</h2>
-<h3 id="_2">実行</h3>
+                <h2 id="_1">並列処理</h2>
+<p><code>pnq</code>は任意のエクゼキュータでの並列処理をサポートし、効率的に計算資源を活用できます。
+並列処理に対応しているメソッドは次の通りです。</p>
+<ul>
+<li>parallel（結果のみを返す）</li>
+<li>request（成功・失敗情報を含む結果を返す）</li>
+<li>dispatch（処理を投げっぱなしにする）</li>
+</ul>
+<p>また、<code>gather</code>を使うと複数のクエリを並列実行し、非同期に完了待機できます。
+<code>gather</code>はコルーチンなど<code>awaitable</code>なオブジェクトに対応しています。</p>
+<p>次の例は、クエリを並列実行し、実行中のクエリの完了を待たずに次のクエリを順次実行する例です。
+ただし、むやみな並列処理はデッドロックやメモリ圧迫などの問題を引き起こすので控えてください。</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">import</span> <span class="nn">pnq</span>
+<span class="kn">from</span> <span class="nn">pnq.concurrent</span> <span class="kn">import</span> <span class="n">ProcessPool</span><span class="p">,</span> <span class="n">ThreadPool</span><span class="p">,</span> <span class="n">AsyncPool</span>
+
+<span class="k">def</span> <span class="nf">mul</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">mul_async</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">aiter</span><span class="p">():</span>
+    <span class="k">yield</span> <span class="mi">1</span>
+    <span class="k">yield</span> <span class="mi">2</span>
+    <span class="k">yield</span> <span class="mi">3</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">notify</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="k">async</span> <span class="k">with</span> <span class="n">ProcessPool</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="k">as</span> <span class="n">proc</span><span class="p">,</span> <span class="n">ThreadPool</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="k">as</span> <span class="n">thread</span><span class="p">,</span> <span class="n">AsyncPool</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="k">as</span> <span class="n">aio</span><span class="p">:</span>
+        <span class="n">tasks</span> <span class="o">=</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span>
+            <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">parallel</span><span class="p">(</span><span class="n">mul</span><span class="p">,</span> <span class="n">proc</span><span class="p">),</span>
+            <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">parallel</span><span class="p">(</span><span class="n">mul_async</span><span class="p">,</span> <span class="n">proc</span><span class="p">),</span>
+            <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">aiter</span><span class="p">())</span><span class="o">.</span><span class="n">parallel</span><span class="p">(</span><span class="n">mul</span><span class="p">,</span> <span class="n">proc</span><span class="p">),</span>
+            <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">aiter</span><span class="p">())</span><span class="o">.</span><span class="n">parallel</span><span class="p">(</span><span class="n">mul_async</span><span class="p">,</span> <span class="n">proc</span><span class="p">),</span>
+
+            <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">parallel</span><span class="p">(</span><span class="n">mul</span><span class="p">,</span> <span class="n">thread</span><span class="p">),</span>
+            <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">parallel</span><span class="p">(</span><span class="n">mul_async</span><span class="p">,</span> <span class="n">thread</span><span class="p">),</span>
+            <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">aiter</span><span class="p">())</span><span class="o">.</span><span class="n">parallel</span><span class="p">(</span><span class="n">mul</span><span class="p">,</span> <span class="n">thread</span><span class="p">),</span>
+            <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">aiter</span><span class="p">())</span><span class="o">.</span><span class="n">parallel</span><span class="p">(</span><span class="n">mul_async</span><span class="p">,</span> <span class="n">thread</span><span class="p">),</span>
+
+            <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">parallel</span><span class="p">(</span><span class="n">mul</span><span class="p">,</span> <span class="n">aio</span><span class="p">),</span>
+            <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">parallel</span><span class="p">(</span><span class="n">mul_async</span><span class="p">,</span> <span class="n">aio</span><span class="p">),</span>
+            <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">aiter</span><span class="p">())</span><span class="o">.</span><span class="n">parallel</span><span class="p">(</span><span class="n">mul</span><span class="p">,</span> <span class="n">aio</span><span class="p">),</span>
+            <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">aiter</span><span class="p">())</span><span class="o">.</span><span class="n">parallel</span><span class="p">(</span><span class="n">mul_async</span><span class="p">,</span> <span class="n">aio</span><span class="p">),</span>
+        <span class="p">])</span>
+
+        <span class="k">await</span> <span class="n">tasks</span><span class="o">.</span><span class="n">gather</span><span class="p">()</span><span class="o">.</span><span class="n">flat</span><span class="p">()</span><span class="o">.</span><span class="n">dispatch</span><span class="p">(</span><span class="n">notify</span><span class="p">,</span> <span class="n">aio</span><span class="p">)</span>
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+</code></pre></div>
+<p><code>pnq</code>が提供するエクゼキュータは次の通りです。</p>
+<h3 id="processpool">ProcessPool</h3>
+<p>CPUバウンドな重たい処理に向いています。GILの制限を受けません。
+チャンクサイズを指定すると、一括処理を効率化できます。
+チャンクサイズは<code>ProcessPool</code>でのみ有効で、それ以外のエクゼキューターでは無視されます。</p>
+<ul>
+<li>同期関数と非同期関数はプロセスプール上で実行されます。</li>
+</ul>
+<h3 id="threadpool">ThreadPool</h3>
+<p>I/Oバウンドなプリエンプティブマルチタスク（time.sleepなど）に向いています。</p>
+<ul>
+<li>同期関数と非同期関数はスレッドプール上で実行されます。</li>
+</ul>
+<h3 id="asyncpool">AsyncPool</h3>
+<p>I/Oバウンドなノンエンプティブマルチタスク（asyncio.sleepなど）に向き、シングルスレッドを効率的に利用します。
+同期関数はスレッドプール上で実行されるため、ThreadPoolの代用としても働きます。</p>
+<ul>
+<li>同期関数はスレッドプール上で実行されます。</li>
+<li>非同期関数はイベントループ上（asyncio）で実行されます。</li>
+</ul>
+<p>クエリは非同期実行のみ許可されます。</p>
+<h3 id="dummypool">DummyPool</h3>
+<p>エクゼキュータを指定しない場合に使用されます。</p>
+<ul>
+<li>同期実行時は並列化されず、単に現在のスレッドで処理を即時実行します。</li>
+<li>非同期実行時は、<code>AsyncPool</code>のように振る舞います。</li>
+<li>同時実行数は、指定した同時実行数＋1（同期実行は即時処理）となります。</li>
+</ul>
+<p>コンテキストが存在せず、投げっぱなしにされた処理の実行は保証されないため、
+基本的には別のエクゼキュータを指定するようにしてください。</p>
+<h2 id="_2">非同期処理</h2>
+<h3 id="_3">実行</h3>
 <p>次の場合、クエリは非同期の文脈で実行する必要があります。</p>
 <ul>
 <li>非同期イテレータをソースとした場合</li>
-<li><code>request_async</code>でクエリをチェインした場合</li>
-<li><code>each_async</code>を呼び出す場合</li>
+<li><code>request</code>による並列処理を非同期に待ち受けたい場合</li>
 </ul>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">asyncio</span>
 <span class="kn">import</span> <span class="nn">pnq</span>
@@ -484,14 +649,13 @@
     <span class="k">async</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">async_iterate</span><span class="p">()):</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
-    <span class="k">async</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="nb">dict</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="nb">dict</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span> <span class="nb">dict</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">)])</span><span class="o">.</span><span class="n">request_async</span><span class="p">(</span><span class="n">sleep</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="nb">dict</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="nb">dict</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span> <span class="nb">dict</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">)])</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="n">sleep</span><span class="p">):</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 
-    <span class="k">await</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">each_async</span><span class="p">(</span><span class="n">sleep</span><span class="p">)</span>
 
 <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
 </code></pre></div>
-<h3 id="_3">キャンセル管理</h3>
+<h3 id="_4">キャンセル管理</h3>
 <p><code>pnq</code>は簡単なキャンセル機構を提供し、これを利用できます。</p>
 <p><code>pnq.run</code>に、非同期関数を渡すと、その関数を起動し、第一引数にキャンセルトークンを渡します。
 第一引数を受け入れ可能な場合、その関数はキャンセルコントロールの意思があるとみなされます。</p>
@@ -544,31 +708,31 @@
 
 <span class="n">pnq</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">)</span>
 </code></pre></div>
-<h3 id="_4">例外処理</h3>
+<h3 id="_5">例外処理</h3>
 <p><code>pnq</code>は基本的に例外をキャッチしませんが、次のクエリのみ関数実行時の例外をキャッチします。</p>
 <ul>
 <li><code>request</code></li>
-<li><code>request_async</code></li>
 </ul>
 <p>これらのクエリは、実行結果を含んだオブジェクト<code>Response</code>を返し、
 <code>Response</code>の<code>err</code>が<code>None</code>でない場合、処理は失敗したとみなせます。</p>
-<p>処理が成功した場合、結果は<code>result</code>に格納されます。</p>
+<p>結果は<code>result</code>から取得できます。
+処理が失敗している場合は例外が返ります。</p>
 <p>スタックトレースは次のように取得できます。</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">traceback</span>
 
 <span class="k">async</span> <span class="k">def</span> <span class="nf">raise_error</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
     <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
 
-<span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}]</span><span class="o">.</span><span class="n">request_async</span><span class="p">(</span><span class="n">raise_error</span><span class="p">)):</span>
+<span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}]</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="n">raise_error</span><span class="p">)):</span>
     <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">err</span><span class="p">:</span>
         <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
             <span class="n">traceback</span><span class="o">.</span><span class="n">format_exception</span><span class="p">(</span><span class="n">etype</span><span class="o">=</span><span class="nb">type</span><span class="p">(</span><span class="n">err</span><span class="p">),</span> <span class="n">value</span><span class="o">=</span><span class="n">err</span><span class="p">,</span> <span class="n">tb</span><span class="o">=</span><span class="n">err</span><span class="o">.</span><span class="n">__traceback__</span><span class="p">)</span>
         <span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">result</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">result</span><span class="p">())</span>
 </code></pre></div>
-<h3 id="_5">実装例</h3>
+<h3 id="_6">実装例</h3>
 <p>非同期なリクエストを含むクエリの実装例です。</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">asyncio</span>
 <span class="kn">import</span> <span class="nn">pnq</span>
@@ -582,17 +746,16 @@
             <span class="p">{</span><span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;test_url_2&quot;</span><span class="p">},</span>
         <span class="p">])</span>
 
-        <span class="nd">@params</span><span class="o">.</span><span class="n">request_async</span>
         <span class="k">async</span> <span class="k">def</span> <span class="nf">fetch_from_url</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
             <span class="n">res</span> <span class="o">=</span> <span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
             <span class="n">res</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
             <span class="k">return</span> <span class="n">res</span>
 
-        <span class="nd">@fetch_from_url</span><span class="o">.</span><span class="n">group_by</span>
+        <span class="nd">@params</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="n">fetch_from_url</span><span class="p">,</span> <span class="n">unpack</span><span class="o">=</span><span class="s2">&quot;**&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">group_by</span>
         <span class="k">def</span> <span class="nf">split_success_and_error</span><span class="p">(</span><span class="n">res</span><span class="p">):</span>
             <span class="k">return</span> <span class="p">(</span><span class="ow">not</span> <span class="n">res</span><span class="o">.</span><span class="n">err</span><span class="p">,</span> <span class="n">res</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="k">await</span> <span class="n">split_success_and_error</span><span class="o">.</span><span class="n">lazy</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="k">await</span> <span class="n">split_success_and_error</span><span class="p">)</span>
 
 <span class="n">result</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
 <span class="c1"># {</span>

@@ -492,8 +492,10 @@
 <ul>
 <li><a href="https://github.com/EntilZha/PyFunctional">PyFunctional</a></li>
 <li><a href="https://github.com/avilum/linqit">linqit</a></li>
+<li><a href="https://github.com/jakkes/python-linq">python-linq</a></li>
 <li><a href="https://github.com/omnilib/aioitertools">aioitertools</a></li>
 <li><a href="https://github.com/maxfischer2781/asyncstdlib">asyncstdlib</a></li>
+<li><a href="https://github.com/sixty-north/asq">asq</a></li>
 </ul>
 <h2 id="documentation">Documentation</h2>
 <ul>
@@ -510,14 +512,14 @@
 <h2 id="getting-started">Getting Started</h2>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">pnq</span>
 
-<span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 <span class="c1"># =&gt; 2, 4, 6</span>
 
 <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
 <span class="c1"># =&gt; [2, 4, 6]</span>
 
-<span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">()</span>
+<span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">()</span>
 <span class="c1"># =&gt; 2</span>
 </code></pre></div>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">asyncio</span>
