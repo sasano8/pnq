@@ -468,17 +468,17 @@
 </code></pre></div>
 <h2 id="_2">クエリを組み立てる</h2>
 <p><code>pnq.query</code>を介して、データソースを加工するパイプラインメソッドをチェインできます。
-組み立てたクエリは、<code>save</code>を実行することでリストとして実体化できます。</p>
+組み立てたクエリは、<code>result</code>を実行することでリストとして実体化できます。</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">pnq</span>
 
-<span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+<span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
 <span class="c1"># =&gt; [4]</span>
 </code></pre></div>
-<p><code>save</code>で返されるリストは、リストを継承した独自拡張クラス（<code>pnq.list</code>）で、引き続きパイプラインメソッドをチェインできます。</p>
+<p><code>result</code>で返されるリストは、リストを継承した独自拡張クラス（<code>pnq.list</code>）で、引き続きパイプラインメソッドをチェインできます。</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">pnq</span>
 
-<span class="n">saved</span> <span class="o">=</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
-<span class="n">saved</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+<span class="n">saved</span> <span class="o">=</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+<span class="n">saved</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
 <span class="c1"># =&gt; [4]</span>
 </code></pre></div>
 <p><code>pnq.list</code>はリストと完全な互換性がありますが、可能な限り副作用を避ける場合は、<code>to(list)</code>または単に<code>list</code>で組込みのリストにできます。</p>
@@ -493,10 +493,10 @@
 <p>データソースが辞書の場合は、キーバリューペアが列挙されることに注意してください。</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">pnq</span>
 
-<span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">})</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+<span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">})</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
 <span class="c1"># =&gt; [(&quot;b&quot;, 2), (&quot;c&quot;, 3)]</span>
 </code></pre></div>
-<p>リストでなく辞書として実体化したい場合は、<code>save</code>の代わりに<code>to(dict)</code>または単に<code>dict</code>を使用してください。</p>
+<p>リストでなく辞書として実体化したい場合は、<code>result</code>の代わりに<code>to(dict)</code>または単に<code>dict</code>を使用してください。</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">pnq</span>
 
 <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">})</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
@@ -508,7 +508,7 @@
 <p>なお、<code>to</code>はイテラブルを引数とする任意の関数を渡すことができます。</p>
 <h2 id="_3">非同期イテレータを扱う</h2>
 <p><code>pnq.query</code>は非同期イテレータも取り扱うことができます。
-ただし、非同期イテレータを実体化するには<code>save</code>の代わりに<code>await</code>を使用します。</p>
+ただし、非同期イテレータを実体化するには<code>result</code>の代わりに<code>await</code>を使用します。</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">asyncio</span>
 <span class="kn">import</span> <span class="nn">pnq</span>
 
@@ -546,7 +546,7 @@
 <h2 id="_4">クエリを実行する</h2>
 <p><code>pnq.query</code>は可能な限り評価を保留（遅延評価）します。
 クエリは、評価を要求されたとき実際に実行されます。</p>
-<p>すでにいくつか評価方法（<code>for</code>文、<code>save</code>、<code>to</code>）を紹介していますが、ほかにもいくつか評価メソッドを紹介します。</p>
+<p>すでにいくつか評価方法（<code>for</code>文、<code>result</code>、<code>to</code>）を紹介していますが、ほかにもいくつか評価メソッドを紹介します。</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">pnq</span>
 
 <span class="c1"># for x in ...: func(x)のショートカットとして使用できます</span>
