@@ -29,9 +29,15 @@ class Response(NamedTuple):
     args: Tuple
     kwargs: Dict
     err: Union[Exception, None]
-    result: Any
+    res: Any
     start: datetime
     end: datetime
+
+    def result(self, timeout=None):
+        if self.err:
+            raise self.err
+        else:
+            return self.res
 
     @property
     def elapsed(self):
@@ -64,7 +70,7 @@ class Response(NamedTuple):
             "func": self.func.__name__,
             "args": self.args,
             "kwargs": self.kwargs,
-            "result": self.result,
+            "result": self.res,
             "start": self.start.isoformat(),
             "end": self.end.isoformat(),
             "err": err,

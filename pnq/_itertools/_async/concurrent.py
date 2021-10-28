@@ -97,7 +97,7 @@ def exec_request(func, *args, **kwargs):
         args,
         kwargs,
         err=err,
-        result=result,
+        res=result,
         start=sw.start,
         end=sw.end,
     )
@@ -119,7 +119,7 @@ async def exec_request_async(func, *args, **kwargs):
         args,
         kwargs,
         err=err,
-        result=result,
+        res=result,
         start=sw.start,
         end=sw.end,
     )

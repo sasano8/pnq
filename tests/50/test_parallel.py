@@ -237,7 +237,7 @@ async def test_pool():
 
     for i, x in enumerate(results):
         assert isinstance(x, Response)
-        assert x.result == 2
+        assert x.res == 2
         assert x.err is None
 
 
@@ -274,7 +274,7 @@ def test_request():
         assert res.args == tuple()
         assert res.kwargs == {"value": 1}
         assert res.err is None
-        assert res.result == "ok"
+        assert res.res == "ok"
         assert isinstance(res.start, datetime)
         assert isinstance(res.end, datetime)
 
@@ -287,7 +287,7 @@ def test_request():
         assert res.args == tuple()
         assert res.kwargs == {"value1": 1, "value2": 2}
         assert str(res.err) == "error"
-        assert res.result is None
+        assert res.res is None
         assert isinstance(res.start, datetime)
         assert isinstance(res.end, datetime)
 
