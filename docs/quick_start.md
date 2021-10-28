@@ -9,22 +9,22 @@ $ pip install pnq
 ## クエリを組み立てる
 
 `pnq.query`を介して、データソースを加工するパイプラインメソッドをチェインできます。
-組み立てたクエリは、`save`を実行することでリストとして実体化できます。
+組み立てたクエリは、`result`を実行することでリストとして実体化できます。
 
 ``` python
 import pnq
 
-pnq.query([1, 2]).map(lambda x: x * 2).filter(lambda x: x > 2).save()
+pnq.query([1, 2]).map(lambda x: x * 2).filter(lambda x: x > 2).result()
 # => [4]
 ```
 
-`save`で返されるリストは、リストを継承した独自拡張クラス（`pnq.list`）で、引き続きパイプラインメソッドをチェインできます。
+`result`で返されるリストは、リストを継承した独自拡張クラス（`pnq.list`）で、引き続きパイプラインメソッドをチェインできます。
 
 ``` python
 import pnq
 
-saved = pnq.query([1]).map(lambda x: x * 2).save()
-saved.map(lambda x: x * 2).save()
+saved = pnq.query([1]).map(lambda x: x * 2).result()
+saved.map(lambda x: x * 2).result()
 # => [4]
 ```
 
@@ -45,11 +45,11 @@ list(pnq.query([1]).map(lambda x: x * 2))
 ``` python
 import pnq
 
-pnq.query({"a": 1, "b": 2, "c": 3}).filter(lambda x: x[1] > 1).save()
+pnq.query({"a": 1, "b": 2, "c": 3}).filter(lambda x: x[1] > 1).result()
 # => [("b", 2), ("c", 3)]
 ```
 
-リストでなく辞書として実体化したい場合は、`save`の代わりに`to(dict)`または単に`dict`を使用してください。
+リストでなく辞書として実体化したい場合は、`result`の代わりに`to(dict)`または単に`dict`を使用してください。
 
 ``` python
 import pnq
@@ -66,7 +66,7 @@ dict(pnq.query({"a": 1, "b": 2, "c": 3}).filter(lambda x: x[1] > 1))
 ## 非同期イテレータを扱う
 
 `pnq.query`は非同期イテレータも取り扱うことができます。
-ただし、非同期イテレータを実体化するには`save`の代わりに`await`を使用します。
+ただし、非同期イテレータを実体化するには`result`の代わりに`await`を使用します。
 
 ``` python
 import asyncio
@@ -112,7 +112,7 @@ asyncio.run(main())
 `pnq.query`は可能な限り評価を保留（遅延評価）します。
 クエリは、評価を要求されたとき実際に実行されます。
 
-すでにいくつか評価方法（`for`文、`save`、`to`）を紹介していますが、ほかにもいくつか評価メソッドを紹介します。
+すでにいくつか評価方法（`for`文、`result`、`to`）を紹介していますが、ほかにもいくつか評価メソッドを紹介します。
 
 ``` python
 import pnq

@@ -11,11 +11,11 @@ class Listable(Iterable[T]):
         return iter(self.source)
 
     def save(self):
-        return list(self.source)
+        return self.result()
 
     def result(self, timeout=None):
         # TODO: implement timeout
-        return self.save()
+        return list(self.source)
 
     def __future__(self):
         raise NotImplementedError()

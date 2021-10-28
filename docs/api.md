@@ -133,6 +133,9 @@
 
 ## Finalizing - Executing
 
+::: pnq.actions.result
+    :docstring:
+
 ::: pnq.actions.save
     :docstring:
 

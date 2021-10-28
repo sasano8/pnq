@@ -57,7 +57,7 @@ for x in pnq.query([1, 2, 3]).map(lambda x: x * 2):
     print(x)
 # => 2, 4, 6
 
-pnq.query([1, 2, 3]).map(lambda x: x * 2).save()
+pnq.query([1, 2, 3]).map(lambda x: x * 2).result()
 # => [2, 4, 6]
 
 pnq.query([1, 2, 3]).filter(lambda x: x == 3).one()

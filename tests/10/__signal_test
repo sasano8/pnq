@@ -14,7 +14,7 @@ if mode == 0:
 
     def main():
         async def wait():
-            await asyncio.sleep(0.5)
+            await asyncio.sleep(3)
             return True
 
         return Builder.run(wait)
@@ -24,7 +24,7 @@ elif mode == 1:
 
     def main():
         async def wait(token):
-            await asyncio.sleep(0.5)
+            await asyncio.sleep(3)
             return True
 
         return Builder.run(wait)

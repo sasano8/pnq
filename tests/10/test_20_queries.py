@@ -136,13 +136,13 @@ class Test000_Init:
     def test_save(self):
         from pnq import list as plist
 
-        assert pnq([]).save() == []
-        assert isinstance(pnq([]).save(), plist)
-        assert pnq([1, 2, 3]).save() == [1, 2, 3]
-        assert pnq((1, 2, 3)).save() == [1, 2, 3]
-        assert pnq(tuple([1, 2, 3])).save() == [1, 2, 3]
-        assert pnq({"a": 1}).save() == [("a", 1)]
-        result = pnq({1, 2, 3}).save()
+        assert pnq([]).result() == []
+        assert isinstance(pnq([]).result(), plist)
+        assert pnq([1, 2, 3]).result() == [1, 2, 3]
+        assert pnq((1, 2, 3)).result() == [1, 2, 3]
+        assert pnq(tuple([1, 2, 3])).result() == [1, 2, 3]
+        assert pnq({"a": 1}).result() == [("a", 1)]
+        result = pnq({1, 2, 3}).result()
         assert len(result) == 3
         assert 1 in result
         assert 2 in result

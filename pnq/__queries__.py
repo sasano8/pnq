@@ -74,20 +74,20 @@ class {{query.CLS}}:
 
     {% if query.is_pair %}
 
-    def save(self, timeout=None) -> "PnqListPair[{{query.K}}, {{query.V}}]":
+    def result(self, timeout=None) -> "PnqListPair[{{query.K}}, {{query.V}}]":
         return PnqList(self)
 
-    result = save
+    save = result
 
     def __await__(self) -> Generator[Any, Any, "PnqListPair[{{query.K}}, {{query.V}}]"]:
         return self.__aresult__().__await__()
 
     {% else %}
 
-    def save(self, timeout=None) -> "PnqList[{{query.T}}]":
+    def result(self, timeout=None) -> "PnqList[{{query.T}}]":
         return PnqList(self)
 
-    result = save
+    save = result
 
     def __await__(self) -> Generator[Any, Any, "PnqList[{{query.T}}]"]:
         return self.__aresult__().__await__()

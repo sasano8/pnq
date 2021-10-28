@@ -383,7 +383,7 @@ def gather(self):
     def main1():
         future = Future()
         future.set_result(0)
-        return pnq.query([future]).gather().save()
+        return pnq.query([future]).gather().result()
 
     async def main2():
         async def heavy_task():
@@ -1382,7 +1382,7 @@ def concat(self, selector=lambda x: x, delimiter: str = ""):
 
 
 @mark
-def save(self):
+def result(self):
     """ストリームを評価し、結果をリストとして保存します。
     返されたリストは、クエリメソッドが実装されたリストの拡張クラスです。
 
@@ -1394,19 +1394,17 @@ def save(self):
 
     Usage:
     ```
-    >>> saved = pnq.query([1, 2, 3]).save()
+    >>> saved = pnq.query([1, 2, 3]).result()
     [1, 2, 3]
-    >>> saved.map(lambda x: x * 2).save()
+    >>> saved.map(lambda x: x * 2).result()
     [2, 4, 6]
     ```
     """
 
 
 @mark
-def result(self):
-    """`save`と同じですが、`concurrent.futures.Future`互換にするために実装されています。
-    これにより、`gather`で複数のクエリを一括で評価するような使い方ができます。
-    """
+def save(self):
+    """`result`のエイリアスです。"""
 
 
 @mark

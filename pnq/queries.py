@@ -71,10 +71,10 @@ class Query(Generic[T]):
     async def __aresult__(self):
         return await PnqList.from_aiter(self)
 
-    def save(self, timeout=None) -> "PnqList[T]":
+    def result(self, timeout=None) -> "PnqList[T]":
         return PnqList(self)
 
-    result = save
+    save = result
 
     def __await__(self) -> Generator[Any, Any, "PnqList[T]"]:
         return self.__aresult__().__await__()
@@ -484,10 +484,10 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
     async def __aresult__(self):
         return await PnqList.from_aiter(self)
 
-    def save(self, timeout=None) -> "PnqListPair[K, V]":
+    def result(self, timeout=None) -> "PnqListPair[K, V]":
         return PnqList(self)
 
-    result = save
+    save = result
 
     def __await__(self) -> Generator[Any, Any, "PnqListPair[K, V]"]:
         return self.__aresult__().__await__()
