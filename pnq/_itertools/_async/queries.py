@@ -100,6 +100,44 @@ async def group_by(source: AsyncIterable[T], selector):
         yield k, v
 
 
+async def chain(*iterables):
+
+    prev = 3
+
+    for iterable in iterables:
+        type = 0
+        if hasattr(iterable, "__iter__"):
+            type += 1
+        if hasattr(iterable, "__aiter__"):
+            type += 2
+
+        if type == 1:
+            prev = 1
+            may_be_async = False
+        elif type == 2:
+            prev = 2
+            may_be_async = True
+        elif type == 3:
+            prev = 3
+            if prev == 1:
+                may_be_async = False
+            elif prev == 2:
+                may_be_async = True
+            elif prev == 3:
+                may_be_async = True
+            else:
+                raise TypeError(iterable, "iterable")
+        else:
+            raise TypeError(iterable, "iterable")
+
+        if may_be_async:
+            async for x in iterable:
+                yield x
+        else:
+            for x in iterable:
+                yield x
+
+
 async def chunked(source: AsyncIterable[T], size: int):
     current = 0
     running = True
@@ -378,3 +416,23 @@ async def sleep(source: AsyncIterable[T], seconds: float):
     async for v in source:
         yield v
         await sleep(seconds)
+
+
+async def as_aiter(source):
+    type = 0
+    if hasattr(source, "__iter__"):
+        type += 1
+    if hasattr(source, "__aiter__"):
+        type += 2
+
+    if type == 3:
+        async for x in source:
+            yield x
+    elif type == 2:
+        async for x in source:
+            yield x
+    elif type == 1:
+        for x in source:
+            yield x
+    else:
+        raise TypeError(f"{source} must be iterable")

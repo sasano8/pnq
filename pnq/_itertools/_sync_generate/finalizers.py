@@ -2,11 +2,14 @@ import asyncio
 from decimal import Decimal, InvalidOperation
 from typing import Any, Callable, Iterable, NoReturn, Sequence, TypeVar, Union
 
+from typing_extensions import Literal
+
 from pnq.exceptions import NoElementError, NotOneElementError
 from pnq.selectors import starmap
 
 from ..common import Listable, name_as
 from ..op import MAP_ASSIGN_OP, TH_ASSIGN_OP, TH_ROUND
+from .queries import _filter
 
 T = TypeVar("T")
 
@@ -31,8 +34,8 @@ def empty(source: Iterable[T]) -> bool:
     return True
 
 
-def exists(source: Iterable[T]) -> bool:
-    for x in source:
+def exists(source: Iterable[T], predicate=None) -> bool:
+    for x in _filter(source, predicate):
         return True
 
     return False
@@ -304,3 +307,21 @@ def last_or_raise(source: Iterable[T], exc: Union[str, Exception]):
             raise exc
     else:
         return result
+
+
+def to_file(source: Iterable[T], path: str, mode: Literal["w", "a"] = "w"):
+    with open(path, mode) as f:
+        for x in source:
+            f.write(str(x) + "\n")
+
+
+def to_csv(path: str):
+    raise NotImplementedError()
+
+
+def to_json(path: str):
+    raise NotImplementedError()
+
+
+def to_jsonl(path: str):
+    raise NotImplementedError()

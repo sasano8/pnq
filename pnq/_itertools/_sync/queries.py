@@ -27,3 +27,9 @@ def sleep(source, seconds: float):  # type: ignore
 
 
 cartesian = _product
+
+
+def chain(*iterables):  # type: ignore
+    for iterable in iterables:
+        for x in iterable:
+            yield x
