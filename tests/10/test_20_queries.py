@@ -282,6 +282,10 @@ class Test010_Finalizer:
         assert pnq(src).exists() == expect
         assert pnq(src).map(lambda x: x).exists() == expect
 
+    def test_exists_with_filter(self):
+        assert pnq([1]).exists(lambda x: x == 1)
+        assert not pnq([1]).exists(lambda x: x != 1)
+
     @pytest.mark.parametrize(
         "src, expect",
         [
@@ -827,6 +831,10 @@ class Test020_Transform:
             ("yellow", [3]),
             ("red", [2, 5]),
         ]
+
+    def test_chain(self):
+        result = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+        assert pnq([1, 2, 3]).chain([4, 5, 6], [7, 8, 9]).to(list) == result
 
     def test_chunked(self):
         assert pnq([]).chunked(1).to(list) == []

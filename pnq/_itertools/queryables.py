@@ -181,6 +181,16 @@ class GroupJoin(Query):
 
 
 @export
+class Chain(Query):
+    _ait = sm | A.queries.chain
+    _sit = sm | S.queries.chain
+
+    def __init__(self, source, *iterables):
+        super().__init__(source)
+        self._args = Arguments(*iterables)
+
+
+@export
 class Chunked(Query):
     _ait = sm | A.queries.chunked
     _sit = sm | S.queries.chunked
@@ -731,8 +741,12 @@ class FinalizerBase:
     last_or_raise = S.finalizers.last_or_raise
     each = S.finalizers.each
     dispatch = S.concurrent.dispatch
-    to = S.finalizers.to
     lazy = Lazy
+    to = S.finalizers.to
+    to_file = S.io.to_file
+    to_csv = S.io.to_csv
+    to_json = S.io.to_json
+    to_jsonl = S.io.to_jsonl
 
 
 class AsyncFinalizerBase:
@@ -761,8 +775,12 @@ class AsyncFinalizerBase:
     last_or_raise = A.finalizers.last_or_raise
     each = A.finalizers.each
     dispatch = A.concurrent.dispatch
-    to = A.finalizers.to
     lazy = Lazy
+    to = A.finalizers.to
+    to_file = A.io.to_file
+    to_csv = A.io.to_csv
+    to_json = A.io.to_json
+    to_jsonl = A.io.to_jsonl
 
 
 class Finalizer(FinalizerBase, Iterable[T]):

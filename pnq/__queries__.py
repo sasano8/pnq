@@ -65,6 +65,11 @@ class {{query.CLS}}:
     def as_aiter(self) -> "AsyncFinalizer[{{query.T}}]":
         return AsyncFinalizer(self)
 
+    to_file = Finalizer.to_file
+    to_csv = Finalizer.to_csv
+    to_json = Finalizer.to_json
+    to_jsonl = Finalizer.to_jsonl
+
     @property
     def _(self) -> "AsyncFinalizer[{{query.T}}]":
         return AsyncFinalizer(self)
@@ -97,8 +102,8 @@ class {{query.CLS}}:
     def len(self) -> int:
         return Finalizer.len(self)
 
-    def exists(self) -> bool:
-        return Finalizer.exists(self)
+    def exists(self, predicate=None) -> bool:
+        return Finalizer.exists(self, predicate)
 
     def all(self, selector: Callable[[{{query.T}}], Any]=lambda x: x) -> bool:
         return Finalizer.all(self, selector)
@@ -345,6 +350,8 @@ class {{query.CLS}}:
     def flat_recursive(self, selector: Callable[[{{query.T}}], Iterable[{{query.T}}]]) -> "{{sequence.SELF__}}[{{query.T}}]":
         return queryables.FlatRecursive(self, selector)
 
+    traverse = flat_recursive
+
     def pivot_unstack(self, default=None) -> "PairQuery[Any, List]":
         return queryables.PivotUnstack(self, default=default)
 
@@ -353,6 +360,9 @@ class {{query.CLS}}:
 
     def group_by(self, selector: Callable[[{{query.T}}], Tuple[K2, V2]] = lambda x: x) -> "{{pair.SELF__}}[K2, List[V2]]":
         return queryables.GroupBy(self, selector=selector)
+
+    def chain(self, *iterables):
+        return queryables.Chain(self, *iterables)
 
     def chunked(self, size: int) -> "Query[List[{{query.T}}]]":
         return queryables.Chunked(self, size=size)

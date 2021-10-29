@@ -64,6 +64,11 @@ class Query(Generic[T]):
     def as_aiter(self) -> "AsyncFinalizer[T]":
         return AsyncFinalizer(self)
 
+    to_file = Finalizer.to_file
+    to_csv = Finalizer.to_csv
+    to_json = Finalizer.to_json
+    to_jsonl = Finalizer.to_jsonl
+
     @property
     def _(self) -> "AsyncFinalizer[T]":
         return AsyncFinalizer(self)
@@ -82,8 +87,8 @@ class Query(Generic[T]):
     def len(self) -> int:
         return Finalizer.len(self)
 
-    def exists(self) -> bool:
-        return Finalizer.exists(self)
+    def exists(self, predicate=None) -> bool:
+        return Finalizer.exists(self, predicate)
 
     def all(self, selector: Callable[[T], Any] = lambda x: x) -> bool:
         return Finalizer.all(self, selector)
@@ -364,6 +369,8 @@ class Query(Generic[T]):
     def flat_recursive(self, selector: Callable[[T], Iterable[T]]) -> "Query[T]":
         return queryables.FlatRecursive(self, selector)
 
+    traverse = flat_recursive
+
     def pivot_unstack(self, default=None) -> "PairQuery[Any, List]":
         return queryables.PivotUnstack(self, default=default)
 
@@ -374,6 +381,9 @@ class Query(Generic[T]):
         self, selector: Callable[[T], Tuple[K2, V2]] = lambda x: x
     ) -> "PairQuery[K2, List[V2]]":
         return queryables.GroupBy(self, selector=selector)
+
+    def chain(self, *iterables):
+        return queryables.Chain(self, *iterables)
 
     def chunked(self, size: int) -> "Query[List[T]]":
         return queryables.Chunked(self, size=size)
@@ -477,6 +487,11 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
     def as_aiter(self) -> "AsyncFinalizer[Tuple[K,V]]":
         return AsyncFinalizer(self)
 
+    to_file = Finalizer.to_file
+    to_csv = Finalizer.to_csv
+    to_json = Finalizer.to_json
+    to_jsonl = Finalizer.to_jsonl
+
     @property
     def _(self) -> "AsyncFinalizer[Tuple[K,V]]":
         return AsyncFinalizer(self)
@@ -495,8 +510,8 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
     def len(self) -> int:
         return Finalizer.len(self)
 
-    def exists(self) -> bool:
-        return Finalizer.exists(self)
+    def exists(self, predicate=None) -> bool:
+        return Finalizer.exists(self, predicate)
 
     def all(self, selector: Callable[[Tuple[K, V]], Any] = lambda x: x) -> bool:
         return Finalizer.all(self, selector)
@@ -807,6 +822,8 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
     ) -> "Query[Tuple[K,V]]":
         return queryables.FlatRecursive(self, selector)
 
+    traverse = flat_recursive
+
     def pivot_unstack(self, default=None) -> "PairQuery[Any, List]":
         return queryables.PivotUnstack(self, default=default)
 
@@ -817,6 +834,9 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
         self, selector: Callable[[Tuple[K, V]], Tuple[K2, V2]] = lambda x: x
     ) -> "PairQuery[K2, List[V2]]":
         return queryables.GroupBy(self, selector=selector)
+
+    def chain(self, *iterables):
+        return queryables.Chain(self, *iterables)
 
     def chunked(self, size: int) -> "Query[List[Tuple[K,V]]]":
         return queryables.Chunked(self, size=size)
