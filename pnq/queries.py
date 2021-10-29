@@ -366,10 +366,8 @@ class Query(Generic[T]):
     def flat(self, selector: Callable[..., Iterable[R]] = None) -> "Query[R]":
         return queryables.Flat(self, selector)
 
-    def flat_recursive(self, selector: Callable[[T], Iterable[T]]) -> "Query[T]":
-        return queryables.FlatRecursive(self, selector)
-
-    traverse = flat_recursive
+    def traverse(self, selector: Callable[[T], Iterable[T]]) -> "Query[T]":
+        return queryables.Traverse(self, selector)
 
     def pivot_unstack(self, default=None) -> "PairQuery[Any, List]":
         return queryables.PivotUnstack(self, default=default)
@@ -817,12 +815,10 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
     def flat(self, selector: Callable[..., Iterable[R]] = None) -> "Query[R]":
         return queryables.Flat(self, selector)
 
-    def flat_recursive(
+    def traverse(
         self, selector: Callable[[Tuple[K, V]], Iterable[Tuple[K, V]]]
     ) -> "Query[Tuple[K,V]]":
-        return queryables.FlatRecursive(self, selector)
-
-    traverse = flat_recursive
+        return queryables.Traverse(self, selector)
 
     def pivot_unstack(self, default=None) -> "PairQuery[Any, List]":
         return queryables.PivotUnstack(self, default=default)

@@ -37,8 +37,8 @@ def flat(source: Iterable[T], selector=None):
         return (_ for elm in source for _ in selector(elm))
 
 
-def flat_recursive(source: Iterable[T], selector):
-    scanner = selectors.flat_recursive(selector)
+def traverse(source: Iterable[T], selector):
+    scanner = selectors.traverse(selector)
     for node in source:
         for x in scanner(node):
             yield x

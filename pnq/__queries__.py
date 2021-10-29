@@ -347,10 +347,8 @@ class {{query.CLS}}:
     def flat(self, selector: Callable[..., Iterable[R]] = None) -> "{{sequence.SELF__}}[R]":
         return queryables.Flat(self, selector)
 
-    def flat_recursive(self, selector: Callable[[{{query.T}}], Iterable[{{query.T}}]]) -> "{{sequence.SELF__}}[{{query.T}}]":
-        return queryables.FlatRecursive(self, selector)
-
-    traverse = flat_recursive
+    def traverse(self, selector: Callable[[{{query.T}}], Iterable[{{query.T}}]]) -> "{{sequence.SELF__}}[{{query.T}}]":
+        return queryables.Traverse(self, selector)
 
     def pivot_unstack(self, default=None) -> "PairQuery[Any, List]":
         return queryables.PivotUnstack(self, default=default)

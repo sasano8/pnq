@@ -20,7 +20,7 @@ __all__ = [
     "select_as_awaitable",
     "select_as_future",
     "reflect",
-    "flat_recursive",
+    "traverse",
     "cmp_to_key",
 ]
 
@@ -211,16 +211,17 @@ def _build_selector(single, multi, attr: bool = False):
     return reflector
 
 
-def flat_recursive(func):
-    def wrapper(x):
-        yield x
-        try:
-            nodes = func(x)
-            for node in nodes:
-                yield from wrapper(node)
+def traverse(selector):
+    from collections import deque
 
-        except Exception:
-            ...
+    def wrapper(root):
+        stack = deque()
+        stack.append(root)
+        while stack:
+            node = stack.popleft()
+            yield node
+            for x in selector(node):
+                stack.append(x)
 
     return wrapper
 

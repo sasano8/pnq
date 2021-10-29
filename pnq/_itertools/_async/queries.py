@@ -1,5 +1,6 @@
 import asyncio
 import random
+from collections import deque
 from typing import AsyncIterable, TypeVar
 
 from pnq import selectors
@@ -37,10 +38,10 @@ async def flat(source: AsyncIterable[T], selector=None):
         return (_ async for elm in source async for _ in selector(elm))
 
 
-async def flat_recursive(source: AsyncIterable[T], selector):
-    scanner = selectors.flat_recursive(selector)
-    async for node in source:
-        for x in scanner(node):
+async def traverse(source: AsyncIterable[T], selector):
+    scanner = selectors.traverse(selector)
+    async for root in source:
+        for x in scanner(root):
             yield x
 
 

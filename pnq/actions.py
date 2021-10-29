@@ -526,7 +526,7 @@ flat_map = flat
 
 
 @mark
-def flat_recursive(self, selector):
+def traverse(self, selector):
     """シーケンスの各要素から再帰的に複数ノードを選択し、選択されたノードを１つのシーケンスに平坦化します。
     各ルート要素から浅い順に列挙されます。
 
@@ -539,7 +539,7 @@ def flat_recursive(self, selector):
     ```
     >>> pnq.query(
     >>>     {"name": "a", "nodes": [{"name": "b", nodes: [{"name": c, "nodes": []}, {"name": "d", "nodes": []}}}]}]}
-    >>> ).flat_recursive(lambdax x: x["nodes"]).select("name").to(list)
+    >>> ).traverse(lambdax x: x["nodes"]).select("name").to(list)
     >>> ["a", "b", "c", "d"]
     ```
     """

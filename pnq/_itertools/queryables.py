@@ -123,9 +123,9 @@ class Flat(Query):
 
 
 @export
-class FlatRecursive(Query):
-    _ait = sm | A.queries.flat_recursive
-    _sit = sm | S.queries.flat_recursive
+class Traverse(Query):
+    _ait = sm | A.queries.traverse
+    _sit = sm | S.queries.traverse
 
     def __init__(self, source, selector):
         super().__init__(source)
