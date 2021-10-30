@@ -1,14 +1,17 @@
 import asyncio
 import random
-from collections import deque
-from typing import AsyncIterable, TypeVar
+from typing import AsyncIterable, Tuple, TypeVar
 
 from pnq import selectors
+from pnq._itertools.common import Listable, name_as
 from pnq.exceptions import DuplicateElementError, MustError, MustTypeError
 
-from ..common import Listable, name_as
+from . import finalizers
 
 T = TypeVar("T")
+K = TypeVar("K")
+V1 = TypeVar("V1")
+V2 = TypeVar("V2")
 
 
 @name_as("map")
@@ -176,6 +179,28 @@ async def join(source: AsyncIterable[T], size: int):
     table(User).join(Item, on=User.id == Item.id).select(User.id, Item.id)
 
     pass
+
+
+async def inner_join(
+    source: AsyncIterable[Tuple[K, V1]],
+    other: AsyncIterable[Tuple[K, V2]],
+):
+    """
+    Implementation for part of join_impl
+    :param other: other sequence to join with
+    :param sequence: first sequence to join with
+    :return: joined sequence
+    """
+    seq_kv = await finalizers.to_dict(Listable(source))
+    other_kv = await finalizers.to_dict(Listable(other))
+
+    keys = seq_kv.keys() if len(seq_kv) < len(other_kv) else other_kv.keys()
+    result = {}
+    for k in keys:
+        if k in seq_kv and k in other_kv:
+            result[k] = (seq_kv[k], other_kv[k])
+    for k, v in result.items():
+        yield k, v
 
 
 async def group_join(source: AsyncIterable[T], size: int):

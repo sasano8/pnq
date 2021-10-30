@@ -1,13 +1,17 @@
 import asyncio
 import random
-from typing import Iterable, TypeVar
+from typing import Iterable, Tuple, TypeVar
 
 from pnq import selectors
+from pnq._itertools.common import Listable, name_as
 from pnq.exceptions import DuplicateElementError, MustError, MustTypeError
 
-from ..common import Listable, name_as
+from . import finalizers
 
 T = TypeVar("T")
+K = TypeVar("K")
+V1 = TypeVar("V1")
+V2 = TypeVar("V2")
 
 
 @name_as("map")
@@ -39,8 +43,8 @@ def flat(source: Iterable[T], selector=None):
 
 def traverse(source: Iterable[T], selector):
     scanner = selectors.traverse(selector)
-    for node in source:
-        for x in scanner(node):
+    for root in source:
+        for x in scanner(root):
             yield x
 
 
@@ -175,6 +179,28 @@ def join(source: Iterable[T], size: int):
     table(User).join(Item, on=User.id == Item.id).select(User.id, Item.id)
 
     pass
+
+
+def inner_join(
+    source: Iterable[Tuple[K, V1]],
+    other: Iterable[Tuple[K, V2]],
+):
+    """
+    Implementation for part of join_impl
+    :param other: other sequence to join with
+    :param sequence: first sequence to join with
+    :return: joined sequence
+    """
+    seq_kv = finalizers.to_dict(Listable(source))
+    other_kv = finalizers.to_dict(Listable(other))
+
+    keys = seq_kv.keys() if len(seq_kv) < len(other_kv) else other_kv.keys()
+    result = {}
+    for k in keys:
+        if k in seq_kv and k in other_kv:
+            result[k] = (seq_kv[k], other_kv[k])
+    for k, v in result.items():
+        yield k, v
 
 
 def group_join(source: Iterable[T], size: int):

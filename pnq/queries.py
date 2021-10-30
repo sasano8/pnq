@@ -389,6 +389,9 @@ class Query(Generic[T]):
     def tee(self, size: int):
         return queryables.Tee(self, size=size)
 
+    def inner_join(self, right):
+        return queryables.InnerJoin(self, right)
+
     def join(self, right, on: Callable[[Tuple[list, list]], Callable], select):
         return queryables.Join(self, right, on=on, select=select)
 
@@ -839,6 +842,9 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
 
     def tee(self, size: int):
         return queryables.Tee(self, size=size)
+
+    def inner_join(self, right):
+        return queryables.InnerJoin(self, right)
 
     def join(self, right, on: Callable[[Tuple[list, list]], Callable], select):
         return queryables.Join(self, right, on=on, select=select)

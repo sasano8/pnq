@@ -7,7 +7,6 @@ from typing_extensions import Literal
 
 from ..io import universal_write_open
 from .finalizers import first_or
-from .queries import chain
 
 
 async def to_file(

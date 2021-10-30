@@ -214,16 +214,21 @@ def _build_selector(single, multi, attr: bool = False):
 def traverse(selector):
     from collections import deque
 
-    def wrapper(root):
-        stack = deque()
-        stack.append(root)
-        while stack:
-            node = stack.popleft()
+    # breadth-first-search
+    def traverse(root):
+        queue = deque()  # type: ignore
+        queue.append(root)
+        while queue:
+            node = queue.popleft()
             yield node
-            for x in selector(node):
-                stack.append(x)
+            children = selector(node)
+            if children is None:
+                children = []
 
-    return wrapper
+            for x in children:
+                queue.append(x)
+
+    return traverse
 
 
 async def _awaitable_wrapper(awaitable):
