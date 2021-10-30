@@ -142,7 +142,7 @@ def chain(*iterables):
                 yield x
 
 
-def chunked(source: Iterable[T], size: int):
+def chunk(source: Iterable[T], size: int):
     current = 0
     running = True
 

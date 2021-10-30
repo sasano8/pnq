@@ -142,7 +142,7 @@ async def chain(*iterables):
                 yield x
 
 
-async def chunked(source: AsyncIterable[T], size: int):
+async def chunk(source: AsyncIterable[T], size: int):
     current = 0
     running = True
 

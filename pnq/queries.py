@@ -383,8 +383,8 @@ class Query(Generic[T]):
     def chain(self, *iterables):
         return queryables.Chain(self, *iterables)
 
-    def chunked(self, size: int) -> "Query[List[T]]":
-        return queryables.Chunked(self, size=size)
+    def chunk(self, size: int) -> "Query[List[T]]":
+        return queryables.Chunk(self, size=size)
 
     def tee(self, size: int):
         return queryables.Tee(self, size=size)
@@ -837,8 +837,8 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
     def chain(self, *iterables):
         return queryables.Chain(self, *iterables)
 
-    def chunked(self, size: int) -> "Query[List[Tuple[K,V]]]":
-        return queryables.Chunked(self, size=size)
+    def chunk(self, size: int) -> "Query[List[Tuple[K,V]]]":
+        return queryables.Chunk(self, size=size)
 
     def tee(self, size: int):
         return queryables.Tee(self, size=size)

@@ -9,7 +9,7 @@ from pnq.concurrent import get_default_pool
 from pnq.inspect import is_coroutine_function
 from pnq.protocols import PExecutor
 
-from .queries import chunked
+from .queries import chunk
 
 T = TypeVar("T")
 
@@ -32,7 +32,7 @@ def parallel(source: Iterable[T], func, executor: PExecutor, *, unpack="", chunk
         runner = _procceed_async if asyncio.iscoroutine(func) else _procceed
         runner = partial(runner, new_func)
 
-        tasks = [submit(runner, chunck) for chunck in chunked(source, chunksize)]
+        tasks = [submit(runner, chunked) for chunked in chunk(source, chunksize)]
         for task in tasks:
             for x in task.result():
                 yield x
@@ -65,8 +65,8 @@ def dispatch(
         runner = _procceed_async if asyncio.iscoroutine(func) else _procceed
         runner = partial(runner, new_func)
 
-        for chunck in chunked(source, chunksize):
-            future = submit(runner, chunck)
+        for chunked in chunk(source, chunksize):
+            future = submit(runner, chunked)
             future.add_done_callback(on_complete)
 
     else:

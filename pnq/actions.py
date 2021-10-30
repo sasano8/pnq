@@ -651,7 +651,7 @@ def group_by(self, selector=lambda x: x):
 
 
 @mark
-def chunked(self, size: int):
+def chunk(self, size: int):
     """
     シーケンスを指定したサイズ毎に分割する。
     """

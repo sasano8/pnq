@@ -148,22 +148,22 @@ async def take_async(aiter, *args):
         return
 
 
-def chunked(iterable, chunksize: int):
+def chunk(iterable, chunksize: int):
     it = iter(iterable)
     while True:
-        chunk = list(take(it, chunksize))
-        if not chunk:
+        chunked = list(take(it, chunksize))
+        if not chunked:
             return
-        yield chunk
+        yield chunked
 
 
-async def chunked_async(aiter, chunksize: int):
+async def chunk_async(aiter, chunksize: int):
     it = aiter.__aiter__()
     while True:
-        chunk = [x async for x in take_async(it, chunksize)]
-        if not chunk:
+        chunked = [x async for x in take_async(it, chunksize)]
+        if not chunked:
             return
-        yield chunk
+        yield chunked
 
 
 def chain_chunks(iterable):
@@ -191,7 +191,7 @@ def map_each_chunk(
 
     results = map(
         executor,
-        chunked(iterable, chunksize=chunksize),
+        chunk(iterable, chunksize=chunksize),
         partial(processer, func, unpack=unpack),
         timeout=timeout,
     )
@@ -261,18 +261,18 @@ class Chunk(IterBase):
     def _iter_impl(self):
         it = iter(self.source)
         while True:
-            chunk = list(itertools.islice(it, self.chunksize))
-            if not chunk:
+            chunked = list(itertools.islice(it, self.chunksize))
+            if not chunked:
                 return
-            yield chunk
+            yield chunked
 
     async def _aiter_impl(self):
         it = self.source.__aiter__()
         while True:
-            chunk = [x async for x in take_async(it, self.chunksize)]
-            if not chunk:
+            chunked = [x async for x in take_async(it, self.chunksize)]
+            if not chunked:
                 return
-            yield chunk
+            yield chunked
 
 
 # TODO: 塊ごとに１ワーカーで処理するのか、要素ごとに１ワーカーで処理するのか使い分けれるといい
@@ -341,8 +341,8 @@ class Map(IterBase):
                 for future in fs:
                     future.cancel()
 
-        for chunk in Chunk(it, chunksize):
-            fs = list(map_iter_submit(executor, chunk, func, unpack=unpack))
+        for chunked in Chunk(it, chunksize):
+            fs = list(map_iter_submit(executor, chunked, func, unpack=unpack))
             for x in result_iterator(fs):
                 yield x
 
@@ -370,13 +370,13 @@ class Map(IterBase):
         is_async = cls._get_is_aiter(it)
 
         if is_async:
-            async for chunk in Chunk(it, chunksize):
-                fs = list(map_iter_asubmit(executor, chunk, func, unpack=unpack))
+            async for chunked in Chunk(it, chunksize):
+                fs = list(map_iter_asubmit(executor, chunked, func, unpack=unpack))
                 async for x in result_iterator(fs):
                     yield x
 
         else:
-            for chunk in Chunk(it, chunksize):
-                fs = list(map_iter_asubmit(executor, chunk, func, unpack=unpack))
+            for chunked in Chunk(it, chunksize):
+                fs = list(map_iter_asubmit(executor, chunked, func, unpack=unpack))
                 async for x in result_iterator(fs):
                     yield x

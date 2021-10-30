@@ -823,10 +823,10 @@ class Test020_Transform:
         result = [1, 2, 3, 4, 5, 6, 7, 8, 9]
         assert pnq([1, 2, 3]).chain([4, 5, 6], [7, 8, 9]).to(list) == result
 
-    def test_chunked(self):
-        assert pnq([]).chunked(1).to(list) == []
-        assert pnq([1, 2, 3]).chunked(1).to(list) == [[1], [2], [3]]
-        assert pnq([1, 2, 3, 4, 5]).chunked(2).to(list) == [[1, 2], [3, 4], [5]]
+    def test_chunk(self):
+        assert pnq([]).chunk(1).to(list) == []
+        assert pnq([1, 2, 3]).chunk(1).to(list) == [[1], [2], [3]]
+        assert pnq([1, 2, 3, 4, 5]).chunk(2).to(list) == [[1, 2], [3, 4], [5]]
 
     def test_tee(self):
         pass

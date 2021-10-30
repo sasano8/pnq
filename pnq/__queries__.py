@@ -362,8 +362,8 @@ class {{query.CLS}}:
     def chain(self, *iterables):
         return queryables.Chain(self, *iterables)
 
-    def chunked(self, size: int) -> "Query[List[{{query.T}}]]":
-        return queryables.Chunked(self, size=size)
+    def chunk(self, size: int) -> "Query[List[{{query.T}}]]":
+        return queryables.Chunk(self, size=size)
 
     def tee(self, size: int):
         return queryables.Tee(self, size=size)

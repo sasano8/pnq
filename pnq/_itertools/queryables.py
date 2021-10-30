@@ -200,9 +200,9 @@ class Chain(Query):
 
 
 @export
-class Chunked(Query):
-    _ait = sm | A.queries.chunked
-    _sit = sm | S.queries.chunked
+class Chunk(Query):
+    _ait = sm | A.queries.chunk
+    _sit = sm | S.queries.chunk
 
     def __init__(self, source, size: int):
         super().__init__(source)

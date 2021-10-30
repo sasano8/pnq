@@ -39,7 +39,7 @@
 ::: pnq.actions.group_by
     :docstring:
 
-::: pnq.actions.chunked
+::: pnq.actions.chunk
     :docstring:
 
 ::: pnq.actions.join
