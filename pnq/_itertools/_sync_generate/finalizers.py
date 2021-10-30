@@ -2,14 +2,12 @@ import asyncio
 from decimal import Decimal, InvalidOperation
 from typing import Any, Callable, Iterable, NoReturn, Sequence, TypeVar, Union
 
-from typing_extensions import Literal
-
+from pnq._itertools.common import Listable, name_as
+from pnq._itertools.op import MAP_ASSIGN_OP, TH_ASSIGN_OP, TH_ROUND
 from pnq.exceptions import NoElementError, NotOneElementError
 from pnq.selectors import starmap
 
-from ..common import Listable, name_as
-from ..op import MAP_ASSIGN_OP, TH_ASSIGN_OP, TH_ROUND
-from .queries import _filter
+from . import queries
 
 T = TypeVar("T")
 
@@ -27,18 +25,18 @@ def _len(source: Iterable[T]) -> int:
     return count
 
 
-def empty(source: Iterable[T]) -> bool:
-    for x in source:
-        return False
-
-    return True
-
-
 def exists(source: Iterable[T], predicate=None) -> bool:
-    for x in _filter(source, predicate):
+    for x in queries._filter(source, predicate):
         return True
 
     return False
+
+
+def empty(source: Iterable[T], predicate=None) -> bool:
+    for x in queries._filter(source, predicate):
+        return False
+
+    return True
 
 
 @name_as("all")
@@ -309,19 +307,13 @@ def last_or_raise(source: Iterable[T], exc: Union[str, Exception]):
         return result
 
 
-def to_file(source: Iterable[T], path: str, mode: Literal["w", "a"] = "w"):
-    with open(path, mode) as f:
-        for x in source:
-            f.write(str(x) + "\n")
-
-
-def to_csv(path: str):
-    raise NotImplementedError()
-
-
-def to_json(path: str):
-    raise NotImplementedError()
-
-
-def to_jsonl(path: str):
-    raise NotImplementedError()
+def to_dict(key_values):
+    if hasattr(key_values, "__iter__"):
+        result = {}
+        for k, v in key_values:
+            result[k] = v
+        return result
+    elif hasattr(key_values, "__iter__"):
+        return dict(key_values)
+    else:
+        raise TypeError(f"{key_values} no has __iter__ or __aiter__")

@@ -366,10 +366,8 @@ class Query(Generic[T]):
     def flat(self, selector: Callable[..., Iterable[R]] = None) -> "Query[R]":
         return queryables.Flat(self, selector)
 
-    def flat_recursive(self, selector: Callable[[T], Iterable[T]]) -> "Query[T]":
-        return queryables.FlatRecursive(self, selector)
-
-    traverse = flat_recursive
+    def traverse(self, selector: Callable[[T], Iterable[T]]) -> "Query[T]":
+        return queryables.Traverse(self, selector)
 
     def pivot_unstack(self, default=None) -> "PairQuery[Any, List]":
         return queryables.PivotUnstack(self, default=default)
@@ -385,11 +383,14 @@ class Query(Generic[T]):
     def chain(self, *iterables):
         return queryables.Chain(self, *iterables)
 
-    def chunked(self, size: int) -> "Query[List[T]]":
-        return queryables.Chunked(self, size=size)
+    def chunk(self, size: int) -> "Query[List[T]]":
+        return queryables.Chunk(self, size=size)
 
     def tee(self, size: int):
         return queryables.Tee(self, size=size)
+
+    def inner_join(self, right):
+        return queryables.InnerJoin(self, right)
 
     def join(self, right, on: Callable[[Tuple[list, list]], Callable], select):
         return queryables.Join(self, right, on=on, select=select)
@@ -817,12 +818,10 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
     def flat(self, selector: Callable[..., Iterable[R]] = None) -> "Query[R]":
         return queryables.Flat(self, selector)
 
-    def flat_recursive(
+    def traverse(
         self, selector: Callable[[Tuple[K, V]], Iterable[Tuple[K, V]]]
     ) -> "Query[Tuple[K,V]]":
-        return queryables.FlatRecursive(self, selector)
-
-    traverse = flat_recursive
+        return queryables.Traverse(self, selector)
 
     def pivot_unstack(self, default=None) -> "PairQuery[Any, List]":
         return queryables.PivotUnstack(self, default=default)
@@ -838,11 +837,14 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
     def chain(self, *iterables):
         return queryables.Chain(self, *iterables)
 
-    def chunked(self, size: int) -> "Query[List[Tuple[K,V]]]":
-        return queryables.Chunked(self, size=size)
+    def chunk(self, size: int) -> "Query[List[Tuple[K,V]]]":
+        return queryables.Chunk(self, size=size)
 
     def tee(self, size: int):
         return queryables.Tee(self, size=size)
+
+    def inner_join(self, right):
+        return queryables.InnerJoin(self, right)
 
     def join(self, right, on: Callable[[Tuple[list, list]], Callable], select):
         return queryables.Join(self, right, on=on, select=select)

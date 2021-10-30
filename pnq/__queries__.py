@@ -347,10 +347,8 @@ class {{query.CLS}}:
     def flat(self, selector: Callable[..., Iterable[R]] = None) -> "{{sequence.SELF__}}[R]":
         return queryables.Flat(self, selector)
 
-    def flat_recursive(self, selector: Callable[[{{query.T}}], Iterable[{{query.T}}]]) -> "{{sequence.SELF__}}[{{query.T}}]":
-        return queryables.FlatRecursive(self, selector)
-
-    traverse = flat_recursive
+    def traverse(self, selector: Callable[[{{query.T}}], Iterable[{{query.T}}]]) -> "{{sequence.SELF__}}[{{query.T}}]":
+        return queryables.Traverse(self, selector)
 
     def pivot_unstack(self, default=None) -> "PairQuery[Any, List]":
         return queryables.PivotUnstack(self, default=default)
@@ -364,11 +362,14 @@ class {{query.CLS}}:
     def chain(self, *iterables):
         return queryables.Chain(self, *iterables)
 
-    def chunked(self, size: int) -> "Query[List[{{query.T}}]]":
-        return queryables.Chunked(self, size=size)
+    def chunk(self, size: int) -> "Query[List[{{query.T}}]]":
+        return queryables.Chunk(self, size=size)
 
     def tee(self, size: int):
         return queryables.Tee(self, size=size)
+
+    def inner_join(self, right):
+        return queryables.InnerJoin(self, right)
 
     def join(self, right, on: Callable[[Tuple[list, list]], Callable], select):
         return queryables.Join(self, right, on=on, select=select)

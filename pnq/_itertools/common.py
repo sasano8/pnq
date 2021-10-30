@@ -12,10 +12,22 @@ class Listable:
         self.selector = selector
 
     def __iter__(self):
-        return map_iter(self.source, self.selector)
+        selector = self.selector
+        it = self.source.__iter__()
+
+        if selector is None:
+            return it
+        else:
+            return (selector(x) for x in it)
 
     def __aiter__(self):
-        return map_aiter(self.source, self.selector)
+        selector = self.selector
+        ait = self.source.__aiter__()
+
+        if selector is None:
+            return ait
+        else:
+            return (selector(x) async for x in ait)
 
     def __await__(self):
         return self._result_async().__await__()
@@ -25,21 +37,3 @@ class Listable:
 
     async def _result_async(self):
         return [x async for x in self]
-
-
-def map_iter(source, selector):
-    it = source.__iter__()
-
-    if selector is None:
-        return it
-    else:
-        return (selector(x) for x in it)
-
-
-def map_aiter(source, selector):
-    ait = source.__aiter__()
-
-    if selector is None:
-        return ait
-    else:
-        return (selector(x) async for x in ait)

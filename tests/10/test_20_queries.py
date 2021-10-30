@@ -781,7 +781,7 @@ class Test020_Transform:
         assert pnq([(0, "abc")]).flat(lambda x: x[1]).to(list) == ["a", "b", "c"]
         assert pnq([(0, [1, 2, 3])]).flat(lambda x: x[1]).to(list) == [1, 2, 3]
 
-    def test_flat_recursive(self):
+    def test_traverse(self):
         data = [
             {
                 "name": "root1",
@@ -800,9 +800,15 @@ class Test020_Transform:
                 "nodes": [{"name": "n5", "nodes": []}],
             },
         ]
-        assert pnq(data).flat_recursive(lambda x: x["nodes"]).select("name").to(
-            list
-        ) == ["root1", "n1", "n2", "n3", "n4", "root2", "n5"]
+        assert pnq(data).traverse(lambda x: x["nodes"]).select("name").to(list) == [
+            "root1",
+            "n1",
+            "n2",
+            "n3",
+            "n4",
+            "root2",
+            "n5",
+        ]
 
     def test_cast(self):
         # castは型注釈を誤魔化す
@@ -812,6 +818,18 @@ class Test020_Transform:
 
     def test_enumerate(self):
         assert pnq([1]).enumerate().to(list) == [(0, 1)]
+
+    def test_chain(self):
+        result = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+        assert pnq([1, 2, 3]).chain([4, 5, 6], [7, 8, 9]).to(list) == result
+
+    def test_chunk(self):
+        assert pnq([]).chunk(1).to(list) == []
+        assert pnq([1, 2, 3]).chunk(1).to(list) == [[1], [2], [3]]
+        assert pnq([1, 2, 3, 4, 5]).chunk(2).to(list) == [[1, 2], [3, 4], [5]]
+
+    def test_tee(self):
+        pass
 
     def test_group_by(self):
         data = [
@@ -832,17 +850,11 @@ class Test020_Transform:
             ("red", [2, 5]),
         ]
 
-    def test_chain(self):
-        result = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-        assert pnq([1, 2, 3]).chain([4, 5, 6], [7, 8, 9]).to(list) == result
+    def test_inner_join(self):
+        left = [("a", 1), ("b", 2)]
+        right = [("b", 3), ("c", 4)]
 
-    def test_chunked(self):
-        assert pnq([]).chunked(1).to(list) == []
-        assert pnq([1, 2, 3]).chunked(1).to(list) == [[1], [2], [3]]
-        assert pnq([1, 2, 3, 4, 5]).chunked(2).to(list) == [[1, 2], [3, 4], [5]]
-
-    def test_tee(self):
-        pass
+        assert pnq(left).inner_join(right).result() == [("b", (2, 3))]
 
     def test_join(self):
         pass

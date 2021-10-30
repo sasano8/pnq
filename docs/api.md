@@ -21,7 +21,7 @@
 ::: pnq.actions.flat
     :docstring:
 
-::: pnq.actions.flat_recursive
+::: pnq.actions.traverse
     :docstring:
 
 ::: pnq.actions.pivot_unstack
@@ -39,7 +39,7 @@
 ::: pnq.actions.group_by
     :docstring:
 
-::: pnq.actions.chunked
+::: pnq.actions.chunk
     :docstring:
 
 ::: pnq.actions.join

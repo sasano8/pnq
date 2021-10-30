@@ -2,14 +2,12 @@ import asyncio
 from decimal import Decimal, InvalidOperation
 from typing import Any, AsyncIterable, Callable, NoReturn, Sequence, TypeVar, Union
 
-from typing_extensions import Literal
-
+from pnq._itertools.common import Listable, name_as
+from pnq._itertools.op import MAP_ASSIGN_OP, TH_ASSIGN_OP, TH_ROUND
 from pnq.exceptions import NoElementError, NotOneElementError
 from pnq.selectors import starmap
 
-from ..common import Listable, name_as
-from ..op import MAP_ASSIGN_OP, TH_ASSIGN_OP, TH_ROUND
-from .queries import _filter
+from . import queries
 
 T = TypeVar("T")
 
@@ -27,18 +25,18 @@ async def _len(source: AsyncIterable[T]) -> int:
     return count
 
 
-async def empty(source: AsyncIterable[T]) -> bool:
-    async for x in source:
-        return False
-
-    return True
-
-
 async def exists(source: AsyncIterable[T], predicate=None) -> bool:
-    async for x in _filter(source, predicate):
+    async for x in queries._filter(source, predicate):
         return True
 
     return False
+
+
+async def empty(source: AsyncIterable[T], predicate=None) -> bool:
+    async for x in queries._filter(source, predicate):
+        return False
+
+    return True
 
 
 @name_as("all")
@@ -309,19 +307,13 @@ async def last_or_raise(source: AsyncIterable[T], exc: Union[str, Exception]):
         return result
 
 
-async def to_file(source: AsyncIterable[T], path: str, mode: Literal["w", "a"] = "w"):
-    with open(path, mode) as f:
-        async for x in source:
-            f.write(str(x) + "\n")
-
-
-async def to_csv(path: str):
-    raise NotImplementedError()
-
-
-async def to_json(path: str):
-    raise NotImplementedError()
-
-
-async def to_jsonl(path: str):
-    raise NotImplementedError()
+async def to_dict(key_values):
+    if hasattr(key_values, "__aiter__"):
+        result = {}
+        async for k, v in key_values:
+            result[k] = v
+        return result
+    elif hasattr(key_values, "__iter__"):
+        return dict(key_values)
+    else:
+        raise TypeError(f"{key_values} no has __iter__ or __aiter__")

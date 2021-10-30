@@ -3,7 +3,6 @@ from typing import (
     AbstractSet,
     AsyncIterable,
     Callable,
-    Generic,
     Iterable,
     List,
     Mapping,
@@ -13,11 +12,11 @@ from typing import (
     Union,
 )
 
+from pnq import selectors
 from pnq._itertools.common import name_as
 from pnq.exceptions import NotFoundError
 from pnq.types import Arguments
 
-from .. import selectors
 from . import _async as A
 from . import _sync as S
 from .core import IterType
@@ -123,9 +122,9 @@ class Flat(Query):
 
 
 @export
-class FlatRecursive(Query):
-    _ait = sm | A.queries.flat_recursive
-    _sit = sm | S.queries.flat_recursive
+class Traverse(Query):
+    _ait = sm | A.queries.traverse
+    _sit = sm | S.queries.traverse
 
     def __init__(self, source, selector):
         super().__init__(source)
@@ -175,6 +174,16 @@ class Join(Query):
 
 
 @export
+class InnerJoin(Query):
+    _ait = sm | A.queries.inner_join
+    _sit = sm | S.queries.inner_join
+
+    def __init__(self, source, right):
+        super().__init__(source)
+        self._args = Arguments(right)
+
+
+@export
 class GroupJoin(Query):
     _ait = sm | A.queries.group_join
     _sit = sm | S.queries.group_join
@@ -191,9 +200,9 @@ class Chain(Query):
 
 
 @export
-class Chunked(Query):
-    _ait = sm | A.queries.chunked
-    _sit = sm | S.queries.chunked
+class Chunk(Query):
+    _ait = sm | A.queries.chunk
+    _sit = sm | S.queries.chunk
 
     def __init__(self, source, size: int):
         super().__init__(source)

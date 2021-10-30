@@ -20,7 +20,7 @@ __all__ = [
     "select_as_awaitable",
     "select_as_future",
     "reflect",
-    "flat_recursive",
+    "traverse",
     "cmp_to_key",
 ]
 
@@ -211,18 +211,24 @@ def _build_selector(single, multi, attr: bool = False):
     return reflector
 
 
-def flat_recursive(func):
-    def wrapper(x):
-        yield x
-        try:
-            nodes = func(x)
-            for node in nodes:
-                yield from wrapper(node)
+def traverse(selector):
+    from collections import deque
 
-        except Exception:
-            ...
+    # breadth-first-search
+    def traverse(root):
+        queue = deque()  # type: ignore
+        queue.append(root)
+        while queue:
+            node = queue.popleft()
+            yield node
+            children = selector(node)
+            if children is None:
+                children = []
 
-    return wrapper
+            for x in children:
+                queue.append(x)
+
+    return traverse
 
 
 async def _awaitable_wrapper(awaitable):

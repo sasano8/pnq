@@ -10,7 +10,7 @@ from pnq.protocols import PExecutor
 from pnq.selectors import starmap
 
 from ..common import Listable
-from .queries import _enumerate, chunked
+from .queries import _enumerate, chunk
 
 T = TypeVar("T")
 
@@ -34,7 +34,7 @@ def parallel(source: Iterable[T], func, executor: PExecutor, *, unpack="", chunk
         runner = _procceed_async if asyncio.iscoroutine(func) else _procceed
         runner = partial(runner, new_func)
 
-        tasks = [submit(runner, chunck) for chunck in chunked(source, chunksize)]
+        tasks = [submit(runner, chuncked) for chuncked in chunk(source, chunksize)]
         for task in tasks:
             for x in task:
                 yield x
@@ -67,8 +67,8 @@ def dispatch(
         runner = _procceed_async if asyncio.iscoroutine(func) else _procceed
         runner = partial(runner, new_func)
 
-        for chunck in chunked(source, chunksize):
-            future = submit(runner, chunck)
+        for chuncked in chunk(source, chunksize):
+            future = submit(runner, chuncked)
             future.add_done_callback(on_complete)
             asyncio.sleep(0)
 
@@ -191,12 +191,6 @@ def gather_tagged(source: Iterable[T], selector=None, parallel: int = 1, timeout
             tag, task = tasks.pop(0)
             yield tag, task
 
-        # async for chunk in chunked(Listable(source, selector), size=parallel):
-        #     results = await asyncio.gather(
-        #         *(asyncio.wait_for(x, timeout) for tag, x in chunk)
-        #     )
-        #     for tagged_result in ((chunk[i][0], x) for i, x in enumerate(results)):
-        #         yield tagged_result
     else:
         for tag, awaitable in Listable(source, selector):
             yield tag, asyncio.wait_for(awaitable, timeout)
