@@ -42,7 +42,7 @@ jobs:
 
       - name: Load cached venv
         id: cache-venv
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: .venv
           key: venv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
@@ -53,7 +53,7 @@ jobs:
 
       # - name: Load cached node_module
       #   id: cache-node_module
-      #   uses: actions/cache@v2
+      #   uses: actions/cache@v3
       #   with:
       #     path: ./ui/node_modules
       #     key: node_module-${{ runner.os }}-${{ hashFiles('**/ui/package-lock.json') }}
