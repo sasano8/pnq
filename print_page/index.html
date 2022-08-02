@@ -10,14 +10,14 @@
       
       
       
-        <link rel="canonical" href="https://github.com/sasano8/pnq/api/">
+        <link rel="canonical" href="https://github.com/sasano8/pnq/print_page/">
       
       <link rel="icon" href="../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.3.1, mkdocs-material-8.3.9">
     
     
       
-        <title>インターフェース - PNQ</title>
+        <title>印刷用ページ - PNQ</title>
       
     
     
@@ -60,13 +60,19 @@
     
       <link rel="stylesheet" href="https://unpkg.com/mermaid@8.0.0/dist/mermaid.css">
     
-    <script>__md_scope=new URL("..",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("/sasano8/pnq/",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
     
     
-  </head>
+  
+        <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            remove_material_navigation();remove_mkdocs_theme_navigation();generate_toc();
+        })
+        </script>
+        </head>
   
   
     
@@ -88,7 +94,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#_1" class="md-skip">
+        <a href="#" class="md-skip">
           コンテンツにスキップ
         </a>
       
@@ -121,7 +127,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              インターフェース
+              印刷用ページ
             
           </span>
         </div>
@@ -281,108 +287,11 @@
 
   
   
-    
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          インターフェース
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
         インターフェース
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="目次">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      目次
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#transforming" class="md-nav__link">
-    Transforming
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#filtering" class="md-nav__link">
-    Filtering
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#validating" class="md-nav__link">
-    Validating
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#partitioning" class="md-nav__link">
-    Partitioning
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#sorting" class="md-nav__link">
-    Sorting
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#expanding" class="md-nav__link">
-    Expanding
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#finalizing-executing" class="md-nav__link">
-    Finalizing - Executing
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#finalizing-aggregating" class="md-nav__link">
-    Finalizing - Aggregating
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#finalizing-getting" class="md-nav__link">
-    Finalizing - Getting
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -455,9 +364,86 @@
   
   
     <li class="md-nav__item">
-      <a href="../print_page/" class="md-nav__link">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          印刷用ページ
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         印刷用ページ
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#" class="md-nav__link">
+    1. はじめに
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick_start" class="md-nav__link">
+    2. 入門
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#api" class="md-nav__link">
+    3. インターフェース
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#class" class="md-nav__link">
+    4. クラス
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#exceptions" class="md-nav__link">
+    5. 例外クラス
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced_usage" class="md-nav__link">
+    6. 高度な使用方法
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#performance" class="md-nav__link">
+    7. 性能
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -479,8 +465,6 @@
   
   
   
-    
-  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -489,64 +473,50 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#transforming" class="md-nav__link">
-    Transforming
+  <a href="#" class="md-nav__link">
+    1. はじめに
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#filtering" class="md-nav__link">
-    Filtering
+  <a href="#quick_start" class="md-nav__link">
+    2. 入門
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#validating" class="md-nav__link">
-    Validating
+  <a href="#api" class="md-nav__link">
+    3. インターフェース
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#partitioning" class="md-nav__link">
-    Partitioning
+  <a href="#class" class="md-nav__link">
+    4. クラス
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#sorting" class="md-nav__link">
-    Sorting
+  <a href="#exceptions" class="md-nav__link">
+    5. 例外クラス
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#expanding" class="md-nav__link">
-    Expanding
+  <a href="#advanced_usage" class="md-nav__link">
+    6. 高度な使用方法
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#finalizing-executing" class="md-nav__link">
-    Finalizing - Executing
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#finalizing-aggregating" class="md-nav__link">
-    Finalizing - Aggregating
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#finalizing-getting" class="md-nav__link">
-    Finalizing - Getting
+  <a href="#performance" class="md-nav__link">
+    7. 性能
   </a>
   
 </li>
@@ -563,22 +533,307 @@
             <article class="md-content__inner md-typeset">
               
 
-    <a href="../print_page/" title="印刷用ページ" class="md-content__button md-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 3H6v4h12m1 5a1 1 0 0 1-1-1 1 1 0 0 1 1-1 1 1 0 0 1 1 1 1 1 0 0 1-1 1m-3 7H8v-5h8m3-6H5a3 3 0 0 0-3 3v6h4v4h12v-4h4v-6a3 3 0 0 0-3-3Z"/></svg>
-    </a>
-
 
 
 
                 
-  <a href="https://github.com/sasano8/pnq/edit/main/docs/api.md" title="編集" class="md-content__button md-icon">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
-  </a>
+
+
+<div id="print-site-page" class="print-site-enumerate-headings print-site-enumerate-figures">
+        <section id="print-site-cover-page">
+            
+<div>
+
+    
+        <h1>PNQ</h1>
+    
+
+</div>
+
+
+<table>
+
+    
+    <tr>
+        <td>Description</td>
+        <td>PNQ is a Python implementation like Language Integrated Query (LINQ).</td>
+    </tr>
+    
+
+    
+
+    
+    <tr>
+        <td>Repository</td>
+        <td><a href="https://github.com/sasano8/pnq">https://github.com/sasano8/pnq</a></td>
+    </tr>
+    
+
+    
+
+</table>
 
 
 
-<h1 id="_1">インターフェース</h1>
-<h2 id="transforming">Transforming</h2>
+
+
+        </section>
+        
+        <div id="print-site-banner">
+            <p>
+    <em>印刷用ページ</em>
+</p>
+<p>
+全てのページを１つにまとめた印刷用のページです。<br>
+PDFとして保存したい場合は、<code>印刷 -> PDFに保存</code>を実行してください。
+</p>
+        </div>
+        
+        <section class="print-page">
+            <div id="print-page-toc" data-toc-depth="6">
+                <nav role='navigation' class='print-page-toc-nav'>
+                <h1 class='print-page-toc-title'>目次</h1>
+                </nav>
+            </div>
+        </section>
+        <section class="print-page" id="index"><h1 id="index-pnq">PNQ</h1>
+<p><a href="https://github.com/sasano8/pnq/actions"><img alt="CI" src="https://github.com/sasano8/pnq/actions/workflows/test.yml/badge.svg" /></a>
+<a href="https://pypi.python.org/pypi/pnq"><img alt="pypi" src="https://img.shields.io/pypi/v/pnq.svg" /></a>
+<a href="https://pepy.tech/project/pnq"><img alt="Downloads" src="https://pepy.tech/badge/pnq/month" /></a></p>
+<p>PNQ is a Python implementation like Language Integrated Query (LINQ).</p>
+<div class="admonition danger">
+<p class="admonition-title">Danger</p>
+<p>PNQはベータ版です。</p>
+<ul>
+<li>現在、ドキュメントとAPIが一致していません。</li>
+<li>ライブラリが十分な品質に到達するまで、頻繁に内部実装やAPIが更新される恐れがあります。</li>
+<li>本番環境では利用しないでください。</li>
+</ul>
+</div>
+<hr />
+<h2 id="index-features">Features</h2>
+<ul>
+<li>コレクション操作に関する多彩な操作</li>
+<li>アクセシブルなインタフェース</li>
+<li>型ヒントの活用</li>
+<li>非同期ストリームに対応</li>
+</ul>
+<h2 id="index-similar-tools">Similar tools</h2>
+<ul>
+<li><a href="https://github.com/EntilZha/PyFunctional">PyFunctional</a></li>
+<li><a href="https://github.com/avilum/linqit">linqit</a></li>
+<li><a href="https://github.com/jakkes/python-linq">python-linq</a></li>
+<li><a href="https://github.com/omnilib/aioitertools">aioitertools</a></li>
+<li><a href="https://github.com/maxfischer2781/asyncstdlib">asyncstdlib</a></li>
+<li><a href="https://github.com/sixty-north/asq">asq</a></li>
+</ul>
+<h2 id="index-documentation">Documentation</h2>
+<ul>
+<li>See <a href="https://sasano8.github.io/pnq/">documentation</a> for more details.</li>
+</ul>
+<h2 id="index-dependencies">Dependencies</h2>
+<ul>
+<li>Python 3.7+</li>
+</ul>
+<h2 id="index-installation">Installation</h2>
+<p>Install with pip:</p>
+<div class="highlight"><pre><span></span><code>$ pip install pnq
+</code></pre></div>
+<h2 id="index-getting-started">Getting Started</h2>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">pnq</span>
+
+<span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="c1"># =&gt; 2, 4, 6</span>
+
+<span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+<span class="c1"># =&gt; [2, 4, 6]</span>
+
+<span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">one</span><span class="p">()</span>
+<span class="c1"># =&gt; 2</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">import</span> <span class="nn">pnq</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">aiter</span><span class="p">():</span>
+    <span class="k">yield</span> <span class="mi">1</span>
+    <span class="k">yield</span> <span class="mi">2</span>
+    <span class="k">yield</span> <span class="mi">3</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="k">async</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">aiter</span><span class="p">())</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="c1"># =&gt; 2, 4, 6</span>
+
+    <span class="k">await</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">aiter</span><span class="p">())</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="c1"># =&gt; [2, 4, 6]</span>
+
+    <span class="k">await</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">aiter</span><span class="p">())</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">==</span> <span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">_</span><span class="o">.</span><span class="n">one</span><span class="p">()</span>
+    <span class="c1"># =&gt; 3</span>
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+</code></pre></div></section><section class="print-page" id="quick_start"><h1 id="quick_start-quick-start">Quick Start</h1>
+<h2 id="quick_start-_1">インストール</h2>
+<p>まず、<code>pnq</code>をインストールします。</p>
+<div class="highlight"><pre><span></span><code>$ pip install pnq
+</code></pre></div>
+<h2 id="quick_start-_2">クエリを組み立てる</h2>
+<p><code>pnq.query</code>を介して、データソースを加工するパイプラインメソッドをチェインできます。
+組み立てたクエリは、<code>result</code>を実行することでリストとして実体化できます。</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">pnq</span>
+
+<span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+<span class="c1"># =&gt; [4]</span>
+</code></pre></div>
+<p><code>result</code>で返されるリストは、リストを継承した独自拡張クラス（<code>pnq.list</code>）で、引き続きパイプラインメソッドをチェインできます。</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">pnq</span>
+
+<span class="n">saved</span> <span class="o">=</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+<span class="n">saved</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+<span class="c1"># =&gt; [4]</span>
+</code></pre></div>
+<p><code>pnq.list</code>はリストと完全な互換性がありますが、可能な限り副作用を避ける場合は、<code>to(list)</code>または単に<code>list</code>で組込みのリストにできます。</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">pnq</span>
+
+<span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+<span class="c1"># =&gt; [2]</span>
+
+<span class="nb">list</span><span class="p">(</span><span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">))</span>
+<span class="c1"># =&gt; [2]</span>
+</code></pre></div>
+<p>データソースが辞書の場合は、キーバリューペアが列挙されることに注意してください。</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">pnq</span>
+
+<span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">})</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+<span class="c1"># =&gt; [(&quot;b&quot;, 2), (&quot;c&quot;, 3)]</span>
+</code></pre></div>
+<p>リストでなく辞書として実体化したい場合は、<code>result</code>の代わりに<code>to(dict)</code>または単に<code>dict</code>を使用してください。</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">pnq</span>
+
+<span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">})</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+<span class="c1"># =&gt; {&quot;b&quot;: 2, &quot;c&quot;: 3}</span>
+
+<span class="nb">dict</span><span class="p">(</span><span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">})</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">))</span>
+<span class="c1"># =&gt; {&quot;b&quot;: 2, &quot;c&quot;: 3}</span>
+</code></pre></div>
+<p>なお、<code>to</code>はイテラブルを引数とする任意の関数を渡すことができます。</p>
+<h2 id="quick_start-_3">非同期イテレータを扱う</h2>
+<p><code>pnq.query</code>は非同期イテレータも取り扱うことができます。
+ただし、非同期イテレータを実体化するには<code>result</code>の代わりに<code>await</code>を使用します。</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">import</span> <span class="nn">pnq</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">aiter</span><span class="p">():</span>
+    <span class="k">yield</span> <span class="mi">1</span>
+    <span class="k">yield</span> <span class="mi">2</span>
+    <span class="k">yield</span> <span class="mi">3</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="k">return</span> <span class="k">await</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">aiter</span><span class="p">())</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+<span class="c1"># &gt;&gt; [2, 4, 6]</span>
+</code></pre></div>
+<p>クエリは<code>for</code>文でも使用できます。</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">import</span> <span class="nn">pnq</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">aiter</span><span class="p">():</span>
+    <span class="k">yield</span> <span class="mi">4</span>
+    <span class="k">yield</span> <span class="mi">5</span>
+    <span class="k">yield</span> <span class="mi">6</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="c1"># =&gt; 2, 4, 6</span>
+
+    <span class="k">async</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">aiter</span><span class="p">())</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="c1"># =&gt; 8, 10, 12</span>
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+</code></pre></div>
+<h2 id="quick_start-_4">クエリを実行する</h2>
+<p><code>pnq.query</code>は可能な限り評価を保留（遅延評価）します。
+クエリは、評価を要求されたとき実際に実行されます。</p>
+<p>すでにいくつか評価方法（<code>for</code>文、<code>result</code>、<code>to</code>）を紹介していますが、ほかにもいくつか評価メソッドを紹介します。</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">pnq</span>
+
+<span class="c1"># for x in ...: func(x)のショートカットとして使用できます</span>
+<span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">each</span><span class="p">(</span><span class="nb">print</span><span class="p">)</span>
+<span class="c1"># =&gt; 2, 4, 6</span>
+
+<span class="c1"># 要素の合計を求めます</span>
+<span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+<span class="c1"># =&gt; 12</span>
+</code></pre></div>
+<p>非同期イテレータをデータソースとする場合は、<code>_</code>で明示的に非同期イテレータを評価すると伝え、<code>await</code>する必要があります。</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">import</span> <span class="nn">pnq</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">aiter</span><span class="p">():</span>
+    <span class="k">yield</span> <span class="mi">1</span>
+    <span class="k">yield</span> <span class="mi">2</span>
+    <span class="k">yield</span> <span class="mi">3</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="k">await</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">aiter</span><span class="p">())</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">_</span><span class="o">.</span><span class="n">each</span><span class="p">(</span><span class="nb">print</span><span class="p">)</span>
+    <span class="c1"># =&gt; 2, 4, 6</span>
+
+    <span class="k">await</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">aiter</span><span class="p">())</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">_</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="c1"># =&gt; 12</span>
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+</code></pre></div>
+<h2 id="quick_start-_5">バッチ処理に活用する</h2>
+<p><code>request</code>メソッドは、簡易的なバッチ処理に活用できます。
+<code>request</code>メソッドはシーケンスの要素を任意の関数に送出し、実行結果（<code>pnq.Response</code>）を返します。</p>
+<p>処理中に例外が発生した場合、例外情報が<code>err</code> <code>msg</code> <code>stack_trace</code>属性にエラー情報が格納されます。</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">pnq</span>
+
+<span class="n">log_name</span> <span class="o">=</span> <span class="s2">&quot;log_&quot;</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">utcnow</span><span class="p">()</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;.jsonl.log&quot;</span>
+<span class="n">log</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">log_name</span><span class="p">)</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">log</span><span class="p">)</span>
+
+
+<span class="n">params</span> <span class="o">=</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([{</span><span class="s2">&quot;val&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span> <span class="p">{</span><span class="s2">&quot;val&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}])</span>
+
+<span class="c1"># パラメータを関数に渡します</span>
+<span class="c1"># パラメータはキーワード引数としてアンパックされるため、パラメータは辞書互換オブジェクトである必要があります</span>
+<span class="nd">@params</span><span class="o">.</span><span class="n">request</span>
+<span class="k">def</span> <span class="nf">do_something</span><span class="p">(</span><span class="n">val</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">val</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;val must be 1 or greater. But got </span><span class="si">{</span><span class="n">val</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;success&quot;</span>
+
+
+<span class="c1"># 処理が失敗した場合、実行情報をjsonl（１行１Json）形式で出力します</span>
+<span class="nd">@do_something</span><span class="o">.</span><span class="n">each</span>
+<span class="k">def</span> <span class="nf">dump_if_error</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">pnq</span><span class="o">.</span><span class="n">Response</span><span class="p">):</span>
+    <span class="c1"># エラーだった場合、ログに出力します</span>
+    <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">err</span><span class="p">:</span>
+        <span class="c1"># レスポンスををjsonにシリアライズします</span>
+        <span class="c1"># シリアライザはデフォルトで`json.dumps`(ensure_ascii=False)が使用されます</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">to_json</span><span class="p">())</span>
+
+
+<span class="c1"># 全ての処理が成功した場合は`0`、いずれかが失敗した場合は`1`を返します</span>
+<span class="n">exit</span><span class="p">(</span><span class="n">pnq</span><span class="o">.</span><span class="n">from_jsonl</span><span class="p">(</span><span class="n">log_name</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">())</span>
+</code></pre></div>
+<p>エラーログは、次のような出力になります。</p>
+<div class="highlight"><pre><span></span><code>cat <span class="sb">`</span>ls *.jsonl.log<span class="sb">`</span>
+<span class="c1"># {&quot;func&quot;: &quot;do_something&quot;, &quot;kwargs&quot;: {&quot;val&quot;: 0}, &quot;err&quot;: &quot;ValueError&quot;, &quot;msg&quot;: &quot;val must be 1 or greater: 0&quot;, &quot;result&quot;: None, ...}</span>
+</code></pre></div>
+<h2 id="quick_start-_6">もっと知りたい</h2>
+<p>これであなたはクエリを自由に扱えるようになったはずです。</p>
+<p>次章の参考例からお気に入りの機能を見つけましょう。</p></section><section class="print-page" id="api"><h1 id="api-_1">インターフェース</h1>
+<h2 id="api-transforming">Transforming</h2>
 <div class="autodoc">
 <div class="autodoc-signature"><code>pnq.actions.<strong>map</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">unpack=''</em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>シーケンスの各要素を新しいフォームに射影します。
@@ -885,7 +1140,7 @@ data = [
 <li>chunksize: cpuバウンドなエクゼキュータで有効です。指定したサイズの要素を一括処理します。</li>
 </ul></div>
 </div>
-<h2 id="filtering">Filtering</h2>
+<h2 id="api-filtering">Filtering</h2>
 <div class="autodoc">
 <div class="autodoc-signature"><code>pnq.actions.<strong>filter</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">predicate</em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>述語に基づいてシーケンスの要素をフィルタ処理します。</p>
@@ -956,7 +1211,7 @@ data = [
 [(0, 0), (0, 1)]
 </code></pre></div></p></div>
 </div>
-<h2 id="validating">Validating</h2>
+<h2 id="api-validating">Validating</h2>
 <div class="autodoc">
 <div class="autodoc-signature"><code>pnq.actions.<strong>must</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">predicate</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">msg=''</em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>述語に基づいてシーケンスの要素を検証します。
@@ -1007,7 +1262,7 @@ raise ValueError(&quot;1 is not str&quot;)
 raise DuplicateError(&quot;1&quot;)
 </code></pre></div></p></div>
 </div>
-<h2 id="partitioning">Partitioning</h2>
+<h2 id="api-partitioning">Partitioning</h2>
 <div class="autodoc">
 <div class="autodoc-signature"><code>pnq.actions.<strong>take</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">count_or_range</em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>シーケンスから指定した範囲の要素を返します。</p>
@@ -1082,7 +1337,7 @@ raise DuplicateError(&quot;1&quot;)
 [3, 4, 5]
 </code></pre></div></p></div>
 </div>
-<h2 id="sorting">Sorting</h2>
+<h2 id="api-sorting">Sorting</h2>
 <div class="autodoc">
 <div class="autodoc-signature"><code>pnq.actions.<strong>order_by</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">key_selector=None</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">desc=False</em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>シーケンスの要素を昇順でソートします。</p>
@@ -1133,7 +1388,7 @@ raise DuplicateError(&quot;1&quot;)
 [3, 1, 2]
 </code></pre></div></p></div>
 </div>
-<h2 id="expanding">Expanding</h2>
+<h2 id="api-expanding">Expanding</h2>
 <div class="autodoc">
 <div class="autodoc-signature"><code>pnq.actions.<strong>union</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">*iterables</em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>全ての行を集合に含み重複は許可しない</p></div>
@@ -1159,7 +1414,7 @@ exceptと同じ意味</p></div>
 <div class="autodoc-signature"><code>pnq.actions.<strong>compress</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">*iterables</em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>未実装</p></div>
 </div>
-<h2 id="finalizing-executing">Finalizing - Executing</h2>
+<h2 id="api-finalizing-executing">Finalizing - Executing</h2>
 <div class="autodoc">
 <div class="autodoc-signature"><code>pnq.actions.<strong>result</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>ストリームを評価し、結果をリストとして保存します。
@@ -1260,7 +1515,7 @@ exceptと同じ意味</p></div>
 1
 </code></pre></div></p></div>
 </div>
-<h2 id="finalizing-aggregating">Finalizing - Aggregating</h2>
+<h2 id="api-finalizing-aggregating">Finalizing - Aggregating</h2>
 <div class="autodoc">
 <div class="autodoc-signature"><code>pnq.actions.<strong>len</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>シーケンスの要素数を返します。</p>
@@ -1444,7 +1699,7 @@ Noneは空文字として扱われます。</p>
 &quot;a,b&quot;
 </code></pre></div></p></div>
 </div>
-<h2 id="finalizing-getting">Finalizing - Getting</h2>
+<h2 id="api-finalizing-getting">Finalizing - Getting</h2>
 <div class="autodoc">
 <div class="autodoc-signature"><code>pnq.actions.<strong>get</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">key</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">default=typing.NoReturn</em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>リストや辞書などの<code><strong>getitem</strong></code>を呼び出します。セットでも使用でき、キーが存在する場合そのままキーを返します。
@@ -1616,7 +1871,381 @@ raise Exception(&quot;No exists.&quot;)
     :docstring:
 
 ::: pnq.actions.range
-    :docstring: -->
+    :docstring: --></section><section class="print-page" id="class"><h1 id="class-_1">クラス</h1>
+<div class="autodoc">
+<div class="autodoc-signature"><em>class </em><code>pnq._itertools.requests.<strong>Response</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">func</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">args</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">kwargs</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">err</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">res</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">start</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">end</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-docstring"><p>Response(func, args, kwargs, err, res, start, end)</p></div>
+</div>
+<div class="autodoc">
+<div class="autodoc-signature"><em>class </em><code>pnq._itertools.requests.<strong>StopWatch</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">name=''</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-docstring"><p>コンテキスト内の処理時間を計測します。</p>
+<p>Args:</p>
+<ul>
+<li>name: 任意の名前を付与できます</li>
+</ul>
+<p>Members:</p>
+<ul>
+<li>name: 初期化時に付与した名前</li>
+<li>start: コンテキストの開始時間（UTC）</li>
+<li>end: コンテキストの完了時間（UTC）</li>
+<li>elapsed: 開始時間と完了時間の差分秒数</li>
+</ul>
+<p>Usage:
+<div class="highlight"><pre><span></span><code>&gt;&gt;&gt; with StopWatch(&quot;test&quot;) as result:
+&gt;&gt;&gt;   [x for x in range(10000)]
+&gt;&gt;&gt; print(result)
+{&#39;name&#39;: &#39;test&#39;, &#39;start&#39;: &#39;2021-09-13T14:10:04.780085+00:00&#39;, &#39;end&#39;: &#39;2021-09-13T14:10:11.907716+00:00&#39;, &#39;elapsed&#39;: 7.127631}
+</code></pre></div></p></div>
+<div class="autodoc-members">
+<div class="autodoc-signature"><code><strong>to_dict</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-docstring"><p>計測データを辞書化します。日付データはisoformatで出力されます</p></div>
+</div>
+</div></section><section class="print-page" id="exceptions"><h1 id="exceptions-_1">例外クラス</h1>
+<h2 id="exceptions-exception-classes">Exception classes</h2>
+<div class="autodoc">
+<div class="autodoc-signature"><em>class </em><code>pnq.exceptions.<strong>PnqException</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">msg=''</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-docstring"><p>Pnqに関連する全ての例外の基底クラス</p></div>
+</div>
+<div class="autodoc">
+<div class="autodoc-signature"><em>class </em><code>pnq.exceptions.<strong>NotFoundError</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">key</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-docstring"><p>クエリがキーに対応する要素を要求したが存在しない。
+IndexErrorとKeyErrorはKeyNotFoundErrorに置き換わります</p>
+<p>関連: <code>get</code> <code>must_get_many</code></p></div>
+</div>
+<div class="autodoc">
+<div class="autodoc-signature"><em>class </em><code>pnq.exceptions.<strong>NoElementError</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">msg=''</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-docstring"><p>クエリが何らかの要素を要求したが要素が存在しない</p>
+<p>関連: <code>one</code> <code>first</code> <code>last</code></p></div>
+</div>
+<div class="autodoc">
+<div class="autodoc-signature"><em>class </em><code>pnq.exceptions.<strong>NotOneElementError</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">msg=''</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-docstring"><p>クエリが要素がひとつであることを要求したが複数の要素が存在した</p>
+<p>関連: <code>one</code></p></div>
+</div>
+<div class="autodoc">
+<div class="autodoc-signature"><em>class </em><code>pnq.exceptions.<strong>DuplicateElementError</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">msg=''</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-docstring"><p>クエリが要素が重複していないことを要求したが重複を検知した</p>
+<p>関連: <code>must_unique</code></p></div>
+</div></section><section class="print-page" id="advanced_usage"><h1 id="advanced_usage-_1">高度な使用方法</h1>
+<h2 id="advanced_usage-_2">並列処理</h2>
+<p><code>pnq</code>は任意のエクゼキュータでの並列処理をサポートし、効率的に計算資源を活用できます。
+並列処理に対応しているメソッドは次の通りです。</p>
+<ul>
+<li>parallel（結果のみを返す）</li>
+<li>request（成功・失敗情報を含む結果を返す）</li>
+<li>dispatch（処理を投げっぱなしにする）</li>
+</ul>
+<p>また、<code>gather</code>を使うと複数のクエリを並列実行し、非同期に完了待機できます。
+<code>gather</code>はコルーチンなど<code>awaitable</code>なオブジェクトに対応しています。</p>
+<p>次の例は、クエリを並列実行し、実行中のクエリの完了を待たずに次のクエリを順次実行する例です。
+ただし、むやみな並列処理はデッドロックやメモリ圧迫などの問題を引き起こすので控えてください。</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">import</span> <span class="nn">pnq</span>
+<span class="kn">from</span> <span class="nn">pnq.concurrent</span> <span class="kn">import</span> <span class="n">ProcessPool</span><span class="p">,</span> <span class="n">ThreadPool</span><span class="p">,</span> <span class="n">AsyncPool</span>
+
+<span class="k">def</span> <span class="nf">mul</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">mul_async</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">aiter</span><span class="p">():</span>
+    <span class="k">yield</span> <span class="mi">1</span>
+    <span class="k">yield</span> <span class="mi">2</span>
+    <span class="k">yield</span> <span class="mi">3</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">notify</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="k">async</span> <span class="k">with</span> <span class="n">ProcessPool</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="k">as</span> <span class="n">proc</span><span class="p">,</span> <span class="n">ThreadPool</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="k">as</span> <span class="n">thread</span><span class="p">,</span> <span class="n">AsyncPool</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="k">as</span> <span class="n">aio</span><span class="p">:</span>
+        <span class="n">tasks</span> <span class="o">=</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span>
+            <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">parallel</span><span class="p">(</span><span class="n">mul</span><span class="p">,</span> <span class="n">proc</span><span class="p">),</span>
+            <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">parallel</span><span class="p">(</span><span class="n">mul_async</span><span class="p">,</span> <span class="n">proc</span><span class="p">),</span>
+            <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">aiter</span><span class="p">())</span><span class="o">.</span><span class="n">parallel</span><span class="p">(</span><span class="n">mul</span><span class="p">,</span> <span class="n">proc</span><span class="p">),</span>
+            <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">aiter</span><span class="p">())</span><span class="o">.</span><span class="n">parallel</span><span class="p">(</span><span class="n">mul_async</span><span class="p">,</span> <span class="n">proc</span><span class="p">),</span>
+
+            <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">parallel</span><span class="p">(</span><span class="n">mul</span><span class="p">,</span> <span class="n">thread</span><span class="p">),</span>
+            <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">parallel</span><span class="p">(</span><span class="n">mul_async</span><span class="p">,</span> <span class="n">thread</span><span class="p">),</span>
+            <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">aiter</span><span class="p">())</span><span class="o">.</span><span class="n">parallel</span><span class="p">(</span><span class="n">mul</span><span class="p">,</span> <span class="n">thread</span><span class="p">),</span>
+            <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">aiter</span><span class="p">())</span><span class="o">.</span><span class="n">parallel</span><span class="p">(</span><span class="n">mul_async</span><span class="p">,</span> <span class="n">thread</span><span class="p">),</span>
+
+            <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">parallel</span><span class="p">(</span><span class="n">mul</span><span class="p">,</span> <span class="n">aio</span><span class="p">),</span>
+            <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span><span class="o">.</span><span class="n">parallel</span><span class="p">(</span><span class="n">mul_async</span><span class="p">,</span> <span class="n">aio</span><span class="p">),</span>
+            <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">aiter</span><span class="p">())</span><span class="o">.</span><span class="n">parallel</span><span class="p">(</span><span class="n">mul</span><span class="p">,</span> <span class="n">aio</span><span class="p">),</span>
+            <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">aiter</span><span class="p">())</span><span class="o">.</span><span class="n">parallel</span><span class="p">(</span><span class="n">mul_async</span><span class="p">,</span> <span class="n">aio</span><span class="p">),</span>
+        <span class="p">])</span>
+
+        <span class="k">await</span> <span class="n">tasks</span><span class="o">.</span><span class="n">gather</span><span class="p">()</span><span class="o">.</span><span class="n">flat</span><span class="p">()</span><span class="o">.</span><span class="n">dispatch</span><span class="p">(</span><span class="n">notify</span><span class="p">,</span> <span class="n">aio</span><span class="p">)</span>
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+</code></pre></div>
+<p><code>pnq</code>が提供するエクゼキュータは次の通りです。</p>
+<h3 id="advanced_usage-processpool">ProcessPool</h3>
+<p>CPUバウンドな重たい処理に向いています。GILの制限を受けません。
+チャンクサイズを指定すると、一括処理を効率化できます。
+チャンクサイズは<code>ProcessPool</code>でのみ有効で、それ以外のエクゼキューターでは無視されます。</p>
+<ul>
+<li>同期関数と非同期関数はプロセスプール上で実行されます。</li>
+</ul>
+<h3 id="advanced_usage-threadpool">ThreadPool</h3>
+<p>I/Oバウンドなプリエンプティブマルチタスク（time.sleepなど）に向いています。</p>
+<ul>
+<li>同期関数と非同期関数はスレッドプール上で実行されます。</li>
+</ul>
+<h3 id="advanced_usage-asyncpool">AsyncPool</h3>
+<p>I/Oバウンドなノンエンプティブマルチタスク（asyncio.sleepなど）に向き、シングルスレッドを効率的に利用します。
+同期関数はスレッドプール上で実行されるため、ThreadPoolの代用としても働きます。</p>
+<ul>
+<li>同期関数はスレッドプール上で実行されます。</li>
+<li>非同期関数はイベントループ上（asyncio）で実行されます。</li>
+</ul>
+<p>クエリは非同期実行のみ許可されます。</p>
+<h3 id="advanced_usage-dummypool">DummyPool</h3>
+<p>エクゼキュータを指定しない場合に使用されます。</p>
+<ul>
+<li>同期実行時は並列化されず、単に現在のスレッドで処理を即時実行します。</li>
+<li>非同期実行時は、<code>AsyncPool</code>のように振る舞います。</li>
+<li>同時実行数は、指定した同時実行数＋1（同期実行は即時処理）となります。</li>
+</ul>
+<p>コンテキストが存在せず、投げっぱなしにされた処理の実行は保証されないため、
+基本的には別のエクゼキュータを指定するようにしてください。</p>
+<h2 id="advanced_usage-_3">非同期処理</h2>
+<h3 id="advanced_usage-_4">実行</h3>
+<p>次の場合、クエリは非同期の文脈で実行する必要があります。</p>
+<ul>
+<li>非同期イテレータをソースとした場合</li>
+<li><code>request</code>による並列処理を非同期に待ち受けたい場合</li>
+</ul>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">import</span> <span class="nn">pnq</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">async_iterate</span><span class="p">():</span>
+    <span class="k">yield</span> <span class="mi">1</span>
+    <span class="k">yield</span> <span class="mi">2</span>
+    <span class="k">yield</span> <span class="mi">3</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">sleep</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="k">async</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">async_iterate</span><span class="p">()):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span><span class="nb">dict</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="nb">dict</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span> <span class="nb">dict</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">3</span><span class="p">)])</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="n">sleep</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+</code></pre></div>
+<h3 id="advanced_usage-_5">キャンセル管理</h3>
+<p><code>pnq</code>は簡単なキャンセル機構を提供し、これを利用できます。</p>
+<p><code>pnq.run</code>に、非同期関数を渡すと、その関数を起動し、第一引数にキャンセルトークンを渡します。
+第一引数を受け入れ可能な場合、その関数はキャンセルコントロールの意思があるとみなされます。</p>
+<p>次のコードは、10秒間待機している間キャンセル（SIGTERMとSIGINT）を受け入れません。</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">import</span> <span class="nn">pnq</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">token</span><span class="p">):</span>
+    <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Hello, world!&quot;</span><span class="p">)</span>
+
+
+<span class="n">pnq</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">)</span>
+</code></pre></div>
+<p>キャンセルを検知すると<code>token.is_running</code>は<code>False</code>を返すようになります。
+<code>token.is_running</code>を監視することで、任意のタイミングで処理を中断できます。</p>
+<p>次のコードは、<code>token.is_running</code>が<code>False</code>と評価されるまで、要素を流し続けます。</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">import</span> <span class="nn">pnq</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">token</span><span class="p">):</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">infinity</span><span class="p">(</span><span class="n">token</span><span class="p">):</span>
+        <span class="k">while</span> <span class="n">token</span><span class="o">.</span><span class="n">is_running</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="mi">1</span>
+            <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">infinity</span><span class="p">(</span><span class="n">token</span><span class="p">)):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+
+<span class="n">pnq</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">)</span>
+</code></pre></div>
+<p>関数が第一引数を受け入れ可能でない場合、その関数はキャンセルコントロールの意思がないとみなされます。</p>
+<p>次のコードは、キャンセルを検知すると実行は即時キャンセルされます。</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">import</span> <span class="nn">pnq</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">infinity</span><span class="p">():</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="mi">1</span>
+            <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">infinity</span><span class="p">()):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+
+<span class="n">pnq</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="advanced_usage-_6">例外処理</h3>
+<p><code>pnq</code>は基本的に例外をキャッチしませんが、次のクエリのみ関数実行時の例外をキャッチします。</p>
+<ul>
+<li><code>request</code></li>
+</ul>
+<p>これらのクエリは、実行結果を含んだオブジェクト<code>Response</code>を返し、
+<code>Response</code>の<code>err</code>が<code>None</code>でない場合、処理は失敗したとみなせます。</p>
+<p>結果は<code>result</code>から取得できます。
+処理が失敗している場合は例外が返ります。</p>
+<p>スタックトレースは次のように取得できます。</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">traceback</span>
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">raise_error</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+
+<span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([{</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}]</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="n">raise_error</span><span class="p">)):</span>
+    <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">err</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="n">traceback</span><span class="o">.</span><span class="n">format_exception</span><span class="p">(</span><span class="n">etype</span><span class="o">=</span><span class="nb">type</span><span class="p">(</span><span class="n">err</span><span class="p">),</span> <span class="n">value</span><span class="o">=</span><span class="n">err</span><span class="p">,</span> <span class="n">tb</span><span class="o">=</span><span class="n">err</span><span class="o">.</span><span class="n">__traceback__</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">result</span><span class="p">())</span>
+</code></pre></div>
+<h3 id="advanced_usage-_7">実装例</h3>
+<p>非同期なリクエストを含むクエリの実装例です。</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">import</span> <span class="nn">pnq</span>
+<span class="kn">import</span> <span class="nn">httpx</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="k">async</span> <span class="k">with</span> <span class="n">httpx</span><span class="o">.</span><span class="n">AsyncClient</span><span class="p">()</span> <span class="k">as</span> <span class="n">client</span><span class="p">:</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">([</span>
+            <span class="p">{</span><span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;test_url_1&quot;</span><span class="p">},</span>
+            <span class="p">{</span><span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;test_url_2&quot;</span><span class="p">},</span>
+        <span class="p">])</span>
+
+        <span class="k">async</span> <span class="k">def</span> <span class="nf">fetch_from_url</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="k">await</span> <span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+            <span class="n">res</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">res</span>
+
+        <span class="nd">@params</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="n">fetch_from_url</span><span class="p">,</span> <span class="n">unpack</span><span class="o">=</span><span class="s2">&quot;**&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">group_by</span>
+        <span class="k">def</span> <span class="nf">split_success_and_error</span><span class="p">(</span><span class="n">res</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">(</span><span class="ow">not</span> <span class="n">res</span><span class="o">.</span><span class="n">err</span><span class="p">,</span> <span class="n">res</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="k">await</span> <span class="n">split_success_and_error</span><span class="p">)</span>
+
+<span class="n">result</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+<span class="c1"># {</span>
+<span class="c1">#   True: [res1, res2, ...],</span>
+<span class="c1">#   False: [res3, res4, ...],</span>
+<span class="c1"># }</span>
+</code></pre></div></section><section class="print-page" id="performance"><h1 id="performance-_1">性能評価</h1>
+<h2 id="performance-_2">性能評価</h2>
+<h3 id="performance-pnq">pnqのイテレーション性能</h3>
+<p>内包表記と比較すると<code>pnq</code>は1.36程度性能が落ちます。
+日常的に大量のデータを処理する場合は、ネイティブな記法に書き直すことも検討ください。</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">pnq</span>
+<span class="kn">from</span> <span class="nn">pnq.base.requests</span> <span class="kn">import</span> <span class="n">StopWatch</span>
+<span class="kn">from</span> <span class="nn">decimal</span> <span class="kn">import</span> <span class="n">Decimal</span><span class="p">,</span> <span class="n">ROUND_HALF_UP</span>
+
+
+<span class="n">RANGE</span> <span class="o">=</span> <span class="mi">100000000</span>
+
+
+<span class="k">def</span> <span class="nf">dummy</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span>
+
+
+<span class="k">with</span> <span class="n">StopWatch</span><span class="p">(</span><span class="s2">&quot;内包表記&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">result_1</span><span class="p">:</span>
+    <span class="nb">list</span><span class="p">(</span><span class="n">dummy</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">RANGE</span><span class="p">)</span> <span class="k">if</span> <span class="n">x</span> <span class="o">%</span> <span class="mi">2</span><span class="p">)</span>
+
+
+<span class="k">with</span> <span class="n">StopWatch</span><span class="p">(</span><span class="s2">&quot;イテレータ&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">result_2</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="nf">iterate</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">RANGE</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">dummy</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+    <span class="nb">list</span><span class="p">(</span><span class="n">iterate</span><span class="p">())</span>
+
+
+<span class="k">with</span> <span class="n">StopWatch</span><span class="p">(</span><span class="s2">&quot;pnq&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">result_3</span><span class="p">:</span>
+    <span class="n">pnq</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">RANGE</span><span class="p">))</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">%</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">dummy</span><span class="p">)</span><span class="o">.</span><span class="n">to_list</span><span class="p">()</span>
+
+<span class="n">difference</span> <span class="o">=</span> <span class="n">Decimal</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result_1</span><span class="o">.</span><span class="n">elapsed</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="o">-</span> <span class="n">Decimal</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result_3</span><span class="o">.</span><span class="n">elapsed</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">rate</span> <span class="o">=</span> <span class="n">Decimal</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result_3</span><span class="o">.</span><span class="n">elapsed</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="n">Decimal</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result_1</span><span class="o">.</span><span class="n">elapsed</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">rate</span> <span class="o">=</span> <span class="n">rate</span><span class="o">.</span><span class="n">quantize</span><span class="p">(</span><span class="n">Decimal</span><span class="p">(</span><span class="s2">&quot;0.01&quot;</span><span class="p">),</span> <span class="n">rounding</span><span class="o">=</span><span class="n">ROUND_HALF_UP</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result_1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result_2</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result_3</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;内包表記:pnq 性能差割 ：</span><span class="si">{</span><span class="n">rate</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>{&#39;name&#39;: &#39;内包表記&#39;, &#39;start&#39;: &#39;2021-09-20T12:42:35.219151+00:00&#39;, &#39;end&#39;: &#39;2021-09-20T12:42:42.270021+00:00&#39;, &#39;elapsed&#39;: 7.05087}
+{&#39;name&#39;: &#39;イテレータ&#39;, &#39;start&#39;: &#39;2021-09-20T12:42:42.270046+00:00&#39;, &#39;end&#39;: &#39;2021-09-20T12:42:49.383548+00:00&#39;, &#39;elapsed&#39;: 7.113502}
+{&#39;name&#39;: &#39;pnq&#39;, &#39;start&#39;: &#39;2021-09-20T12:42:49.383573+00:00&#39;, &#39;end&#39;: &#39;2021-09-20T12:42:58.979269+00:00&#39;, &#39;elapsed&#39;: 9.595696}
+内包表記:pnq 性能差割 ：1.36
+</code></pre></div>
+<h3 id="performance-_3">非同期イテレータの性能</h3>
+<p>非同期イテレータは同期イテレータより性能が2.25倍程度遅いです。</p>
+<p>非同期イテレータは、ネットワークI/OやファイルI/Oなどの待機時間で、
+並列処理できるケースで有効です。</p>
+<p>特に理由がない場合は、同期イテレータを積極的に使うようにしてください。</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">from</span> <span class="nn">decimal</span> <span class="kn">import</span> <span class="n">Decimal</span><span class="p">,</span> <span class="n">ROUND_HALF_UP</span>
+
+<span class="kn">from</span> <span class="nn">pnq.models</span> <span class="kn">import</span> <span class="n">StopWatch</span>
+
+
+<span class="k">class</span> <span class="nc">Range</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">count</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">=</span> <span class="n">count</span>
+
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">count</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">i</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="fm">__aiter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">count</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">i</span>
+
+
+<span class="n">calculator</span> <span class="o">=</span> <span class="n">Range</span><span class="p">(</span><span class="mi">100000000</span><span class="p">)</span>
+
+
+<span class="k">async</span> <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="k">with</span> <span class="n">StopWatch</span><span class="p">()</span> <span class="k">as</span> <span class="n">result_1</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">calculator</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+    <span class="k">with</span> <span class="n">StopWatch</span><span class="p">()</span> <span class="k">as</span> <span class="n">result_2</span><span class="p">:</span>
+        <span class="k">async</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">calculator</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+    <span class="n">difference</span> <span class="o">=</span> <span class="n">Decimal</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result_1</span><span class="o">.</span><span class="n">elapsed</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="o">-</span> <span class="n">Decimal</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result_2</span><span class="o">.</span><span class="n">elapsed</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">rate</span> <span class="o">=</span> <span class="n">Decimal</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result_2</span><span class="o">.</span><span class="n">elapsed</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="n">Decimal</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result_1</span><span class="o">.</span><span class="n">elapsed</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">rate</span> <span class="o">=</span> <span class="n">rate</span><span class="o">.</span><span class="n">quantize</span><span class="p">(</span><span class="n">Decimal</span><span class="p">(</span><span class="s2">&quot;0.01&quot;</span><span class="p">),</span> <span class="n">rounding</span><span class="o">=</span><span class="n">ROUND_HALF_UP</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;同期　　　　　：</span><span class="si">{</span><span class="n">result_1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;非同期　　　　：</span><span class="si">{</span><span class="n">result_2</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;性能差割合　　：</span><span class="si">{</span><span class="n">rate</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+<span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>同期　　　　　：{&#39;start&#39;: &#39;2021-09-13T10:28:55.240113+00:00&#39;, &#39;end&#39;: &#39;2021-09-13T10:28:58.890342+00:00&#39;, &#39;elapsed&#39;: 3.650229}
+非同期　　　　：{&#39;start&#39;: &#39;2021-09-13T10:28:58.890577+00:00&#39;, &#39;end&#39;: &#39;2021-09-13T10:29:07.085747+00:00&#39;, &#39;elapsed&#39;: 8.19517}
+性能劣化率　　：2.25
+</code></pre></div></section></div>
 
               
 
@@ -1628,42 +2257,6 @@ raise Exception(&quot;No exists.&quot;)
       </main>
       
         <footer class="md-footer">
-  
-    
-    <nav class="md-footer__inner md-grid" aria-label="フッター" >
-      
-        
-        <a href="../quick_start/" class="md-footer__link md-footer__link--prev" aria-label="前: 入門" rel="prev">
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
-          </div>
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                前
-              </span>
-              入門
-            </div>
-          </div>
-        </a>
-      
-      
-        
-        <a href="../class/" class="md-footer__link md-footer__link--next" aria-label="次: クラス" rel="next">
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                次
-              </span>
-              クラス
-            </div>
-          </div>
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
-          </div>
-        </a>
-      
-    </nav>
   
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
@@ -1685,7 +2278,7 @@ raise Exception(&quot;No exists.&quot;)
     <div class="md-dialog" data-md-component="dialog">
       <div class="md-dialog__inner md-typeset"></div>
     </div>
-    <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.b97dbffb.min.js", "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.config.lang": "ja", "search.config.pipeline": "trimmer, stemmer", "search.config.separator": "[\\s\\-\u3000\u3001\u3002\uff0c\uff0e]+", "search.placeholder": "\u691c\u7d22", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version.title": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "/sasano8/pnq/", "features": [], "search": "../assets/javascripts/workers/search.b97dbffb.min.js", "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.config.lang": "ja", "search.config.pipeline": "trimmer, stemmer", "search.config.separator": "[\\s\\-\u3000\u3001\u3002\uff0c\uff0e]+", "search.placeholder": "\u691c\u7d22", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version.title": "Select version"}}</script>
     
     
       <script src="../assets/javascripts/bundle.6c7ad80a.min.js"></script>
