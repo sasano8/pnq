@@ -1,3 +1,5 @@
+# クラス
+
 ::: pnq._itertools.requests.Response
     :docstring:
 

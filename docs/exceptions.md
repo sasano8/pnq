@@ -1,3 +1,4 @@
+# 例外クラス
 
 ## Exception classes
 
