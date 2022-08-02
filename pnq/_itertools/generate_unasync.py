@@ -27,14 +27,10 @@ rules = [
 filepaths = []
 for root, _, filenames in os.walk(CODE_ROOT / "_async"):
     for filename in filenames:
-        if (
-            filename.rpartition(".")[-1]
-            in (
-                "py",
-                "pyi",
-            )
-            and not filename.startswith("utils.py")
-        ):
+        if filename.rpartition(".")[-1] in (
+            "py",
+            "pyi",
+        ) and not filename.startswith("utils.py"):
             filepaths.append(os.path.join(root, filename))
 
 # create _sync from _async
