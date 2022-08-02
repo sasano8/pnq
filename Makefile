@@ -1,3 +1,4 @@
+include common/Makefile
 all: format test-full
 
 format: format-black format-isort

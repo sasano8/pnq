@@ -1,14 +1,11 @@
+INHERIT: ./common/mkdocs_base.yml
+
 site_name: PNQ
 site_description: PNQ is a Python implementation like Language Integrated Query (LINQ).
 site_url: https://github.com/sasano8/pnq/
 
-theme:
-  name: "material"
-  language: "ja"
-
 repo_name: sasano8/pnq
 repo_url: https://github.com/sasano8/pnq
-edit_uri: ""
 
 nav:
   - はじめに: "index.md"
@@ -30,7 +27,7 @@ markdown_extensions:
           format: !!python/name:pymdownx.superfences.fence_div_format
 
 extra_css:
-  - css/custom.css
+  - overrides/css/custom.css
   - https://unpkg.com/mermaid@8.0.0/dist/mermaid.css
 
 extra_javascript:
