@@ -1,7 +1,7 @@
 {
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv",
   "editor.formatOnSave": true,
   "yaml.format.enable": true,
-  "python.defaultInterpreterPath": ".venv/bin/python3",
   "python.linting.lintOnSave": true,
   "python.linting.enabled": true,
   "python.linting.flake8Enabled": true,

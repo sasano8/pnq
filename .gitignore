@@ -12,3 +12,4 @@ __pycache__
 datalake
 site
 .coverage
+.python-version
