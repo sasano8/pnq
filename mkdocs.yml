@@ -12,6 +12,7 @@ nav:
   - 入門: "quick_start.md"
   - インターフェース: "api.md"
   - クラス: "class.md"
+  - データソース: "datasource.md"
   - 例外クラス: "exceptions.md"
   - 高度な使用方法: "advanced_usage.md"
   - 性能: "performance.md"
