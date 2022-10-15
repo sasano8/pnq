@@ -8,7 +8,7 @@ from typing import Any, Awaitable, NoReturn
 
 from typing_extensions import Literal
 
-from pnq.inspect import is_coroutine_function
+from asyncio import iscoroutinefunction
 
 __all__ = [
     "starmap",
@@ -54,21 +54,21 @@ async def _star3map_async(func, val):
 
 
 def star1map(func):
-    if is_coroutine_function(func):
+    if iscoroutinefunction(func):
         return _partial(_star1map_async, func)
     else:
         return _partial(_star1map, func)
 
 
 def star2map(func):
-    if is_coroutine_function(func):
+    if iscoroutinefunction(func):
         return _partial(_star2map_async, func)
     else:
         return _partial(_star2map, func)
 
 
 def star3map(func):
-    if is_coroutine_function(func):
+    if iscoroutinefunction(func):
         return _partial(_star3map_async, func)
     else:
         return _partial(_star3map, func)

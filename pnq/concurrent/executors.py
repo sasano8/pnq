@@ -8,7 +8,7 @@ from contextlib import AsyncExitStack, ExitStack
 from functools import partial
 from typing import TYPE_CHECKING, Union
 
-from pnq.inspect import is_coroutine_function
+from asyncio import iscoroutinefunction
 
 from . import tools
 from .protocols import Executor, PExecutable, PExecutor
@@ -135,7 +135,7 @@ class ExecutorWrapper(PExecutor, PExecutable):
         return self._is_async_only
 
     def submit(self, func, *args, **kwargs):
-        if is_coroutine_function(func):
+        if iscoroutinefunction(func):
             return self.executor.submit(
                 self.__class__.ASYNC_RUNNER, func, *args, **kwargs
             )
@@ -413,7 +413,7 @@ class AsyncPoolExecutor(PExecutor, PExecutable):
         raise NotImplementedError()
 
     def asubmit(self, func, *args, **kwargs):
-        is_async = is_coroutine_function(func)
+        is_async = iscoroutinefunction(func)
         return self._asubmit_inner(is_async, func, args, kwargs)
 
     def amap(self, func, iterable):
@@ -484,7 +484,7 @@ class DummyPoolExecutor(OverrideExecutor):
         f = Future()
 
         try:
-            if is_coroutine_function(func):
+            if iscoroutinefunction(func):
                 result = asyncio.run(func(*args, **kwargs))
             else:
                 result = func(*args, **kwargs)
@@ -500,7 +500,7 @@ class DummyPoolExecutor(OverrideExecutor):
         if self._shutdown:
             raise RuntimeError("cannot schedule new futures after shutdown")
 
-        if is_coroutine_function(func):
+        if iscoroutinefunction(func):
             async_func = partial(func, *args, **kwargs)
         else:
             async_func = partial(

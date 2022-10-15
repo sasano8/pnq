@@ -6,10 +6,11 @@ from typing import Iterable, TypeVar
 
 from pnq import selectors
 from pnq.concurrent import get_default_pool
-from pnq.inspect import is_coroutine_function
 from pnq.protocols import PExecutor
 
 from .queries import chunk
+
+from asyncio import iscoroutinefunction
 
 T = TypeVar("T")
 
@@ -132,7 +133,7 @@ def request(
     if executor is None:
         executor = get_default_pool()
 
-    if is_coroutine_function(func):
+    if iscoroutinefunction(func):
         wrapped = partial(exec_request_async, func)
     else:
         wrapped = partial(exec_request, func)
