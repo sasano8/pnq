@@ -38,7 +38,7 @@ PNQ is a Python implementation like Language Integrated Query (LINQ).
 
 ## Dependencies
 
-- Python 3.7+
+- Python 3.8+
 
 ## Installation
 
