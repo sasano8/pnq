@@ -1,4 +1,5 @@
 import asyncio
+from asyncio import iscoroutinefunction
 from collections import deque
 from concurrent.futures import Future
 from functools import partial
@@ -9,8 +10,6 @@ from pnq.concurrent import get_default_pool
 from pnq.protocols import PExecutor
 
 from .queries import chunk
-
-from asyncio import iscoroutinefunction
 
 T = TypeVar("T")
 

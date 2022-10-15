@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from asyncio import iscoroutinefunction
 from collections import deque
 from concurrent.futures import Future
 from concurrent.futures import ProcessPoolExecutor as _ProcessPoolExecutor
@@ -7,8 +8,6 @@ from concurrent.futures import ThreadPoolExecutor as _ThreadPoolExecutor
 from contextlib import AsyncExitStack, ExitStack
 from functools import partial
 from typing import TYPE_CHECKING, Union
-
-from asyncio import iscoroutinefunction
 
 from . import tools
 from .protocols import Executor, PExecutable, PExecutor

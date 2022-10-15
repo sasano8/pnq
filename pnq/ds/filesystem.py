@@ -1,9 +1,9 @@
+import platform
 from glob import iglob
 from os.path import isfile
 from pathlib import Path
 
 from pnq import query
-import platform
 
 V_3_10 = int(platform.python_version_tuple()[1]) >= 10
 

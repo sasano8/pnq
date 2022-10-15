@@ -1,4 +1,5 @@
 import asyncio
+from asyncio import iscoroutinefunction
 from collections import deque
 from functools import partial
 from typing import Iterable, TypeVar
@@ -10,7 +11,6 @@ from pnq.selectors import starmap
 
 from ..common import Listable
 from .queries import _enumerate, chunk
-from asyncio import iscoroutinefunction
 
 T = TypeVar("T")
 
