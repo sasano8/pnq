@@ -89,6 +89,12 @@ def test_filesystem(tmpdirs: List[Path]):
         assert filesystem.dirs(pathname="**", recursive=True).map(Path.absolute).to(set) == set([d10, d20])  # noqa
         # fmt: on
 
+    if "check pathlib":
+        p = Path(tmp2)
+        # fmt: off
+        assert filesystem.ls(pathname=p / "**", recursive=False).map(Path.absolute).to(set) == set([f10, d10])  # noqa
+        # fmt: on
+
 
 def test_schedule():
     async def main(is_async):

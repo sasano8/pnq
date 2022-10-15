@@ -5,6 +5,7 @@ from pathlib import Path
 
 from pnq import query
 
+# TODO: 3.10以降では削除
 V_3_10 = int(platform.python_version_tuple()[1]) >= 10
 
 
@@ -18,7 +19,15 @@ def _build_args(**kwargs):
         return kwargs
 
 
+def pathlib_to_str(x):
+    if isinstance(x, Path):
+        return str(x)
+    else:
+        return x
+
+
 def ls(pathname="*", *, root_dir=None, dir_fd=None, recursive=False):
+    pathname = pathlib_to_str(pathname)
     kwargs = _build_args(
         pathname=pathname, root_dir=root_dir, dir_fd=dir_fd, recursive=recursive
     )
@@ -26,6 +35,7 @@ def ls(pathname="*", *, root_dir=None, dir_fd=None, recursive=False):
 
 
 def files(pathname="*", *, root_dir=None, dir_fd=None, recursive=False):
+    pathname = pathlib_to_str(pathname)
     kwargs = _build_args(
         pathname=pathname, root_dir=root_dir, dir_fd=dir_fd, recursive=recursive
     )
@@ -33,6 +43,7 @@ def files(pathname="*", *, root_dir=None, dir_fd=None, recursive=False):
 
 
 def dirs(pathname="*", *, root_dir=None, dir_fd=None, recursive=False):
+    pathname = pathlib_to_str(pathname)
     kwargs = _build_args(
         pathname=pathname, root_dir=root_dir, dir_fd=dir_fd, recursive=recursive
     )
