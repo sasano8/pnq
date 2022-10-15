@@ -8,15 +8,21 @@ def dumps(obj: Any) -> str:
     return _dumps(obj, ensure_ascii=False)
 
 
+# TODO: is_cancelled はスペルが長くし、否定形で判定することが多いので嫌いだ。is_activeを採用したい。
 class CancelToken:
     def __init__(self):
-        self.is_cancelled = False
+        self._is_active = True
 
-    def is_running(self, *args):
-        return not self.is_cancelled
+    @property
+    def is_cancelled(self):
+        return not self._is_active
+
+    @property
+    def is_active(self):
+        return self._is_active
 
     def cancel(self):
-        self.is_cancelled = True
+        self._is_active = False
 
 
 class Request:
