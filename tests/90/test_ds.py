@@ -146,12 +146,15 @@ def test_types():
 
     # TODO: 3.10以降では削除
     V_3_10 = int(platform.python_version_tuple()[1]) >= 10
+    V_3_09 = int(platform.python_version_tuple()[1]) >= 9
 
     res = types.items().to(dict)
     if V_3_10:
         assert len(res) == 73
-    else:
+    if V_3_09:
         assert len(res) == 67
+    else:
+        assert len(res) == 61
 
     assert isinstance(res, dict)
 
