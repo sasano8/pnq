@@ -7,7 +7,7 @@ from typing import List
 
 import pytest
 
-from pnq.ds import filesystem, schedule
+from pnq.ds import docker, filesystem, schedule, types
 
 
 @pytest.fixture
@@ -96,7 +96,7 @@ def test_filesystem(tmpdirs: List[Path]):
         # fmt: on
 
 
-def test_schedule():
+def test_schedule_tick():
     async def main(is_async):
         if is_async:
             times = await schedule.tick_async(seconds=1).take(3)
@@ -117,3 +117,51 @@ def test_schedule():
 
     asyncio.run(main(False))
     asyncio.run(main(True))
+
+
+def test_schedule_weekday():
+    assert schedule.weekdays.items().to(dict) == {
+        0: "Monday",
+        1: "Tuesday",
+        2: "Wednesday",
+        3: "Thursday",
+        4: "Friday",
+        5: "Saturday",
+        6: "Sunday",
+    }
+
+    assert schedule.isoweekdays.items().to(dict) == {
+        1: "Monday",
+        2: "Tuesday",
+        3: "Wednesday",
+        4: "Thursday",
+        5: "Friday",
+        6: "Saturday",
+        7: "Sunday",
+    }
+
+
+def test_types():
+    res = types.items().to(dict)
+    assert len(res) == 73
+    assert isinstance(res, dict)
+
+
+def test_docker():
+    # TODO: 例外処理を書く
+    client = docker.Client()
+    commands = client.commands().to(list)
+    assert commands == [
+        "images",
+        "containers",
+        "networks",
+        "volumes",
+        "nodes",
+        "services",
+        "tasks",
+        "secrets",
+        "configs",
+    ]
+    for command in commands:
+        query = getattr(client, command)
+        assert len(query().to(list)) >= 0
