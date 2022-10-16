@@ -25,7 +25,7 @@ def default_ignore_keys():
 def keys(ignores: typing.Iterable[str] = DEFAULT_IGNORE_KEYS):
     _types = set(typing.__all__)
     for key in ignores:
-        _types.remove(key)
+        _types.discard(key)
 
     return query(_types)
 
