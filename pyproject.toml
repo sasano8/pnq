@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pnq"
-version = "0.0.18"
+version = "0.0.19"
 description = ""
 authors = ["sasano8 <y-sasahara@ys-method.com>"]
 license = "MIT"
@@ -8,10 +8,10 @@ readme = "README.md"
 repository = "https://github.com/sasano8/pnq"
 
 classifiers = [
-    "Development Status :: 2 - Pre-Alpha",
-    "Topic :: Software Development :: Libraries :: Python Modules",
-    "Topic :: Scientific/Engineering",
-    "Framework :: AsyncIO"
+  "Development Status :: 2 - Pre-Alpha",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Topic :: Scientific/Engineering",
+  "Framework :: AsyncIO"
 ]
 
 [tool.poetry.dependencies]
@@ -50,8 +50,8 @@ extend-exclude = '''
 
 [tool.pytest.ini_options]
 markers = [
-    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+  "slow: marks tests as slow (deselect with '-m \"not slow\"')",
 ]
 testpaths = [
-    "tests",
+  "tests",
 ]
