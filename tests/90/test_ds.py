@@ -142,8 +142,17 @@ def test_schedule_weekday():
 
 
 def test_types():
+    import platform
+
+    # TODO: 3.10以降では削除
+    V_3_10 = int(platform.python_version_tuple()[1]) >= 10
+
     res = types.items().to(dict)
-    assert len(res) == 73
+    if V_3_10:
+        assert len(res) == 73
+    else:
+        assert len(res) == 67
+
     assert isinstance(res, dict)
 
 
