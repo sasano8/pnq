@@ -17,7 +17,7 @@ class PnqContextManager(_GeneratorContextManager):
 def contextmanager(func):
     @wraps(func)
     def helper(*args, **kwds):
-        return PnqContextManager(func, args, kwds)  # type: ignore
+        return PnqContextManager(func, args, kwds)
 
     return helper
 

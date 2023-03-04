@@ -1084,6 +1084,40 @@ def take_page(self, page: int, size: int):
     """
 
 
+@mark
+def defrag(self, size: int):
+    """シーケンス内の断片を指定したサイズの断片に整理します。
+
+    Args:
+
+    * self: 断片を含むシーケンス
+    * size: サイズ
+
+    Usage:
+    ```
+    >>> pnq.query(["a", "bcd", "efghi"]).defrag(2).to(list)
+    ["ab", "cd", "ef", "gh", "i"]
+    ```
+    """
+
+
+@mark
+def ngram(self, size: int):
+    """シーケンス内の断片を指定したサイズの連続した断片としてを返します。
+
+    Args:
+
+    * self: 断片を含むシーケンス
+    * size: サイズ
+
+    Usage:
+    ```
+    >>> pnq.query(["a", "bcd", "efghi"]).ngram(2).to(list)
+    ["a", "ab", "bc", "de", "ef", "fg", "gh", "hi", "i"]
+    ```
+    """
+
+
 ###########################################
 # order
 ###########################################

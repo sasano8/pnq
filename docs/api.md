@@ -99,6 +99,12 @@
 ::: pnq.actions.take_page
     :docstring:
 
+::: pnq.actions.defrag
+    :docstring:
+
+::: pnq.actions.ngram
+    :docstring:
+
 ## Sorting
 
 ::: pnq.actions.order_by

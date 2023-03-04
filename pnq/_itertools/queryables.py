@@ -577,6 +577,26 @@ class OrderByMap(Query):
 
 
 @export
+class Defrag(Query):
+    _ait = sm | no_implement
+    _sit = sm | no_implement
+
+    def __init__(self, source, size: int):
+        super().__init__(source)
+        self._args = Arguments(size)
+
+
+@export
+class Ngram(Query):
+    _ait = sm | A.queries.ngram
+    _sit = sm | S.queries.ngram
+
+    def __init__(self, source, size: int):
+        super().__init__(source)
+        self._args = Arguments(size)
+
+
+@export
 class OrderBy(OrderByMap):
     _ait = sm | A.queries.order_by
     _sit = sm | S.queries.order_by

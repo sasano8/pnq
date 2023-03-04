@@ -450,6 +450,12 @@ class Query(Generic[T]):
     def take_page(self, page: int, size: int) -> "Query[T]":
         return queryables.TakePage(self, page=page, size=size)
 
+    def defrag(self, size: int) -> "Query[T]":
+        return queryables.Defrag(self, size=size)
+
+    def ngram(self, size: int) -> "Query[T]":
+        return queryables.Ngram(self, size=size)
+
     def order_by(self, *fields, desc: bool = False, attr: bool = False) -> "Query[T]":
         return queryables.OrderBy(self, *fields, desc=desc, attr=attr)
 
@@ -905,6 +911,12 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
 
     def take_page(self, page: int, size: int) -> "PairQuery[K,V]":
         return queryables.TakePage(self, page=page, size=size)
+
+    def defrag(self, size: int) -> "PairQuery[K,V]":
+        return queryables.Defrag(self, size=size)
+
+    def ngram(self, size: int) -> "PairQuery[K,V]":
+        return queryables.Ngram(self, size=size)
 
     def order_by(
         self, *fields, desc: bool = False, attr: bool = False

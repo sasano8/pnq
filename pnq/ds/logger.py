@@ -1,7 +1,8 @@
 import logging
 from logging import Logger
-from pnq import query
 from typing import Dict
+
+from pnq import query
 
 
 def get_loggers():

@@ -425,6 +425,12 @@ class {{query.CLS}}:
     def take_page(self, page: int, size: int) -> "{{query.SELF_T}}":
         return queryables.TakePage(self, page=page, size=size)
 
+    def defrag(self, size: int) -> "{{query.SELF_T}}":
+        return queryables.Defrag(self, size=size)
+
+    def ngram(self, size: int) -> "{{query.SELF_T}}":
+        return queryables.Ngram(self, size=size)
+
     def order_by(self, *fields, desc: bool = False, attr: bool = False) -> "{{query.SELF_T}}":
         return queryables.OrderBy(self, *fields, desc=desc, attr=attr)
 
