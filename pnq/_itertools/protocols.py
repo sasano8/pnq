@@ -10,10 +10,9 @@ from typing import (
     Generic,
     Iterable,
     List,
+    Protocol,
     TypeVar,
 )
-
-from typing_extensions import Protocol
 
 T = TypeVar("T")
 

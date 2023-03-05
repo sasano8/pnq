@@ -13,6 +13,7 @@ from typing import (
     Iterable,
     Iterator,
     List,
+    Literal,
     Mapping,
     NoReturn,
     Sequence,
@@ -24,11 +25,6 @@ from typing import (
     no_type_check,
     overload,
 )
-
-try:
-    from typing import Literal
-except:
-    from typing_extensions import Literal
 
 from pnq.exceptions import NotFoundError
 

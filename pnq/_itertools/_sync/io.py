@@ -12,9 +12,7 @@ https://github.com/EntilZha/PyFunctional/blob/master/functional/pipeline.py
 import csv
 import json
 from functools import partial
-from typing import Union
-
-from typing_extensions import Literal
+from typing import Literal, Union
 
 from ..io import universal_write_open
 

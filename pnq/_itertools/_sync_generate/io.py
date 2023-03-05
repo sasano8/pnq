@@ -1,9 +1,7 @@
 import csv
 import json
 from functools import partial
-from typing import Iterable, Mapping, Union
-
-from typing_extensions import Literal
+from typing import Iterable, Literal, Mapping, Union
 
 from ..io import universal_write_open
 from .finalizers import first_or

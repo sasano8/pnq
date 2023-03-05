@@ -9,6 +9,7 @@ from typing import (
     Dict,
     Iterable,
     List,
+    Literal,
     Mapping,
     NoReturn,
     Sequence,
@@ -17,11 +18,6 @@ from typing import (
     Union,
     overload,
 )
-
-try:
-    from typing import Literal
-except:
-    from typing_extensions import Literal
 
 from pnq._itertools.op import MAP_ASSIGN_OP, TH_ASSIGN_OP, TH_ROUND
 from pnq.exceptions import (

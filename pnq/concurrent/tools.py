@@ -3,9 +3,7 @@ import itertools
 import time
 from concurrent.futures import Future as ConcurrentFuture
 from functools import partial
-from typing import Iterable, Iterator
-
-from typing_extensions import Literal
+from typing import Iterable, Iterator, Literal
 
 from .iterables import LazyListable
 

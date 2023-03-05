@@ -2,9 +2,7 @@ from pnq.protocols import Executor, PExecutable, PExecutor  # noqa
 
 # import asyncio
 # import concurrent
-# from typing import Dict, Iterable
-
-# from typing_extensions import Protocol, runtime_checkable  # from python3.8
+# from typing import Dict, Iterable, Protocol, runtime_checkable
 
 # """
 # concurrent.futures.ProcessPoolExecutorはmultiprocessing.Poolのラッパーです。

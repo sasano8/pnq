@@ -1,8 +1,6 @@
 import asyncio
 from concurrent.futures import Future as _Future
-from typing import Iterable, Mapping
-
-from typing_extensions import Protocol
+from typing import Iterable, Mapping, Protocol
 
 
 class PArguments(Protocol):
