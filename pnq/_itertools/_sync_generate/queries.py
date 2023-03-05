@@ -3,7 +3,7 @@ import random
 from typing import Iterable, Tuple, TypeVar
 
 from pnq import selectors
-from pnq._itertools.common import Listable, name_as
+from pnq._itertools.common import Dummy, Listable, name_as
 from pnq.exceptions import DuplicateElementError, MustError, MustTypeError
 
 from . import finalizers
@@ -403,6 +403,70 @@ def _take_page_calc(page: int, size: int):
     start = (page - 1) * size
     stop = start + size
     return range(start, stop)
+
+
+def defrag(iterable: Iterable, size: int):
+    if size < 1:
+        raise ValueError("size must be greater than 0.")
+
+    from pnq.io import BufferCache
+
+    cache = BufferCache()
+    for val in iterable:
+        cache.write(val)
+        for x in cache.defrag(size, keep_remain=True):
+            yield x
+
+    for x in cache.defrag(size, keep_remain=False):
+        yield x
+
+
+def ngram(iterable: Iterable, size: int):
+    if size < 1:
+        raise ValueError()
+
+    if isinstance(iterable, (str, bytes)):
+        chars = as_aiter(iterable)
+    else:
+        chars = flat(iterable)
+
+    # unigram は単に文字を返す
+    if size == 1:
+        for x in chars:
+            yield x
+        return
+
+    previous = Dummy()
+    break_first = False
+    max = size
+
+    # open
+    while len(previous) < max:
+        try:
+            c = chars.__next__()
+            previous += c  # type: ignore
+        except StopIteration:
+            break_first = True
+            break
+
+    # first
+    tmpsize = len(previous)
+    for i in range(1, tmpsize):
+        yield previous[:i]  # 文字列数 -1 まで返す
+
+    if break_first:
+        if previous:
+            yield previous
+        return
+
+    # intermediate
+    for c in chars:
+        yield previous
+        previous = previous[1:] + c  # type: ignore
+
+    # last
+    for i in range(len(previous)):
+        yield previous[i:]
 
 
 def order_by(source: Iterable[T], key_selector=None, desc: bool = False):

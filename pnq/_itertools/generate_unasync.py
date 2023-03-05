@@ -35,3 +35,6 @@ for root, _, filenames in os.walk(CODE_ROOT / "_async"):
 
 # create _sync from _async
 unasync.unasync_files(filepaths, rules)
+
+
+# TODO: このモジュールはパッケージの外に出したい

@@ -365,6 +365,9 @@ class {{query.CLS}}:
     def chunk(self, size: int) -> "Query[List[{{query.T}}]]":
         return queryables.Chunk(self, size=size)
 
+    def bundle(self, size: int) -> "Query[List[{{query.T}}]]":
+        return queryables.Chunk(self, size=size)
+
     def tee(self, size: int):
         return queryables.Tee(self, size=size)
 
@@ -407,7 +410,13 @@ class {{query.CLS}}:
     def must(self, predicate: Callable[[{{query.T}}], bool], msg: str="") -> "{{query.SELF_T}}":
         return queryables.Must(self, predicate, msg)
 
+    def guard(self, predicate: Callable[[{{query.T}}], bool], msg: str="") -> "{{query.SELF_T}}":
+        return queryables.Must(self, predicate, msg)
+
     def must_type(self, type, *types: Type) -> "{{query.SELF_T}}":
+        return queryables.MustType(self, type, *types)
+
+    def guard_type(self, type, *types: Type) -> "{{query.SELF_T}}":
         return queryables.MustType(self, type, *types)
 
     def must_unique(self, selector: Callable[[T], R] = None):
@@ -424,6 +433,12 @@ class {{query.CLS}}:
 
     def take_page(self, page: int, size: int) -> "{{query.SELF_T}}":
         return queryables.TakePage(self, page=page, size=size)
+
+    def defrag(self, size: int) -> "{{query.SELF_T}}":
+        return queryables.Defrag(self, size=size)
+
+    def ngram(self, size: int) -> "{{query.SELF_T}}":
+        return queryables.Ngram(self, size=size)
 
     def order_by(self, *fields, desc: bool = False, attr: bool = False) -> "{{query.SELF_T}}":
         return queryables.OrderBy(self, *fields, desc=desc, attr=attr)

@@ -386,6 +386,9 @@ class Query(Generic[T]):
     def chunk(self, size: int) -> "Query[List[T]]":
         return queryables.Chunk(self, size=size)
 
+    def bundle(self, size: int) -> "Query[List[T]]":
+        return queryables.Chunk(self, size=size)
+
     def tee(self, size: int):
         return queryables.Tee(self, size=size)
 
@@ -432,7 +435,13 @@ class Query(Generic[T]):
     def must(self, predicate: Callable[[T], bool], msg: str = "") -> "Query[T]":
         return queryables.Must(self, predicate, msg)
 
+    def guard(self, predicate: Callable[[T], bool], msg: str = "") -> "Query[T]":
+        return queryables.Must(self, predicate, msg)
+
     def must_type(self, type, *types: Type) -> "Query[T]":
+        return queryables.MustType(self, type, *types)
+
+    def guard_type(self, type, *types: Type) -> "Query[T]":
         return queryables.MustType(self, type, *types)
 
     def must_unique(self, selector: Callable[[T], R] = None):
@@ -449,6 +458,12 @@ class Query(Generic[T]):
 
     def take_page(self, page: int, size: int) -> "Query[T]":
         return queryables.TakePage(self, page=page, size=size)
+
+    def defrag(self, size: int) -> "Query[T]":
+        return queryables.Defrag(self, size=size)
+
+    def ngram(self, size: int) -> "Query[T]":
+        return queryables.Ngram(self, size=size)
 
     def order_by(self, *fields, desc: bool = False, attr: bool = False) -> "Query[T]":
         return queryables.OrderBy(self, *fields, desc=desc, attr=attr)
@@ -840,6 +855,9 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
     def chunk(self, size: int) -> "Query[List[Tuple[K,V]]]":
         return queryables.Chunk(self, size=size)
 
+    def bundle(self, size: int) -> "Query[List[Tuple[K,V]]]":
+        return queryables.Chunk(self, size=size)
+
     def tee(self, size: int):
         return queryables.Tee(self, size=size)
 
@@ -888,7 +906,15 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
     ) -> "PairQuery[K,V]":
         return queryables.Must(self, predicate, msg)
 
+    def guard(
+        self, predicate: Callable[[Tuple[K, V]], bool], msg: str = ""
+    ) -> "PairQuery[K,V]":
+        return queryables.Must(self, predicate, msg)
+
     def must_type(self, type, *types: Type) -> "PairQuery[K,V]":
+        return queryables.MustType(self, type, *types)
+
+    def guard_type(self, type, *types: Type) -> "PairQuery[K,V]":
         return queryables.MustType(self, type, *types)
 
     def must_unique(self, selector: Callable[[T], R] = None):
@@ -905,6 +931,12 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
 
     def take_page(self, page: int, size: int) -> "PairQuery[K,V]":
         return queryables.TakePage(self, page=page, size=size)
+
+    def defrag(self, size: int) -> "PairQuery[K,V]":
+        return queryables.Defrag(self, size=size)
+
+    def ngram(self, size: int) -> "PairQuery[K,V]":
+        return queryables.Ngram(self, size=size)
 
     def order_by(
         self, *fields, desc: bool = False, attr: bool = False

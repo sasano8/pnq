@@ -314,6 +314,7 @@ class Filter(Query):
         self._args = Arguments(predicate, unpack)
 
 
+# TODO: Guardに変更する
 @export
 class Must(Query):
     _ait = sm | A.queries.must
@@ -335,6 +336,7 @@ class FilterType(Query):
         self._args = Arguments.from_obj(types, {})
 
 
+# TODO: GuardTypeに変更する
 @export
 class MustType(Query):
     _ait = sm | A.queries.must_type
@@ -574,6 +576,26 @@ class OrderByMap(Query):
     def __init__(self, source, selector=None, desc: bool = False):
         super().__init__(source)
         self._args = Arguments(selector, desc)
+
+
+@export
+class Defrag(Query):
+    _ait = sm | A.queries.defrag
+    _sit = sm | S.queries.defrag
+
+    def __init__(self, source, size: int):
+        super().__init__(source)
+        self._args = Arguments(size)
+
+
+@export
+class Ngram(Query):
+    _ait = sm | A.queries.ngram
+    _sit = sm | S.queries.ngram
+
+    def __init__(self, source, size: int):
+        super().__init__(source)
+        self._args = Arguments(size)
 
 
 @export

@@ -651,20 +651,6 @@ def group_by(self, selector=lambda x: x):
 
 
 @mark
-def chunk(self, size: int):
-    """
-    シーケンスを指定したサイズ毎に分割する。
-    """
-
-
-@mark
-def tee(self, size: int):
-    """
-    ひとつのイテレータから独立したN個のイテレータを返す
-    """
-
-
-@mark
 def join(self, right, on, select):
     pass
 
@@ -852,7 +838,7 @@ def filter(self, predicate):
 
 
 @mark
-def must(self, predicate, msg=""):
+def guard(self, predicate, msg=""):
     """述語に基づいてシーケンスの要素を検証します。
     検証に失敗した場合、即時に例外が発生します。
 
@@ -863,12 +849,17 @@ def must(self, predicate, msg=""):
 
     Usage:
     ```
-    >>> pnq.query([1, 2]).must(lambda x: x == 1).to(list)
+    >>> pnq.query([1, 2]).guard(lambda x: x == 1).to(list)
     raise ValueError("2")
-    >>> pnq.query({1: True, 2: False, 3: True}).must(lambda x: x[1] == True).to(list)
+    >>> pnq.query({1: True, 2: False, 3: True}).guard(lambda x: x[1] == True).to(list)
     raise ValueError("(2, False)")
     ```
     """
+
+
+@mark
+def must(self, predicate, msg=""):
+    """[deprecated]guard のエイリアスです。"""
 
 
 @mark
@@ -892,7 +883,7 @@ def filter_type(self, *types):
 
 
 @mark
-def must_type(self, types):
+def guard_type(self, types):
     """シーケンスの要素が指定した型のいずれかであるか検証します。
     検証に失敗した場合、即時に例外が発生します。
     型は複数指定することができ、`isinstance`の挙動に準じます。
@@ -904,10 +895,15 @@ def must_type(self, types):
 
     Usage:
     ```
-    >>> pnq.query([1, 2]).must_type(str, int).to(list)
+    >>> pnq.query([1, 2]).guard_type(str, int).to(list)
     raise ValueError("1 is not str")
     ```
     """
+
+
+@mark
+def must_type(self, types):
+    """[deprecated]guard_type のエイリアスです。"""
 
 
 @mark
@@ -1080,6 +1076,86 @@ def take_page(self, page: int, size: int):
     [0, 1]
     >>> pnq.query([0, 1, 2, 3, 4, 5]).take_page(page=2, size=3).to(list)
     [3, 4, 5]
+    ```
+    """
+
+
+@mark
+def tee(self, size: int):
+    """
+    ひとつのイテレータから独立したN個のイテレータを返す
+    """
+
+
+@mark
+def bundle(self, size: int):
+    """指定した要素数毎に束ねる。
+
+    Args:
+
+    * self: 断片を含むシーケンス
+    * size: サイズ
+
+    Usage:
+    ```
+    >>> pnq.query(["a", "bcd", "", "efghi", "j"]).bundle(2).to(list)
+    [["a", "bcd"], ["", "efghi"], ["j"]]
+    ```
+    """
+
+
+@mark
+def chunk(self, size: int):
+    """[deprecated]bundle のエイリアスです。"""
+
+
+# @mark
+# def chunk(self, size: int):
+#     """指定した要素数を一つの要素として返す。
+
+#     Args:
+
+#     * self: 断片を含むシーケンス
+#     * size: サイズ
+
+#     Usage:
+#     ```
+#     >>> pnq.query(["a", "bcd", "", "efghi", "j"]).chunk(2).to(list)
+#     ["abcd", "efghi", "j"]
+#     ```
+#     """
+
+
+@mark
+def defrag(self, size: int):
+    """要素を指定したサイズの断片に整理します。
+
+    Args:
+
+    * self: 断片を含むシーケンス
+    * size: サイズ
+
+    Usage:
+    ```
+    >>> pnq.query(["a", "bcd", "efghi"]).defrag(2).to(list)
+    ["ab", "cd", "ef", "gh", "i"]
+    ```
+    """
+
+
+@mark
+def ngram(self, size: int):
+    """要素を指定したサイズの連続した断片としてを返します。
+
+    Args:
+
+    * self: 断片を含むシーケンス
+    * size: サイズ
+
+    Usage:
+    ```
+    >>> pnq.query(["a", "bcd", "efghi"]).ngram(2).to(list)
+    ["a", "ab", "bc", "de", "ef", "fg", "gh", "hi", "i"]
     ```
     """
 

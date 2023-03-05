@@ -1195,6 +1195,108 @@ class Test050_Partition:
         assert q.take_page(2, 2).to(list) == [3, 4]
         assert q.take_page(3, 2).to(list) == [5, 6]
 
+    def test_defrag(self):
+        def func(iterable, size: int):
+            return pnq(iterable).defrag(size=size)
+
+        # empty
+        assert list(func([], size=1)) == []
+        assert list(func([], size=2)) == []
+
+        # size = 1
+        assert list(func(["a"], size=1)) == ["a"]
+        assert list(func(["ab"], size=1)) == ["a", "b"]
+        assert list(func(["a", "b"], size=1)) == ["a", "b"]
+        assert list(func(["abc"], size=1)) == ["a", "b", "c"]
+
+        # size = 2
+        # fmt: off
+        assert list(func(["a"], size=2)) == ["a"]
+        assert list(func(["ab"], size=2)) == ["ab"]
+        assert list(func(["a", "b"], size=2)) == ["ab"]
+        assert list(func(["abc"], size=2)) == ["ab", "c"]
+        assert list(func(["a", "bc"], size=2)) == ["ab", "c"]
+        assert list(func(["ab", "c"], size=2)) == ["ab", "c"]
+        assert list(func(["abcd"], size=2)) == ["ab", "cd"]
+        assert list(func(["a", "bcd"], size=2)) == ["ab", "cd"]
+        assert list(func(["ab", "cd"], size=2)) == ["ab", "cd"]
+        assert list(func(["abc", "d"], size=2)) == ["ab", "cd"]
+        assert list(func(["abcde"], size=2)) == ["ab", "cd", "e"]
+        assert list(func(["a", "bcde"], size=2)) == ["ab", "cd", "e"]
+        assert list(func(["ab", "cde"], size=2)) == ["ab", "cd", "e"]
+        assert list(func(["abc", "de"], size=2)) == ["ab", "cd", "e"]
+        assert list(func(["abcd", "e"], size=2)) == ["ab", "cd", "e"]
+        assert list(func(["ab", "c", "de"], size=2)) == ["ab", "cd", "e"]
+        assert list(func(["abc", "d", "e"], size=2)) == ["ab", "cd", "e"]
+        # fmt: on
+
+        assert list(func(["abc", "d", "e", "fgh", "ijk"], size=10)) == [
+            "abcdefghij",
+            "k",
+        ]
+
+        assert list(func("abcde", size=2)) == ["ab", "cd", "e"]
+
+    def test_ngram(self):
+        def func(iterable, size: int):
+            return pnq(iterable).ngram(size=size)
+
+        # empty
+        assert list(func([], size=1)) == []
+        assert list(func([], size=2)) == []
+
+        # size = 1
+        assert list(func(["a"], size=1)) == ["a"]
+        assert list(func(["ab"], size=1)) == ["a", "b"]
+        assert list(func(["a", "b"], size=1)) == ["a", "b"]
+        assert list(func(["abc"], size=1)) == ["a", "b", "c"]
+
+        # size = 2
+        # fmt: off
+        assert list(func(["a"], size=2)) == ["a"]
+        assert list(func(["ab"], size=2)) == ["a", "ab", "b"]
+        assert list(func(["a", "b"], size=2)) == ["a", "ab", "b"]
+        assert list(func(["abc"], size=2)) == ["a", "ab", "bc", "c"]
+        assert list(func(["a", "bc"], size=2)) == ["a", "ab", "bc", "c"]
+        assert list(func(["ab", "c"], size=2)) == ["a", "ab", "bc", "c"]
+        assert list(func(["abcd"], size=2)) == ["a", "ab", "bc", "cd", "d"]
+        assert list(func(["a", "bcd"], size=2)) == ["a", "ab", "bc", "cd", "d"]
+        assert list(func(["ab", "cd"], size=2)) == ["a", "ab", "bc", "cd", "d"]
+        assert list(func(["abc", "d"], size=2)) == ["a", "ab", "bc", "cd", "d"]
+        assert list(func(["abcde"], size=2)) == ["a", "ab", "bc", "cd", "de", "e"]
+        assert list(func(["a", "bcde"], size=2)) == ["a", "ab", "bc", "cd", "de", "e"]
+        assert list(func(["ab", "cde"], size=2)) == ["a", "ab", "bc", "cd", "de", "e"]
+        assert list(func(["abc", "de"], size=2)) == ["a", "ab", "bc", "cd", "de", "e"]
+        assert list(func(["abcd", "e"], size=2)) == ["a", "ab", "bc", "cd", "de", "e"]
+        assert list(func(["ab", "c", "de"], size=2)) == ["a", "ab", "bc", "cd", "de", "e"]
+        assert list(func(["abc", "d", "e"], size=2)) == ["a", "ab", "bc", "cd", "de", "e"]
+        # fmt: on
+
+        assert list(func(["abc", "d", "e", "fgh", "ijk"], size=10)) == [
+            "a",
+            "ab",
+            "abc",
+            "abcd",
+            "abcde",
+            "abcdef",
+            "abcdefg",
+            "abcdefgh",
+            "abcdefghi",
+            "abcdefghij",
+            "bcdefghijk",
+            "cdefghijk",
+            "defghijk",
+            "efghijk",
+            "fghijk",
+            "ghijk",
+            "hijk",
+            "ijk",
+            "jk",
+            "k",
+        ]
+
+        assert list(func("abcde", size=2)) == ["a", "ab", "bc", "cd", "de", "e"]
+
 
 class Test060_Sort:
     def test_order_by_map(self):

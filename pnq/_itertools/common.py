@@ -37,3 +37,14 @@ class Listable:
 
     async def _result_async(self):
         return [x async for x in self]
+
+
+class Dummy:
+    def __add__(self, other):
+        return other
+
+    def __len__(self):
+        return 0
+
+    def __bool__(self):
+        return False

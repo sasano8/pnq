@@ -41,9 +41,6 @@
 ::: pnq.actions.group_by
     :docstring:
 
-::: pnq.actions.chunk
-    :docstring:
-
 ::: pnq.actions.join
     :docstring:
 
@@ -72,12 +69,17 @@
 ::: pnq.actions.must
     :docstring:
 
+::: pnq.actions.guard
+    :docstring:
+
 ::: pnq.actions.must_type
+    :docstring:
+
+::: pnq.actions.guard_type
     :docstring:
 
 ::: pnq.actions.must_keys
     :docstring:
-
 
 ::: pnq.actions.must_unique
     :docstring:
@@ -97,6 +99,18 @@
     :docstring:
 
 ::: pnq.actions.take_page
+    :docstring:
+
+::: pnq.actions.bundle
+    :docstring:
+
+::: pnq.actions.chunk
+    :docstring:
+
+::: pnq.actions.defrag
+    :docstring:
+
+::: pnq.actions.ngram
     :docstring:
 
 ## Sorting
