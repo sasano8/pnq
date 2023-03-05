@@ -37,7 +37,7 @@ jobs:
 
       - name: Install Dependencies
         if: steps.cache-venv.outputs.cache-hit != 'true'
-        run: poetry install --only docs
+        run: poetry install --only main,docs
 
       - run: make doc-build
 
