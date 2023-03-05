@@ -1196,7 +1196,7 @@ class Test050_Partition:
         assert q.take_page(3, 2).to(list) == [5, 6]
 
     def test_defrag(self):
-        def func(iterable: list[str], size: int):
+        def func(iterable, size: int):
             return pnq(iterable).defrag(size=size)
 
         # empty
@@ -1238,7 +1238,7 @@ class Test050_Partition:
         assert list(func("abcde", size=2)) == ["ab", "cd", "e"]
 
     def test_ngram(self):
-        def func(iterable: list[str], size: int):
+        def func(iterable, size: int):
             return pnq(iterable).ngram(size=size)
 
         # empty
