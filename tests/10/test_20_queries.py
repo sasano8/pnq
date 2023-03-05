@@ -1196,13 +1196,8 @@ class Test050_Partition:
         assert q.take_page(3, 2).to(list) == [5, 6]
 
     def test_defrag(self):
-        # arr = [1, 2, 3, 4, 5, 6]
-        # q = pnq(arr)
-        from ngram import MyDeque
-
-        func = MyDeque.defrag
-
-        pnq([""]).defrag
+        def func(iterable: list[str], size: int):
+            return pnq(iterable).defrag(size=size)
 
         # empty
         assert list(func([], size=1)) == []

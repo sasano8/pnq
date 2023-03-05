@@ -365,6 +365,9 @@ class {{query.CLS}}:
     def chunk(self, size: int) -> "Query[List[{{query.T}}]]":
         return queryables.Chunk(self, size=size)
 
+    def bundle(self, size: int) -> "Query[List[{{query.T}}]]":
+        return queryables.Chunk(self, size=size)
+
     def tee(self, size: int):
         return queryables.Tee(self, size=size)
 
@@ -407,7 +410,13 @@ class {{query.CLS}}:
     def must(self, predicate: Callable[[{{query.T}}], bool], msg: str="") -> "{{query.SELF_T}}":
         return queryables.Must(self, predicate, msg)
 
+    def guard(self, predicate: Callable[[{{query.T}}], bool], msg: str="") -> "{{query.SELF_T}}":
+        return queryables.Must(self, predicate, msg)
+
     def must_type(self, type, *types: Type) -> "{{query.SELF_T}}":
+        return queryables.MustType(self, type, *types)
+
+    def guard_type(self, type, *types: Type) -> "{{query.SELF_T}}":
         return queryables.MustType(self, type, *types)
 
     def must_unique(self, selector: Callable[[T], R] = None):

@@ -3,7 +3,7 @@ import random
 from typing import AsyncIterable, Tuple, TypeVar
 
 from pnq import selectors
-from pnq._itertools.common import Listable, name_as
+from pnq._itertools.common import Dummy, Listable, name_as
 from pnq.exceptions import DuplicateElementError, MustError, MustTypeError
 
 from . import finalizers
@@ -405,15 +405,20 @@ def _take_page_calc(page: int, size: int):
     return range(start, stop)
 
 
-class Dummy:
-    def __add__(self, other):
-        return other
+async def defrag(iterable: AsyncIterable, size: int):
+    if size < 1:
+        raise ValueError("size must be greater than 0.")
 
-    def __len__(self):
-        return 0
+    from pnq.io import BufferCache
 
-    def __bool__(self):
-        return False
+    cache = BufferCache()
+    async for val in iterable:
+        cache.write(val)
+        for x in cache.defrag(size, keep_remain=True):
+            yield x
+
+    for x in cache.defrag(size, keep_remain=False):
+        yield x
 
 
 async def ngram(iterable: AsyncIterable, size: int):

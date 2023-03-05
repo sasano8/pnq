@@ -144,18 +144,13 @@ def test_schedule_weekday():
 def test_types():
     import platform
 
-    # TODO: 3.10以降では削除
-    V_3_10 = int(platform.python_version_tuple()[1]) >= 10
-    V_3_09 = int(platform.python_version_tuple()[1]) >= 9
+    TYPE_NUMS = {10: 73, 9: 67, 0: 61}  # other
+
+    VERSION = int(platform.python_version_tuple()[1])
+    expected = TYPE_NUMS.get(VERSION, TYPE_NUMS[0])
 
     res = types.items().to(dict)
-    if V_3_10:
-        assert len(res) == 73
-    if V_3_09:
-        assert len(res) == 67
-    else:
-        assert len(res) == 61
-
+    assert len(res) == expected
     assert isinstance(res, dict)
 
 
