@@ -71,3 +71,6 @@ jobs:
       # - name: Check code style with Prettier
       #   working-directory: ./ui
       #   run: npx prettier --check .
+
+      - name: Check remain topics
+        run: make grep-todo
