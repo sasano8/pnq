@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from json import dumps as _dumps
 from typing import Any, Dict, NamedTuple, Tuple, Union
 from threading import Event
+from contextlib import contextmanager
 
 
 def dumps(obj: Any) -> str:
@@ -36,6 +37,20 @@ class ChainTokenBase(Event):
         if parent:
             if not isinstance(parent, ChainTokenBase):
                 raise TypeError(parent)
+            
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args, **kwargs):
+        self.set("Cancelled because the token scope has ended.")
+
+    def lifespan(self, reason: str = "Cancelled because the token scope has ended."):
+        @contextmanager
+        def _lifespan(self: ChainTokenBase, reason: str):
+            yield self
+            self.set(str(reason))
+
+        return _lifespan(self, reason)
 
     def set(self, reason: str = "canceled"):
         with self._cond:
