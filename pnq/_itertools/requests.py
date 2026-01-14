@@ -2,6 +2,7 @@ import traceback
 from datetime import datetime, timezone
 from json import dumps as _dumps
 from typing import Any, Dict, NamedTuple, Tuple, Union
+from threading import Event
 
 
 def dumps(obj: Any) -> str:
@@ -23,6 +24,70 @@ class CancelToken:
 
     def cancel(self):
         self._is_active = False
+
+
+# TODO: 未テスト
+class ChainTokenBase(Event):
+    def __init__(self, parent: "ChainTokenBase" = None):
+        super().__init__()
+        self._parent = parent
+        self._reason = ""
+
+        if parent:
+            if not isinstance(parent, ChainTokenBase):
+                raise TypeError(parent)
+
+    def set(self, reason: str = "canceled"):
+        with self._cond:
+            if not self._flag:
+                self._reason = str(reason)
+
+            self._flag = True
+            self._cond.notify_all()
+
+    def is_set(self):
+        if self.is_parent_set():
+            return True
+        else:
+            return super().is_set()
+
+    def is_parent_set(self):
+        return self._parent and self._parent.is_set()
+
+    def reason(self):
+        if not self.is_set():
+            raise RuntimeError("Not set.")
+        else:
+            if self._flag:
+                return self._reason
+            else:
+                return self._parent.reason() + " by parent."
+
+    def create_child(self):
+        return ChainTokenBase(self)
+
+
+class ChainToken(ChainTokenBase):
+    def with_deadline(self, deadline: Union[datetime | str]):
+        import time, threading, functools
+        from time import sleep
+
+        if isinstance(deadline, str):
+            # deadline = "2018-01-02T03:04:05+09:00"
+            deadline = datetime.fromisoformat(deadline)
+
+        def handle_deadline(cancel_token: ChainTokenBase, deadline: datetime):
+            deadline_ts = deadline.timestamp()
+            while not cancel_token.is_set():
+                sleep(1)
+                now_ts = time.time()
+                if deadline_ts < now_ts:
+                    break
+            cancel_token.set(f"cancelled by deadline => {deadline}")
+
+        handler = functools.partial(handle_deadline, self, deadline)
+        t = threading.Thread(target=handler, daemon=True)
+        t.start()
 
 
 class Request:
