@@ -177,6 +177,7 @@ repr(frames.wrap(src))
 
 from pathlib import Path
 import os
+from typing import TypedDict
 
 
 class LocalFileReader:
@@ -217,6 +218,14 @@ class LocalFileWriter:
         await self.close()
 
 
+class FileInfo(TypedDict):
+    """File information."""
+
+    key: str
+    size: int
+    updated_at: float | None
+
+
 class FileStore:
     @classmethod
     async def create(cls, root: str = None, create_if_not_exists = True) -> "FileStore":
@@ -249,13 +258,21 @@ class FileStore:
         f = (self._root / key).open("wb")
         return LocalFileWriter(f)
 
-    async def exists(self, key: str) -> bool:
-        return (self._root / key).exists()
-
     async def delete(self, key: str) -> int:
         exists = await self.exists(key)
         (self._root / key).unlink(missing_ok=True)
         return int(exists)
+    
+    async def stat(self, key: str) -> FileInfo | None:
+        if not (self._root / key).is_file():
+            return None
+        
+        stat = (self._root / key).stat()
+        return FileInfo(key=key, size=stat.st_size, updated_at=stat.st_mtime)
+
+    async def exists(self, key: str) -> bool:
+        stat = await self.stat(key)
+        return stat is not None
 
     async def list(self, limit: int = 10) -> list:
         ...
