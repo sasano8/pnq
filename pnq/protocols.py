@@ -230,9 +230,9 @@ class FileStore:
     @classmethod
     async def create(cls, root: str = None, create_if_not_exists = True) -> "FileStore":
         if root is None:
-            _root = Path(os.getcwd())
+            _root = Path(os.getcwd()).absolute()
         else:
-            _root = Path(root)
+            _root = Path(root).absolute()
 
         if create_if_not_exists:
             _root.parent.mkdir(parents=True, exist_ok=True)
@@ -243,31 +243,41 @@ class FileStore:
     def __init__(self, root: Path):
         self._root = Path(root)
 
+    def validate_path(self, key: str):
+        if ".." in key:
+            raise ValueError("Key cannot contain '..' to prevent directory traversal")
+
+        return (self._root / key)
+
     async def is_connected(self) -> bool:
         return True
     
     async def open_reader(self, key: str):
+        path = self.validate_path(key)
         if not await self.exists(key):
             raise Exception(f"Key {key} not exists")
 
-        f = (self._root / key).open("rb")
+        f = path.open("rb")
         return LocalFileReader(f)
 
     async def open_writer(self, key: str):
-        (self._root / key).parent.mkdir(parents=True, exist_ok=True)
-        f = (self._root / key).open("wb")
+        path = self.validate_path(key)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        f = path.open("wb")
         return LocalFileWriter(f)
 
     async def delete(self, key: str) -> int:
+        path = self.validate_path(key)
         exists = await self.exists(key)
-        (self._root / key).unlink(missing_ok=True)
+        path.unlink(missing_ok=True)
         return int(exists)
     
     async def stat(self, key: str) -> FileInfo | None:
-        if not (self._root / key).is_file():
+        path = self.validate_path(key)
+        if not path.is_file():
             return None
         
-        stat = (self._root / key).stat()
+        stat = path.stat()
         return FileInfo(key=key, size=stat.st_size, updated_at=stat.st_mtime)
 
     async def exists(self, key: str) -> bool:
