@@ -174,3 +174,170 @@ frames
 src
 repr(frames.wrap(src))
 """
+
+from pathlib import Path
+import os
+
+
+class LocalFileReader:
+    """File reader for local filesystem."""
+
+    def __init__(self, file):
+        self._file = file
+
+    async def read(self, size: int = -1) -> bytes:
+        return self._file.read(size)
+    
+    async def close(self):
+        self._file.close()
+    
+    async def __aenter__(self):
+        return self
+        
+    async def __aexit__(self, exc_type, exc, tb):
+        await self.close()
+
+
+class LocalFileWriter:
+    """File writer for local filesystem."""
+
+    def __init__(self, file):
+        self._file = file
+
+    async def write(self, data: bytes) -> int:
+        return self._file.write(data)
+
+    async def close(self):
+        self._file.close()
+
+    async def __aenter__(self):
+        return self
+        
+    async def __aexit__(self, exc_type, exc, tb):
+        await self.close()
+
+
+class FileStore:
+    @classmethod
+    async def create(cls, root: str = None, create_if_not_exists = True) -> "FileStore":
+        if root is None:
+            _root = Path(os.getcwd())
+        else:
+            _root = Path(root)
+
+        if create_if_not_exists:
+            _root.parent.mkdir(parents=True, exist_ok=True)
+
+        obj =  cls(_root)
+        return obj
+
+    def __init__(self, root: Path):
+        self._root = Path(root)
+
+    async def is_connected(self) -> bool:
+        return True
+    
+    async def open_reader(self, key: str):
+        if not await self.exists(key):
+            raise Exception(f"Key {key} not exists")
+
+        f = (self._root / key).open("rb")
+        return LocalFileReader(f)
+
+    async def open_writer(self, key: str):
+        (self._root / key).parent.mkdir(parents=True, exist_ok=True)
+        f = (self._root / key).open("wb")
+        return LocalFileWriter(f)
+
+    async def exists(self, key: str) -> bool:
+        return (self._root / key).exists()
+
+    async def delete(self, key: str) -> int:
+        exists = await self.exists(key)
+        (self._root / key).unlink(missing_ok=True)
+        return int(exists)
+
+    async def list(self, limit: int = 10) -> list:
+        ...
+
+class DefaultAdapter:
+    @classmethod
+    def create(cls, read_type, write_type):
+        async def load(f):
+            value = await f.read()
+            return value
+        
+        async def dump(value, f):
+            await f.write(value)
+
+        return load, dump
+
+class JsonAdapter:
+    @classmethod
+    def create(cls, read_type, write_type):
+        import json
+
+        async def load(f):
+            value = await f.read()
+            decoded = json.loads(value)
+            return decoded
+        
+        async def dump(value, f):
+            encoded = json.dumps(value).encode("utf-8")
+            await f.write(encoded)
+
+        return load, dump
+
+
+class KVStore:
+    def __init__(self, store: FileStore, adapter_factory = DefaultAdapter.create):
+        self._store = store
+        self.set_adapter(adapter_factory)
+
+    def set_adapter(self, adapter_factory):
+        loader, dumper = adapter_factory(bytes, bytes)
+        self.load = loader
+        self.dump = dumper
+
+    async def load(self, f):
+        value = await f.read()
+        return value
+
+    async def dump(self, value: bytes, f):
+        await f.write(value)
+    
+    async def create(self, key: str, value: bytes):
+        exists = await self._store.exists(key)
+        if exists:
+            raise Exception(f"Key {key} already exists")
+        
+        return await self.put(key, value)
+
+    async def put(self, key: str, value: bytes):
+        async with self._store.open_writer(key) as f:
+            await self.dump(value, f)
+
+    async def delete(self, key: str):
+        return await self._store.delete(key)
+
+    async def list(self, limit: int = 10):
+        return await self._store.list(limit)
+
+    async def exists(self, key: str):
+        return await self._store.exists(key)
+
+    async def get(self, key: str):
+        undefined = object()
+        result = await self.get_or_default(key, undefined)
+        if result is undefined:
+            raise Exception(f"Key {key} not exists")
+        
+        return result
+
+    async def get_or_default(self, key: str, default = None):
+        exists = await self._store.exists(key)
+        if not exists:
+            return default
+
+        async with self._store.open_reader(key) as f:
+            return await self.load(f)
