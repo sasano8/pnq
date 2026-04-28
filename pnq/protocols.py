@@ -1,6 +1,6 @@
 import asyncio
 import concurrent
-from typing import Dict, Iterable, Protocol, runtime_checkable, Union
+from typing import Dict, Iterable, Protocol, Union, runtime_checkable
 
 """
 concurrent.futures.ProcessPoolExecutorはmultiprocessing.Poolのラッパーです。
@@ -49,6 +49,7 @@ class PExecutable(Protocol):
 
 import keyword
 
+
 def format_call(cls_name: str, args: tuple, kwargs: dict) -> str:
     parts = [repr(arg) for arg in args]
 
@@ -64,12 +65,14 @@ def format_call(cls_name: str, args: tuple, kwargs: dict) -> str:
 
 from typing import Any, Callable, NamedTuple, Union
 
+
 class WrapPlaceholder:
     def __repr__(self):
         return "*"
-    
+
     def __str__(self):
         return self.__repr__()
+
 
 class WrapFrame(NamedTuple):
     factory: Union[Callable[..., Any], None]
@@ -102,10 +105,10 @@ class WrapFrame(NamedTuple):
             *self.args,
             **self.kwargs,
         )
-    
+
     def is_term(self):
         return not isinstance(self.target, (Wrapped, WrapFrame))
-    
+
     def to_frames_src(self):
         frames, src = unwrap_recursive(self)
         return frames, src
@@ -153,12 +156,14 @@ def _unwrap_recursive(target):
         yield frame.replace(WrapPlaceholder())
         yield from _unwrap_recursive(frame.target)
 
+
 def unwrap_recursive(target):
     elms = list(_unwrap_recursive(target))
     src = elms[-1]
     frames = elms[:-1]
     frames.reverse()
     return WrapFrameChain(frames), src
+
 
 """
 from pnq import protocols
@@ -175,8 +180,8 @@ src
 repr(frames.wrap(src))
 """
 
-from pathlib import Path
 import os
+from pathlib import Path
 from typing import TypedDict
 
 
@@ -188,13 +193,13 @@ class LocalFileReader:
 
     async def read(self, size: int = -1) -> bytes:
         return self._file.read(size)
-    
+
     async def close(self):
         self._file.close()
-    
+
     async def __aenter__(self):
         return self
-        
+
     async def __aexit__(self, exc_type, exc, tb):
         await self.close()
 
@@ -213,7 +218,7 @@ class LocalFileWriter:
 
     async def __aenter__(self):
         return self
-        
+
     async def __aexit__(self, exc_type, exc, tb):
         await self.close()
 
@@ -228,7 +233,7 @@ class FileInfo(TypedDict):
 
 class FileStore:
     @classmethod
-    async def create(cls, root: str = None, create_if_not_exists = True) -> "FileStore":
+    async def create(cls, root: str = None, create_if_not_exists=True) -> "FileStore":
         if root is None:
             _root = Path(os.getcwd()).absolute()
         else:
@@ -237,7 +242,7 @@ class FileStore:
         if create_if_not_exists:
             _root.parent.mkdir(parents=True, exist_ok=True)
 
-        obj =  cls(_root)
+        obj = cls(_root)
         return obj
 
     def __init__(self, root: Path):
@@ -247,11 +252,11 @@ class FileStore:
         if ".." in key:
             raise ValueError("Key cannot contain '..' to prevent directory traversal")
 
-        return (self._root / key)
+        return self._root / key
 
     async def is_connected(self) -> bool:
         return True
-    
+
     async def open_reader(self, key: str):
         path = self.validate_path(key)
         if not await self.exists(key):
@@ -271,12 +276,12 @@ class FileStore:
         exists = await self.exists(key)
         path.unlink(missing_ok=True)
         return int(exists)
-    
+
     async def stat(self, key: str) -> Union[FileInfo, None]:
         path = self.validate_path(key)
         if not path.is_file():
             return None
-        
+
         stat = path.stat()
         return FileInfo(key=key, size=stat.st_size, updated_at=stat.st_mtime)
 
@@ -287,17 +292,19 @@ class FileStore:
     async def list(self, limit: int = 10) -> list:
         ...
 
+
 class DefaultAdapter:
     @classmethod
     def create(cls, read_type, write_type):
         async def load(f):
             value = await f.read()
             return value
-        
+
         async def dump(value, f):
             await f.write(value)
 
         return load, dump
+
 
 class JsonAdapter:
     @classmethod
@@ -308,7 +315,7 @@ class JsonAdapter:
             value = await f.read()
             decoded = json.loads(value)
             return decoded
-        
+
         async def dump(value, f):
             encoded = json.dumps(value).encode("utf-8")
             await f.write(encoded)
@@ -317,7 +324,7 @@ class JsonAdapter:
 
 
 class KVStore:
-    def __init__(self, store: FileStore, adapter_factory = DefaultAdapter.create):
+    def __init__(self, store: FileStore, adapter_factory=DefaultAdapter.create):
         self._store = store
         self.set_adapter(adapter_factory)
 
@@ -332,12 +339,12 @@ class KVStore:
 
     async def dump(self, value: bytes, f):
         await f.write(value)
-    
+
     async def create(self, key: str, value: bytes):
         exists = await self._store.exists(key)
         if exists:
             raise Exception(f"Key {key} already exists")
-        
+
         return await self.put(key, value)
 
     async def put(self, key: str, value: bytes):
@@ -358,10 +365,10 @@ class KVStore:
         result = await self.get_or_default(key, undefined)
         if result is undefined:
             raise Exception(f"Key {key} not exists")
-        
+
         return result
 
-    async def get_or_default(self, key: str, default = None):
+    async def get_or_default(self, key: str, default=None):
         exists = await self._store.exists(key)
         if not exists:
             return default

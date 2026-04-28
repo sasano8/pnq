@@ -1,9 +1,9 @@
 import traceback
+from contextlib import contextmanager
 from datetime import datetime, timezone
 from json import dumps as _dumps
-from typing import Any, Dict, NamedTuple, Tuple, Union
 from threading import Event
-from contextlib import contextmanager
+from typing import Any, Dict, NamedTuple, Tuple, Union
 
 
 def dumps(obj: Any) -> str:
@@ -37,7 +37,7 @@ class ChainTokenBase(Event):
         if parent:
             if not isinstance(parent, ChainTokenBase):
                 raise TypeError(parent)
-            
+
     def __enter__(self):
         return self
 
@@ -83,8 +83,10 @@ class ChainTokenBase(Event):
 
 
 class ChainToken(ChainTokenBase):
-    def with_deadline(self, deadline: Union[datetime , str]):
-        import time, threading, functools
+    def with_deadline(self, deadline: Union[datetime, str]):
+        import functools
+        import threading
+        import time
         from time import sleep
 
         if isinstance(deadline, str):

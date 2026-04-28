@@ -1,10 +1,11 @@
 def test_rx():
-    from pnq.rx import Distributer, Subscriber, MyExitStack
+    from pnq.rx import Distributer, MyExitStack, Subscriber
 
     result_next = []
     result_err = []
 
     sub1 = Subscriber()
+
     @sub1.callback_on_next
     def on_next(value):
         result_next.append(value)
