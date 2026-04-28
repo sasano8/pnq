@@ -1003,9 +1003,14 @@ wheels = [
 
 [[package]]
 name = "mkautodoc"
-version = "0.1.0"
+version = "0.2.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/0c/a7/f2a6662152ae0baa7786fc7fa3a879c0cfa437b8f87fedb97a89d01de3a5/mkautodoc-0.1.0.tar.gz", hash = "sha256:7c2595f40276b356e576ce7e343338f8b4fa1e02ea904edf33fadf82b68ca67c", size = 4531, upload-time = "2019-10-11T12:15:44.02Z" }
+dependencies = [
+    { name = "markdown", version = "3.7", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
+    { name = "markdown", version = "3.9", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.9.*'" },
+    { name = "markdown", version = "3.10.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/66/a4/aa32093fb96c4d657cce0fbd7fa4ce28e54eb6df05ef24caf0c0c57acd2b/mkautodoc-0.2.0.tar.gz", hash = "sha256:b6e0c89804ba39d453ce5795eb040e5615756f90438ac04f47e97893a86a10cd", size = 4827, upload-time = "2022-08-03T09:10:37.084Z" }
 
 [[package]]
 name = "mkdocs"
@@ -1310,7 +1315,7 @@ dev = [
     { name = "unasync", specifier = ">=0.5.0,<0.6.0" },
 ]
 docs = [
-    { name = "mkautodoc", specifier = ">=0.1.0,<0.2.0" },
+    { name = "mkautodoc", specifier = ">=0.2.0,<0.3.0" },
     { name = "mkdocs", specifier = ">=1.3.1,<2.0.0" },
     { name = "mkdocs-material", specifier = ">=8.3.9,<9.0.0" },
     { name = "mkdocs-print-site-plugin", specifier = ">=2.3.4,<3.0.0" },
