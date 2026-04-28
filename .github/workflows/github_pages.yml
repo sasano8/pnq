@@ -10,36 +10,23 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v2
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
         with:
-          python-version: "3.9"
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
 
-      - name: Install Poetry
-        run: |
-          curl -sSL https://install.python-poetry.org | python3 -
-          poetry config virtualenvs.create true
-          poetry config virtualenvs.in-project true
-
-      - name: Add path for Poetry
-        run: echo "$HOME/.poetry/bin" >> $GITHUB_PATH
-
-      - name: Load cached venv
-        id: cache-venv
-        uses: actions/cache@v4
-        with:
-          path: .venv
-          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+      - name: Set up Python
+        run: uv python install 3.9
 
       - name: Install Dependencies
-        if: steps.cache-venv.outputs.cache-hit != 'true'
-        run: poetry install --only main,docs
+        run: uv sync --group docs --python 3.9
 
       - run: make doc-build
 

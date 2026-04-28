@@ -1,6 +1,6 @@
-from typing import Protocol, Generic, TypeVar, Callable, List, Dict, ContextManager
 from contextlib import ExitStack
 from functools import partial
+from typing import Callable, ContextManager, Dict, Generic, List, Protocol, TypeVar
 
 T = TypeVar("T")
 
@@ -13,7 +13,7 @@ class MyExitStack:
     def __enter__(self):
         if self._stack:
             raise RuntimeError()
-        
+
         self._stack = ExitStack().__enter__()
         try:
             for k, v in self._list_context():
@@ -40,7 +40,8 @@ class MyExitStack:
 
         ctx = self._stack.enter_context(cm)
         return ctx
-    
+
+
 class NamedExitStack(MyExitStack):
     def __init__(self, **contexts: ContextManager):
         self._contexts = contexts
@@ -60,10 +61,11 @@ class Subscription:
     def __exit__(self, exc_type, exc, tb) -> bool:
         self._undistribuite()
 
+
 # Subject
 class Distributer(Generic[T]):
     def __init__(self):
-        self._subscribers= set()
+        self._subscribers = set()
 
     def distribuite(self, subscriber: "Subscriber[T]") -> Subscription:
         cancel = partial(self.undistribuite, subscriber)
@@ -76,8 +78,8 @@ class Distributer(Generic[T]):
 
     def __enter__(self):
         return self
-    
-    def __exit__(self ,*args, **kwargs):
+
+    def __exit__(self, *args, **kwargs):
         while len(self._subscribers):
             subscriber = self._subscribers.pop()
             self.undistribuite(subscriber)
@@ -90,6 +92,7 @@ class Distributer(Generic[T]):
         for sub in self._subscribers:
             sub.on_error(err)
 
+
 class Subscriber(Generic[T]):
     def callback_on_next(self, func):
         self._on_next = func
@@ -101,7 +104,7 @@ class Subscriber(Generic[T]):
 
     def subscribe(self, distributer: "Distributer[T]") -> Subscription:
         return distributer.distribuite(self)
-    
+
     def unsubscribe(self, distributer: "Distributer[T]") -> Subscription:
         return distributer.undistribuite(self)
 
@@ -111,4 +114,5 @@ class Subscriber(Generic[T]):
     def on_error(self, error: Exception) -> None:
         self._on_err(error)
 
-    def on_completed(self) -> None: ...
+    def on_completed(self) -> None:
+        ...

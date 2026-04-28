@@ -16,10 +16,10 @@ update-common:
 	@curl https://raw.githubusercontent.com/sasano8/portfolio/main/.vscode/.gitignore -o .vscode/.gitignore
 
 doc-build:
-	@poetry run mkdocs build
+	@uv run mkdocs build
 
 doc-serve: doc-build
-	@poetry run mkdocs serve -a localhost:8001
+	@uv run mkdocs serve -a localhost:8001
 
 grep-todo:
 	@grep -n -e "TODO:" -e "FIXME:" -r --exclude="Makefile" --exclude-dir=".venv" . || true
