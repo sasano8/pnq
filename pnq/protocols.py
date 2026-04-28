@@ -1,6 +1,22 @@
 import asyncio
 import concurrent
-from typing import AsyncIterable, Dict, Iterable, Protocol, Union, runtime_checkable
+from enum import Flag
+from typing import (
+    Any,
+    AsyncIterable,
+    Awaitable,
+    Callable,
+    Dict,
+    Generator,
+    Generic,
+    Iterable,
+    List,
+    NamedTuple,
+    Protocol,
+    TypeVar,
+    Union,
+    runtime_checkable,
+)
 
 """
 concurrent.futures.ProcessPoolExecutorはmultiprocessing.Poolのラッパーです。
@@ -53,8 +69,6 @@ def format_call(cls_name: str, args: tuple, kwargs: dict) -> str:
 
     return f"{cls_name}({', '.join(parts)})"
 
-
-from typing import Any, Callable, Generic, NamedTuple, TypeVar, Union
 
 TargetT = TypeVar("TargetT")
 
@@ -140,7 +154,31 @@ class Wrapped(Generic[TargetT]):
 T = TypeVar("T")
 
 
-class WrappedQuery(Wrapped[Union[Iterable[T], AsyncIterable[T]]], Generic[T]):
+class IterType(Flag):
+    IMPOSSIBLE = 0
+    NORMAL = 1
+    ASYNC = 2
+    BOTH = NORMAL | ASYNC
+
+
+class PResult(Protocol[T]):
+    def result(self, timeout=None) -> List[T]:
+        raise NotImplementedError()
+
+
+class PAsyncResult(Awaitable[List[T]], Generic[T]):
+    def __await__(self) -> Generator[Any, Any, List[T]]:
+        raise NotImplementedError()
+
+
+class WrappedQuery(
+    Wrapped[Union[Iterable[T], AsyncIterable[T]]],
+    Iterable[T],
+    AsyncIterable[T],
+    PResult[T],
+    PAsyncResult[T],
+    Generic[T],
+):
     """pnq の Query 系を Wrapped 互換として扱うための橋渡し。
 
     Why: Query 系は ``self.source`` に target を、``self._args``
@@ -156,6 +194,8 @@ class WrappedQuery(Wrapped[Union[Iterable[T], AsyncIterable[T]]], Generic[T]):
     を持つため、frame の args/kwargs から元の呼び出しを再構築できないこと
     がある。デバッグ・内省用途を主目的とする。
     """
+
+    iter_type: IterType
 
     def __init__(self, *args, **kwargs):
         # Wrapped.__init__ をバイパス。Query 系サブクラスは独自に

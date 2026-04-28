@@ -12,8 +12,11 @@ from typing import (
     Union,
 )
 
-# from . import finalizers
 from .protocols import IterType, PQuery
+
+# from . import finalizers
+# from pnq.protocols import WrappedQuery
+
 
 if TYPE_CHECKING:
     # python3.7には含まれていない
