@@ -1,20 +1,10 @@
 import asyncio
 import concurrent.futures
-from enum import Flag
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    AsyncIterable,
-    Awaitable,
-    Generator,
-    Generic,
-    Iterable,
-    List,
-    Protocol,
-    TypeVar,
-)
+from typing import Protocol
 
-T = TypeVar("T")
+from pnq.protocols import IterType, PAsyncResult, PResult, WrappedQuery
+
+__all__ = ["PExecutor", "PResult", "PAsyncResult", "IterType", "PQuery"]
 
 
 class PExecutor(Protocol):
@@ -32,22 +22,6 @@ class PExecutor(Protocol):
     def is_async_only(self) -> bool: ...
 
 
-class PResult(Protocol[T]):
-    def result(self, timeout=None) -> List[T]:
-        raise NotImplementedError()
-
-
-class PAsyncResult(Awaitable[List[T]], Generic[T]):
-    def __await__(self) -> Generator[Any, Any, List[T]]:
-        raise NotImplementedError()
-
-
-class IterType(Flag):
-    IMPOSSIBLE = 0
-    NORMAL = 1
-    ASYNC = 2
-    BOTH = NORMAL | ASYNC
-
-
-class PQuery(Iterable[T], AsyncIterable[T], PResult[T], PAsyncResult[T], Generic[T]):
-    iter_type: IterType
+# pnq.protocols.WrappedQuery は Iterable / AsyncIterable / PResult /
+# PAsyncResult / iter_type を備えており、従来の PQuery と同じ役割を果たす。
+PQuery = WrappedQuery
