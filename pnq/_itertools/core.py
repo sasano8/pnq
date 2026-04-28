@@ -12,10 +12,11 @@ from typing import (
     Union,
 )
 
-# from . import finalizers
-from pnq.protocols import WrappedQuery
-
 from .protocols import IterType, PQuery
+
+# from . import finalizers
+# from pnq.protocols import WrappedQuery
+
 
 if TYPE_CHECKING:
     # python3.7には含まれていない
@@ -62,7 +63,7 @@ def set_iter_type(self, source):
             raise TypeError("can not convert sync iterator to any iteraotr.")
 
 
-class Query(WrappedQuery[T]):
+class Query(PQuery[T]):
     """Queryクラスをチェインするのに使うか、__iter__と__aiter__の挙動をソースに任せる場合に使います。"""
 
     iter_type = IterType.BOTH
