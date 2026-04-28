@@ -146,6 +146,12 @@ def test_types():
 
     if sys.version_info >= (3, 14):
         expected = 94
+    elif sys.version_info >= (3, 13):
+        expected = 93
+    elif sys.version_info >= (3, 12):
+        expected = 88
+    elif sys.version_info >= (3, 11):
+        expected = 86
     elif sys.version_info >= (3, 10):
         expected = 73
     elif sys.version_info >= (3, 9):
