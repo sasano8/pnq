@@ -334,6 +334,7 @@ def test_dispatch():
 
     async def main_async():
         succeeded.clear()
+        failed.clear()
 
         await pnq.query([1, 2]).map(lambda x: x)._.dispatch(ok, on_complete=on_complete)
         await pnq.query([3, 4]).map(lambda x: x)._.dispatch(
@@ -345,7 +346,21 @@ def test_dispatch():
         await pnq.query([7, 8]).map(lambda x: x)._.dispatch(
             err_async, on_complete=on_complete
         )  # exception unhandle
-        assert succeeded == [1, 2, 5, 6]
+
+        # dispatch は fire-and-forget なので on_complete (8件) が全て発火するまで待つ
+        for _ in range(500):
+            if len(succeeded) + len(failed) == 8:
+                break
+            await asyncio.sleep(0.01)
+
+        # pnq に watch api が欲しい
+        """
+        subscription = pnq.watch(lambda: len(target), interval=0.01).until(lambda x: x == 1).subscribe(timeout=10)
+        """
+
+        # 完了順序は非決定的なため sorted で比較
+        assert sorted(succeeded) == [1, 2, 5, 6]
+        assert sorted(failed) == [3, 4, 7, 8]
 
     main()
     asyncio.run(main_async())
