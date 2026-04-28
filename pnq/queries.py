@@ -100,36 +100,29 @@ class Query(Generic[T]):
     def min(
         self, key_selector: Callable[[T], R] = lambda x: x, default=NoReturn
     ) -> R: ...
-
     def min(self, key_selector: Callable[[T], R] = lambda x: x, default=NoReturn) -> R:
         return Finalizer.min(self, key_selector, default)
 
     @overload
     def max(self, *, default=NoReturn) -> Union[T, NoReturn]: ...
-
     @overload
     def max(
         self, key_selector: Callable[[T], R] = lambda x: x, default=NoReturn
     ) -> R: ...
-
     def max(self, key_selector: Callable[[T], R] = lambda x: x, default=NoReturn) -> R:
         return Finalizer.max(self, key_selector, default)
 
     @overload
     def sum(self) -> T: ...
-
     @overload
     def sum(self, selector: Callable[[T], R] = lambda x: x) -> R: ...
-
     def sum(self, selector: Callable[[T], R] = lambda x: x) -> R:
         return Finalizer.sum(self, selector)
 
     @overload
     def average(self) -> T: ...
-
     @overload
     def average(self, selector: Callable[[T], R] = lambda x: x) -> R: ...
-
     def average(self, selector: Callable[[T], R] = lambda x: x) -> R:
         return Finalizer.average(self, selector)
 
@@ -525,7 +518,6 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
     def min(
         self, key_selector: Callable[[Tuple[K, V]], R] = lambda x: x, default=NoReturn
     ) -> R: ...
-
     def min(
         self, key_selector: Callable[[Tuple[K, V]], R] = lambda x: x, default=NoReturn
     ) -> R:
@@ -533,12 +525,10 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
 
     @overload
     def max(self, *, default=NoReturn) -> Union[Tuple[K, V], NoReturn]: ...
-
     @overload
     def max(
         self, key_selector: Callable[[Tuple[K, V]], R] = lambda x: x, default=NoReturn
     ) -> R: ...
-
     def max(
         self, key_selector: Callable[[Tuple[K, V]], R] = lambda x: x, default=NoReturn
     ) -> R:
@@ -546,19 +536,15 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
 
     @overload
     def sum(self) -> Tuple[K, V]: ...
-
     @overload
     def sum(self, selector: Callable[[Tuple[K, V]], R] = lambda x: x) -> R: ...
-
     def sum(self, selector: Callable[[Tuple[K, V]], R] = lambda x: x) -> R:
         return Finalizer.sum(self, selector)
 
     @overload
     def average(self) -> Tuple[K, V]: ...
-
     @overload
     def average(self, selector: Callable[[Tuple[K, V]], R] = lambda x: x) -> R: ...
-
     def average(self, selector: Callable[[Tuple[K, V]], R] = lambda x: x) -> R:
         return Finalizer.average(self, selector)
 
