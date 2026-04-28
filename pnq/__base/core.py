@@ -145,8 +145,7 @@ class QueryDict(QueryNormal[Tuple[K, V]]):
 
     if TYPE_CHECKING:
 
-        def __init__(self, source: Mapping[K, V]):
-            ...
+        def __init__(self, source: Mapping[K, V]): ...
 
     def _impl_iter(self):
         return self.source.items().__iter__()  # type: ignore

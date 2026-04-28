@@ -61,7 +61,9 @@ class Test000_Init:
 
         assert isinstance(pnq([]), Iterable)
         assert not isinstance(pnq([]), Mapping)
-        assert not isinstance(pnq({}), Mapping)  # クエリ化したら辞書互換でないように変更
+        assert not isinstance(
+            pnq({}), Mapping
+        )  # クエリ化したら辞書互換でないように変更
         assert isinstance(pnq({}), Iterable)
         assert isinstance(pnq(tuple()), Iterable)
         assert isinstance(pnq(set()), Iterable)

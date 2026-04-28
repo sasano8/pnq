@@ -19,8 +19,7 @@ class Undefined:
 undefined: bool = Undefined()  # type: ignore
 
 
-class TestException(Exception):
-    ...
+class TestException(Exception): ...
 
 
 @dataclass

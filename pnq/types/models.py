@@ -93,11 +93,9 @@ class PnqExitStack:
 
     if TYPE_CHECKING:
 
-        def close(self):
-            ...
+        def close(self): ...
 
-        async def aclose(self):
-            ...
+        async def aclose(self): ...
 
     def __enter__(self):
         return self.start()

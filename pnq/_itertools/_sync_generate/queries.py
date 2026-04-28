@@ -165,8 +165,7 @@ def chunk(source: Iterable[T], size: int):
             yield queue
 
 
-def tee(source: Iterable[T], size: int):
-    ...
+def tee(source: Iterable[T], size: int): ...
 
 
 def join(source: Iterable[T], size: int):
@@ -203,8 +202,7 @@ def inner_join(
         yield k, v
 
 
-def group_join(source: Iterable[T], size: int):
-    ...
+def group_join(source: Iterable[T], size: int): ...
 
 
 def debug(source: Iterable[T], breakpoint=lambda x: x, printer=print):
@@ -214,23 +212,19 @@ def debug(source: Iterable[T], breakpoint=lambda x: x, printer=print):
         yield v
 
 
-def union_all(source: Iterable[T]):
-    ...
+def union_all(source: Iterable[T]): ...
 
 
 extend = union_all
 
 
-def union(source: Iterable[T]):
-    ...
+def union(source: Iterable[T]): ...
 
 
-def union_intersect(source: Iterable[T]):
-    ...
+def union_intersect(source: Iterable[T]): ...
 
 
-def union_minus(source: Iterable[T]):
-    ...
+def union_minus(source: Iterable[T]): ...
 
 
 # difference
@@ -240,8 +234,7 @@ def union_minus(source: Iterable[T]):
 
 
 @name_as("zip")
-def _zip(source: Iterable[T]):
-    ...
+def _zip(source: Iterable[T]): ...
 
 
 def compress(source: Iterable[T]):

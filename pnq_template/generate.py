@@ -99,7 +99,9 @@ def generate(input, output):
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description="雛形からソースコードを自動生成します。")
+    parser = argparse.ArgumentParser(
+        description="雛形からソースコードを自動生成します。"
+    )
     parser.add_argument("-i", help="入力とするテンプレートファイルを指定します")
     parser.add_argument("-o", help="出力するファイル名を指定します")
 
