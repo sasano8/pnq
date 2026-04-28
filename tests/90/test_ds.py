@@ -142,12 +142,16 @@ def test_schedule_weekday():
 
 
 def test_types():
-    import platform
+    import sys
 
-    TYPE_NUMS = {10: 73, 9: 67, 0: 61}  # other
-
-    VERSION = int(platform.python_version_tuple()[1])
-    expected = TYPE_NUMS.get(VERSION, TYPE_NUMS[0])
+    if sys.version_info >= (3, 14):
+        expected = 94
+    elif sys.version_info >= (3, 10):
+        expected = 73
+    elif sys.version_info >= (3, 9):
+        expected = 67
+    else:
+        expected = 61
 
     res = types.items().to(dict)
     assert len(res) == expected

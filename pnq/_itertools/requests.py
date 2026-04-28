@@ -205,13 +205,11 @@ class StopWatch:
     def __enter__(self):
         if self.start:
             raise RuntimeError("StopWatch already started")
-        start = datetime.utcnow()
-        self.start = start.astimezone(timezone.utc)
+        self.start = datetime.now(timezone.utc)
         return self
 
     def __exit__(self, exc_value, exc_type, exc_tb):
-        end = datetime.utcnow()
-        self.end = end.astimezone(timezone.utc)
+        self.end = datetime.now(timezone.utc)
 
     def __str__(self):
         return str(self.to_dict())

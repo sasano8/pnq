@@ -5,6 +5,8 @@ from concurrent.futures import Future as ConcurrentFuture
 from functools import partial
 from typing import Iterable, Iterator, Literal
 
+from pnq._compat import iscoroutinefunction
+
 from .iterables import LazyListable
 
 
@@ -73,7 +75,7 @@ async def map_to_aiter(iterable, func, unpack: Literal["", "*", "**", "***"] = "
 
 
 async def map_aiter(iterable, func, unpack: Literal["", "*", "**", "***"] = ""):
-    if asyncio.iscoroutinefunction(func):
+    if iscoroutinefunction(func):
         if unpack == "":
             async for x in iterable:
                 yield await func(x)
@@ -182,7 +184,7 @@ def map_each_chunk(
     if chunksize < 1:
         raise ValueError("chunksize must be >= 1.")
 
-    if asyncio.iscoroutinefunction(func):
+    if iscoroutinefunction(func):
         processer = process_chunk_async
     else:
         processer = process_chunk

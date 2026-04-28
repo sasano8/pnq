@@ -1,5 +1,6 @@
 import asyncio
 
+from pnq._compat import iscoroutinefunction
 from pnq.selectors import starmap
 
 from .._sync_generate.finalizers import (  # _all,; _any,; _sum,; each,; each,
@@ -44,7 +45,7 @@ def _sum(source, selector=None):
 
 
 def each(source, func=lambda x: x, unpack=""):
-    if asyncio.iscoroutinefunction(func):
+    if iscoroutinefunction(func):
         raise TypeError(f"cannot acceptable async funcition: {func}")
 
     func = starmap(func, unpack)
