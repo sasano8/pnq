@@ -1,10 +1,10 @@
 import asyncio
-from asyncio import iscoroutinefunction
 from collections import deque
 from functools import partial
 from typing import Iterable, TypeVar
 
 from pnq import selectors
+from pnq._compat import iscoroutinefunction
 from pnq.concurrent import get_default_pool
 from pnq.protocols import PExecutor
 from pnq.selectors import starmap

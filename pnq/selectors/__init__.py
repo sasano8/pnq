@@ -1,11 +1,12 @@
 import asyncio
-from asyncio import iscoroutinefunction
 from concurrent.futures import Future as ConcurrentFuture
 from functools import cmp_to_key
 from functools import partial
 from functools import partial as _partial
 from operator import attrgetter, itemgetter
 from typing import Any, Awaitable, Literal, NoReturn
+
+from pnq._compat import iscoroutinefunction
 
 __all__ = [
     "starmap",

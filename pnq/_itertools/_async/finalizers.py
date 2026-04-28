@@ -2,6 +2,7 @@ import asyncio
 from decimal import Decimal, InvalidOperation
 from typing import Any, AsyncIterable, Callable, NoReturn, Sequence, TypeVar, Union
 
+from pnq._compat import iscoroutinefunction
 from pnq._itertools.common import Listable, name_as
 from pnq._itertools.op import MAP_ASSIGN_OP, TH_ASSIGN_OP, TH_ROUND
 from pnq.exceptions import NoElementError, NotOneElementError
@@ -198,7 +199,7 @@ async def concat(source: AsyncIterable[T], selector=None, delimiter: str = ""):
 
 
 async def each(source: AsyncIterable[T], func=lambda x: x, unpack=""):
-    if asyncio.iscoroutinefunction(func):
+    if iscoroutinefunction(func):
         func = starmap(func, unpack)
         async for elm in source:
             await func(elm)

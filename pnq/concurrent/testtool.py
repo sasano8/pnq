@@ -13,6 +13,8 @@ class Undefined:
     def __bool__(self):
         raise AttributeError("undefined cannot be referenced.")
 
+    __hash__ = object.__hash__
+
 
 undefined: bool = Undefined()  # type: ignore
 

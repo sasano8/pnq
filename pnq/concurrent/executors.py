@@ -1,6 +1,5 @@
 import asyncio
 import logging
-from asyncio import iscoroutinefunction
 from collections import deque
 from concurrent.futures import Future
 from concurrent.futures import ProcessPoolExecutor as _ProcessPoolExecutor
@@ -8,6 +7,8 @@ from concurrent.futures import ThreadPoolExecutor as _ThreadPoolExecutor
 from contextlib import AsyncExitStack, ExitStack
 from functools import partial
 from typing import TYPE_CHECKING, Union
+
+from pnq._compat import iscoroutinefunction
 
 from . import tools
 from .protocols import Executor, PExecutable, PExecutor
@@ -56,14 +57,14 @@ class OverrideExecutor:
         return asyncio.wrap_future(future, loop=self._loop)
 
     def request(self, func, *args, **kwargs):
-        if asyncio.iscoroutinefunction(func):
+        if iscoroutinefunction(func):
             future = self.submit_async(func, *args, **kwargs)
         else:
             future = self.submit(func, *args, **kwargs)
         return future
 
     def arequest(self, func, *args, **kwargs):
-        if asyncio.iscoroutinefunction(func):
+        if iscoroutinefunction(func):
             future = self.asubmit_async(func, *args, **kwargs)
         else:
             future = self.asubmit(func, *args, **kwargs)
@@ -424,7 +425,7 @@ class AsyncPoolExecutor(PExecutor, PExecutable):
         else:
             target = func
 
-        if asyncio.iscoroutinefunction(target):
+        if iscoroutinefunction(target):
 
             async def main():
                 return await asyncio.gather(*(func(x) for x in iterable))

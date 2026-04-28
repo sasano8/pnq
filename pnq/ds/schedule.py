@@ -1,5 +1,5 @@
 from asyncio import sleep as asleep
-from datetime import datetime
+from datetime import datetime, timezone
 from time import sleep
 
 from pnq import query
@@ -12,7 +12,7 @@ def tick(seconds: float, token: CancelToken = None):
 
     def infinity(seconds, token: CancelToken):
         while token.is_active:
-            yield datetime.utcnow()
+            yield datetime.now(timezone.utc)
             sleep(seconds)
 
     return query(infinity(seconds, token))
@@ -23,7 +23,7 @@ def tick_async(seconds: float, token: CancelToken = None):
 
     async def infinity(seconds, token: CancelToken):
         while token.is_active:
-            yield datetime.utcnow()
+            yield datetime.now(timezone.utc)
             await asleep(seconds)
 
     return query(infinity(seconds, token))
