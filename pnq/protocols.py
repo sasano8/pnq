@@ -1,6 +1,13 @@
 import asyncio
 import concurrent
-from typing import Dict, Iterable, Protocol, Union, runtime_checkable
+from typing import (
+    AsyncIterable,
+    Dict,
+    Iterable,
+    Protocol,
+    Union,
+    runtime_checkable,
+)
 
 """
 concurrent.futures.ProcessPoolExecutorはmultiprocessing.Poolのラッパーです。
@@ -63,7 +70,9 @@ def format_call(cls_name: str, args: tuple, kwargs: dict) -> str:
     return f"{cls_name}({', '.join(parts)})"
 
 
-from typing import Any, Callable, NamedTuple, Union
+from typing import Any, Callable, Generic, NamedTuple, TypeVar, Union
+
+TargetT = TypeVar("TargetT")
 
 
 class WrapPlaceholder:
@@ -78,7 +87,7 @@ class WrapFrame(NamedTuple):
     factory: Union[Callable[..., Any], None]
     target: Any
     args: tuple = ()
-    kwarg: Dict[str, Any] = {}
+    kwargs: Dict[str, Any] = {}
 
     def __get_wrapframe__(self) -> "WrapFrame":
         return self
@@ -126,8 +135,10 @@ class WrapFrameChain(list):
         return prev
 
 
-class Wrapped:
-    def __init__(self, _, /, *args, **kwargs):
+class Wrapped(Generic[TargetT]):
+    _target: TargetT
+
+    def __init__(self, _: TargetT, /, *args, **kwargs):
         self._target = _
         self._args = args
         self._kwargs = kwargs
@@ -141,6 +152,42 @@ class Wrapped:
     def __repr__(self):
         return self.__get_wrapframe__().__repr__()
 
+
+T = TypeVar("T")
+
+
+class WrappedQuery(Wrapped[Union[Iterable[T], AsyncIterable[T]]], Generic[T]):
+    """pnq の Query 系を Wrapped 互換として扱うための橋渡し。
+
+    Why: Query 系は ``self.source`` に target を、``self._args``
+    （types.models.Arguments）に呼び出し時の args/kwargs を保持する。
+    Wrapped と属性名や格納方法が異なるため、そのままでは
+    ``unwrap_recursive`` や ``__repr__`` が機能しない。
+    本クラスは ``__get_wrapframe__`` のみ Query の流儀に合わせて
+    オーバーライドし、Wrapped エコシステム（再帰的アンラップ、repr
+    生成）に参加させる。
+
+    Note: factory 経由の ``WrapFrame.wrap()`` による復元は保証されない。
+    Query 系のサブクラスは独自シグネチャ（例: Map(source, selector, unpack)）
+    を持つため、frame の args/kwargs から元の呼び出しを再構築できないこと
+    がある。デバッグ・内省用途を主目的とする。
+    """
+
+    def __init__(self, *args, **kwargs):
+        # Wrapped.__init__ をバイパス。Query 系サブクラスは独自に
+        # self.source / self._args を初期化する。
+        pass
+
+    def __get_wrapframe__(self) -> WrapFrame:
+        target = getattr(self, "source", None)
+        args_obj = getattr(self, "_args", None)
+        if hasattr(args_obj, "args") and hasattr(args_obj, "kwargs"):
+            args = tuple(args_obj.args)
+            kwargs = dict(args_obj.kwargs)
+        else:
+            args, kwargs = (), {}
+        return WrapFrame(self.__class__, target, args, kwargs)
+    
 
 def _unwrap_recursive(target):
     if isinstance(target, (Wrapped, WrapFrame)):
