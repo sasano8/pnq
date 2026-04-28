@@ -8,13 +8,11 @@ T = TypeVar("T")
 @overload
 def LazyGeneratorFunction(
     func: Union[Callable[..., Iterable[T]], Callable[..., AsyncIterable[T]]]
-) -> iterables.LazyGeneratorFunction[T]:
-    ...
+) -> iterables.LazyGeneratorFunction[T]: ...
 
 
 @overload
-def LazyGeneratorFunction(func) -> iterables.LazyGeneratorFunction:
-    ...
+def LazyGeneratorFunction(func) -> iterables.LazyGeneratorFunction: ...
 
 
 def LazyGeneratorFunction(func):
@@ -32,8 +30,7 @@ def LazyListable(func: Iterable[T]) -> iterables.Listable[T]:  # type: ignore
 
 
 @overload
-def LazyListable(func) -> iterables.LazyListable:
-    ...
+def LazyListable(func) -> iterables.LazyListable: ...
 
 
 def LazyListable(func):

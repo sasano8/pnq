@@ -19,13 +19,11 @@ T = TypeVar("T")
 
 
 class IT(Generic[T]):
-    def __iter__(self) -> Iterator[T]:
-        ...
+    def __iter__(self) -> Iterator[T]: ...
 
 
 class AIT(Generic[T]):
-    def __aiter__(self) -> AsyncIterator[T]:
-        ...
+    def __aiter__(self) -> AsyncIterator[T]: ...
 
 
 def query_empty() -> Iterator[Query]:

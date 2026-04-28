@@ -100,10 +100,14 @@ def test_schedule_tick():
     async def main(is_async):
         if is_async:
             times = await schedule.tick_async(seconds=1).take(3)
-            assert len(await schedule.tick_async(seconds=1).take(1)) == 1  # 再実行できるか確認
+            assert (
+                len(await schedule.tick_async(seconds=1).take(1)) == 1
+            )  # 再実行できるか確認
         else:
             times = schedule.tick(seconds=1).take(3).result()
-            assert len(schedule.tick(seconds=1).take(1).result()) == 1  # 再実行できるか確認
+            assert (
+                len(schedule.tick(seconds=1).take(1).result()) == 1
+            )  # 再実行できるか確認
 
         assert len(times) == 3
         assert all(isinstance(x, datetime) for x in times)

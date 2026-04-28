@@ -120,7 +120,7 @@ def to_csv(
     dialect="excel",
     compression: Union[None, Literal["gz", "gzip", "lzma", "xz", "bz2"]] = None,
     newline="",
-    **fmtparams
+    **fmtparams,
 ):
     """
     Saves the sequence to a csv file. Each element should be an iterable which will be expanded

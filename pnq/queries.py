@@ -47,11 +47,9 @@ __all__ = ["Query", "PairQuery", "query"]
 class Query(Generic[T]):
     if TYPE_CHECKING:
 
-        def __iter__(self) -> Iterator[T]:
-            ...
+        def __iter__(self) -> Iterator[T]: ...
 
-        def __aiter__(self) -> AsyncIterator[T]:
-            ...
+        def __aiter__(self) -> AsyncIterator[T]: ...
 
     def as_iter(self) -> "Finalizer[T]":
         # return finalizers.SyncFinalizer(self)
@@ -96,45 +94,41 @@ class Query(Generic[T]):
         return Finalizer.contains(self, value, selector)
 
     @overload
-    def min(self, *, default=NoReturn) -> Union[T, NoReturn]:
-        ...
+    def min(self, *, default=NoReturn) -> Union[T, NoReturn]: ...
 
     @overload
-    def min(self, key_selector: Callable[[T], R] = lambda x: x, default=NoReturn) -> R:
-        ...
+    def min(
+        self, key_selector: Callable[[T], R] = lambda x: x, default=NoReturn
+    ) -> R: ...
 
     def min(self, key_selector: Callable[[T], R] = lambda x: x, default=NoReturn) -> R:
         return Finalizer.min(self, key_selector, default)
 
     @overload
-    def max(self, *, default=NoReturn) -> Union[T, NoReturn]:
-        ...
+    def max(self, *, default=NoReturn) -> Union[T, NoReturn]: ...
 
     @overload
-    def max(self, key_selector: Callable[[T], R] = lambda x: x, default=NoReturn) -> R:
-        ...
+    def max(
+        self, key_selector: Callable[[T], R] = lambda x: x, default=NoReturn
+    ) -> R: ...
 
     def max(self, key_selector: Callable[[T], R] = lambda x: x, default=NoReturn) -> R:
         return Finalizer.max(self, key_selector, default)
 
     @overload
-    def sum(self) -> T:
-        ...
+    def sum(self) -> T: ...
 
     @overload
-    def sum(self, selector: Callable[[T], R] = lambda x: x) -> R:
-        ...
+    def sum(self, selector: Callable[[T], R] = lambda x: x) -> R: ...
 
     def sum(self, selector: Callable[[T], R] = lambda x: x) -> R:
         return Finalizer.sum(self, selector)
 
     @overload
-    def average(self) -> T:
-        ...
+    def average(self) -> T: ...
 
     @overload
-    def average(self, selector: Callable[[T], R] = lambda x: x) -> R:
-        ...
+    def average(self, selector: Callable[[T], R] = lambda x: x) -> R: ...
 
     def average(self, selector: Callable[[T], R] = lambda x: x) -> R:
         return Finalizer.average(self, selector)
@@ -218,14 +212,12 @@ class Query(Generic[T]):
         *,
         unpack="",
         chunksize=1,
-    ) -> "Query[R]":
-        ...
+    ) -> "Query[R]": ...
 
     @overload
     def parallel(
         self, func: Callable[..., R], executor=None, *, unpack="", chunksize=1
-    ) -> "Query[R]":
-        ...
+    ) -> "Query[R]": ...
 
     def parallel(self, func, executor=None, *, unpack="", chunksize=1) -> "Query[R]":
         return queryables.Parallel(
@@ -251,12 +243,10 @@ class Query(Generic[T]):
         )
 
     @overload
-    def to(self: Iterable[T], func: Type[Iterable[T]]) -> Iterable[T]:
-        ...
+    def to(self: Iterable[T], func: Type[Iterable[T]]) -> Iterable[T]: ...
 
     @overload
-    def to(self: Iterable[T], func: Callable[[Iterable[T]], R]) -> R:
-        ...
+    def to(self: Iterable[T], func: Callable[[Iterable[T]], R]) -> R: ...
 
     def to(self, func: Callable[[Iterable[T]], R]) -> R:
         return Finalizer.to(self, func)
@@ -334,16 +324,13 @@ class Query(Generic[T]):
         return queryables.Map(self, selector, unpack)
 
     @overload
-    def select(self, field) -> "Query[Any]":
-        ...
+    def select(self, field) -> "Query[Any]": ...
 
     @overload
-    def select(self, field1, field2, *fields) -> "PairQuery":
-        ...
+    def select(self, field1, field2, *fields) -> "PairQuery": ...
 
     @overload
-    def select(self, field, *fields) -> "Query[Tuple]":
-        ...
+    def select(self, field, *fields) -> "Query[Tuple]": ...
 
     def select(self, *fields, attr: bool = False) -> "Query[Any]":
         return queryables.Select(self, *fields, attr=attr)
@@ -409,18 +396,15 @@ class Query(Generic[T]):
         return queryables.FilterType(self, *types)
 
     @overload
-    def filter_unique(self) -> "Query[T]":
-        ...
+    def filter_unique(self) -> "Query[T]": ...
 
     @overload
     def filter_unique(
         self, selector: Callable[[T], Tuple[K2, V2]]
-    ) -> "PairQuery[K2, V2]":
-        ...
+    ) -> "PairQuery[K2, V2]": ...
 
     @overload
-    def filter_unique(self, selector: Callable[[T], R]) -> "Query[R]":
-        ...
+    def filter_unique(self, selector: Callable[[T], R]) -> "Query[R]": ...
 
     def filter_unique(self, selector=None):
         return queryables.FilterUnique(self, selector=selector)
@@ -486,11 +470,9 @@ class Query(Generic[T]):
 class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
     if TYPE_CHECKING:
 
-        def __iter__(self) -> Iterator[Tuple[K, V]]:
-            ...
+        def __iter__(self) -> Iterator[Tuple[K, V]]: ...
 
-        def __aiter__(self) -> AsyncIterator[Tuple[K, V]]:
-            ...
+        def __aiter__(self) -> AsyncIterator[Tuple[K, V]]: ...
 
     def as_iter(self) -> "Finalizer[Tuple[K,V]]":
         # return finalizers.SyncFinalizer(self)
@@ -537,14 +519,12 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
         return Finalizer.contains(self, value, selector)
 
     @overload
-    def min(self, *, default=NoReturn) -> Union[Tuple[K, V], NoReturn]:
-        ...
+    def min(self, *, default=NoReturn) -> Union[Tuple[K, V], NoReturn]: ...
 
     @overload
     def min(
         self, key_selector: Callable[[Tuple[K, V]], R] = lambda x: x, default=NoReturn
-    ) -> R:
-        ...
+    ) -> R: ...
 
     def min(
         self, key_selector: Callable[[Tuple[K, V]], R] = lambda x: x, default=NoReturn
@@ -552,14 +532,12 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
         return Finalizer.min(self, key_selector, default)
 
     @overload
-    def max(self, *, default=NoReturn) -> Union[Tuple[K, V], NoReturn]:
-        ...
+    def max(self, *, default=NoReturn) -> Union[Tuple[K, V], NoReturn]: ...
 
     @overload
     def max(
         self, key_selector: Callable[[Tuple[K, V]], R] = lambda x: x, default=NoReturn
-    ) -> R:
-        ...
+    ) -> R: ...
 
     def max(
         self, key_selector: Callable[[Tuple[K, V]], R] = lambda x: x, default=NoReturn
@@ -567,23 +545,19 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
         return Finalizer.max(self, key_selector, default)
 
     @overload
-    def sum(self) -> Tuple[K, V]:
-        ...
+    def sum(self) -> Tuple[K, V]: ...
 
     @overload
-    def sum(self, selector: Callable[[Tuple[K, V]], R] = lambda x: x) -> R:
-        ...
+    def sum(self, selector: Callable[[Tuple[K, V]], R] = lambda x: x) -> R: ...
 
     def sum(self, selector: Callable[[Tuple[K, V]], R] = lambda x: x) -> R:
         return Finalizer.sum(self, selector)
 
     @overload
-    def average(self) -> Tuple[K, V]:
-        ...
+    def average(self) -> Tuple[K, V]: ...
 
     @overload
-    def average(self, selector: Callable[[Tuple[K, V]], R] = lambda x: x) -> R:
-        ...
+    def average(self, selector: Callable[[Tuple[K, V]], R] = lambda x: x) -> R: ...
 
     def average(self, selector: Callable[[Tuple[K, V]], R] = lambda x: x) -> R:
         return Finalizer.average(self, selector)
@@ -667,14 +641,12 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
         *,
         unpack="",
         chunksize=1,
-    ) -> "Query[R]":
-        ...
+    ) -> "Query[R]": ...
 
     @overload
     def parallel(
         self, func: Callable[..., R], executor=None, *, unpack="", chunksize=1
-    ) -> "Query[R]":
-        ...
+    ) -> "Query[R]": ...
 
     def parallel(self, func, executor=None, *, unpack="", chunksize=1) -> "Query[R]":
         return queryables.Parallel(
@@ -700,22 +672,18 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
         )
 
     @overload
-    def to(self: Iterable[Tuple[K, V]], func: Type[Mapping[K, V]]) -> Mapping[K, V]:
-        ...
+    def to(self: Iterable[Tuple[K, V]], func: Type[Mapping[K, V]]) -> Mapping[K, V]: ...
 
     @overload
     def to(
         self: Iterable[Tuple[K, V]], func: Callable[[Iterable[Tuple[K, V]]], R]
-    ) -> R:
-        ...
+    ) -> R: ...
 
     @overload
-    def to(self: Iterable[T], func: Type[Iterable[T]]) -> Iterable[T]:
-        ...
+    def to(self: Iterable[T], func: Type[Iterable[T]]) -> Iterable[T]: ...
 
     @overload
-    def to(self: Iterable[T], func: Callable[[Iterable[T]], R]) -> R:
-        ...
+    def to(self: Iterable[T], func: Callable[[Iterable[T]], R]) -> R: ...
 
     def to(self, func: Callable[[Iterable[T]], R]) -> R:
         return Finalizer.to(self, func)
@@ -793,24 +761,19 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
         return queryables.Map(self, selector, unpack)
 
     @overload
-    def select(self, item: Literal[0]) -> "Query[K]":
-        ...
+    def select(self, item: Literal[0]) -> "Query[K]": ...
 
     @overload
-    def select(self, item: Literal[1]) -> "Query[V]":
-        ...
+    def select(self, item: Literal[1]) -> "Query[V]": ...
 
     @overload
-    def select(self, field) -> "Query[Any]":
-        ...
+    def select(self, field) -> "Query[Any]": ...
 
     @overload
-    def select(self, field1, field2, *fields) -> "PairQuery":
-        ...
+    def select(self, field1, field2, *fields) -> "PairQuery": ...
 
     @overload
-    def select(self, field, *fields) -> "Query[Tuple]":
-        ...
+    def select(self, field, *fields) -> "Query[Tuple]": ...
 
     def select(self, *fields, attr: bool = False) -> "Query[Any]":
         return queryables.Select(self, *fields, attr=attr)
@@ -878,18 +841,15 @@ class PairQuery(Generic[K, V], Query[Tuple[K, V]]):
         return queryables.FilterType(self, *types)
 
     @overload
-    def filter_unique(self) -> "PairQuery[K,V]":
-        ...
+    def filter_unique(self) -> "PairQuery[K,V]": ...
 
     @overload
     def filter_unique(
         self, selector: Callable[[Tuple[K, V]], Tuple[K2, V2]]
-    ) -> "PairQuery[K2, V2]":
-        ...
+    ) -> "PairQuery[K2, V2]": ...
 
     @overload
-    def filter_unique(self, selector: Callable[[Tuple[K, V]], R]) -> "Query[R]":
-        ...
+    def filter_unique(self, selector: Callable[[Tuple[K, V]], R]) -> "Query[R]": ...
 
     def filter_unique(self, selector=None):
         return queryables.FilterUnique(self, selector=selector)
@@ -1128,15 +1088,12 @@ class QuerySet(Query[T], core.QuerySet[T]):
 
 if TYPE_CHECKING:
 
-    class QuerySeqPair(PairQuery[K, V], core.QuerySeq[Tuple[K, V]]):
-        ...
+    class QuerySeqPair(PairQuery[K, V], core.QuerySeq[Tuple[K, V]]): ...
 
-    class QuerySetPair(PairQuery[K, V], core.QuerySeq[Tuple[K, V]]):
-        ...
+    class QuerySetPair(PairQuery[K, V], core.QuerySeq[Tuple[K, V]]): ...
 
     class PnqListPair(PairQuery[K, V], PnqList[Tuple[K, V]]):
-        def __init__(self, source: Iterable[Tuple[K, V]]):
-            ...
+        def __init__(self, source: Iterable[Tuple[K, V]]): ...
 
 
 class QueryBuilder(builder.Builder):
@@ -1149,58 +1106,47 @@ class QueryBuilder(builder.Builder):
 
 
 @overload
-def query(source: Mapping[K, V]) -> QueryDict[K, V]:
-    ...
+def query(source: Mapping[K, V]) -> QueryDict[K, V]: ...
 
 
 @overload
-def query(source: Set[Tuple[K, V]]) -> "QuerySetPair[K, V]":
-    ...
+def query(source: Set[Tuple[K, V]]) -> "QuerySetPair[K, V]": ...
 
 
 @overload
-def query(source: Set[T]) -> QuerySet[T]:
-    ...
+def query(source: Set[T]) -> QuerySet[T]: ...
 
 
 @overload
-def query(source: Iterable[Tuple[K, V]]) -> "QuerySeqPair[K, V]":
-    ...
+def query(source: Iterable[Tuple[K, V]]) -> "QuerySeqPair[K, V]": ...
 
 
 @overload
-def query(source: AsyncIterable[Tuple[K, V]]) -> "QuerySeqPair[K, V]":
-    ...
+def query(source: AsyncIterable[Tuple[K, V]]) -> "QuerySeqPair[K, V]": ...
 
 
 @overload
-def query(source: Generator[T, Any, Any]) -> QuerySeq[T]:
-    ...
+def query(source: Generator[T, Any, Any]) -> QuerySeq[T]: ...
 
 
 @overload
-def query(source: AsyncGenerator[T, Any]) -> QuerySeq[T]:
-    ...
+def query(source: AsyncGenerator[T, Any]) -> QuerySeq[T]: ...
 
 
 @overload
-def query(source: Iterable[T]) -> QuerySeq[T]:
-    ...
+def query(source: Iterable[T]) -> QuerySeq[T]: ...
 
 
 @overload
-def query(source: AsyncIterable[T]) -> QuerySeq[T]:
-    ...
+def query(source: AsyncIterable[T]) -> QuerySeq[T]: ...
 
 
 @overload
-def query(source: Iterable[T]) -> QuerySeq[T]:
-    ...
+def query(source: Iterable[T]) -> QuerySeq[T]: ...
 
 
 @overload
-def query(source) -> "Query[Any]":
-    ...
+def query(source) -> "Query[Any]": ...
 
 
 def query(source):

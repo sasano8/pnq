@@ -165,8 +165,7 @@ async def chunk(source: AsyncIterable[T], size: int):
             yield queue
 
 
-async def tee(source: AsyncIterable[T], size: int):
-    ...
+async def tee(source: AsyncIterable[T], size: int): ...
 
 
 async def join(source: AsyncIterable[T], size: int):
@@ -203,8 +202,7 @@ async def inner_join(
         yield k, v
 
 
-async def group_join(source: AsyncIterable[T], size: int):
-    ...
+async def group_join(source: AsyncIterable[T], size: int): ...
 
 
 async def debug(source: AsyncIterable[T], breakpoint=lambda x: x, printer=print):
@@ -214,23 +212,19 @@ async def debug(source: AsyncIterable[T], breakpoint=lambda x: x, printer=print)
         yield v
 
 
-async def union_all(source: AsyncIterable[T]):
-    ...
+async def union_all(source: AsyncIterable[T]): ...
 
 
 extend = union_all
 
 
-async def union(source: AsyncIterable[T]):
-    ...
+async def union(source: AsyncIterable[T]): ...
 
 
-async def union_intersect(source: AsyncIterable[T]):
-    ...
+async def union_intersect(source: AsyncIterable[T]): ...
 
 
-async def union_minus(source: AsyncIterable[T]):
-    ...
+async def union_minus(source: AsyncIterable[T]): ...
 
 
 # difference
@@ -240,8 +234,7 @@ async def union_minus(source: AsyncIterable[T]):
 
 
 @name_as("zip")
-async def _zip(source: AsyncIterable[T]):
-    ...
+async def _zip(source: AsyncIterable[T]): ...
 
 
 async def compress(source: AsyncIterable[T]):

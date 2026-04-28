@@ -37,8 +37,7 @@ class OverrideExecutor:
 
     if TYPE_CHECKING:
 
-        def submit(self, *args, **kwargs):
-            ...
+        def submit(self, *args, **kwargs): ...
 
     def submit_async(self, func, *args, **kwargs):
         return self.submit(self._submit_async, func, *args, **kwargs)
@@ -514,14 +513,12 @@ class DummyPoolExecutor(OverrideExecutor):
     def __enter__(self):
         return self
 
-    def __exit__(self, *args, **kwargs):
-        ...
+    def __exit__(self, *args, **kwargs): ...
 
     async def __aenter__(self):
         return self
 
-    async def __aexit__(self, *args, **kwargs):
-        ...
+    async def __aexit__(self, *args, **kwargs): ...
 
     @property
     def is_cpubound(self):

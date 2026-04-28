@@ -114,5 +114,4 @@ class Subscriber(Generic[T]):
     def on_error(self, error: Exception) -> None:
         self._on_err(error)
 
-    def on_completed(self) -> None:
-        ...
+    def on_completed(self) -> None: ...

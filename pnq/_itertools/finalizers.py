@@ -66,8 +66,7 @@ class SyncFinalizer(Generic[T]):
         else:
             return finalizer(self)
 
-    def lazy(self, finalizer):
-        ...
+    def lazy(self, finalizer): ...
 
     def len(self):
         if hasattr(self.source, "__len__"):
@@ -296,8 +295,7 @@ class AsyncFinalizer(Generic[T]):
         else:
             return await finalizer(self)
 
-    async def lazy(self, finalizer):
-        ...
+    async def lazy(self, finalizer): ...
 
     async def len(self) -> int:
         i = 0

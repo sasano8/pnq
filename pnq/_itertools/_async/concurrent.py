@@ -56,7 +56,7 @@ async def dispatch(
     *,
     unpack="",
     chunksize=1,
-    on_complete=None
+    on_complete=None,
 ):
     if executor is None:
         executor = get_default_pool()
@@ -135,7 +135,7 @@ def request(
     unpack="",
     chunksize=1,
     retry: int = None,
-    timeout: float = None
+    timeout: float = None,
 ):
     if executor is None:
         executor = get_default_pool()
