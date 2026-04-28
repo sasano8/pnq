@@ -83,7 +83,7 @@ class ChainTokenBase(Event):
 
 
 class ChainToken(ChainTokenBase):
-    def with_deadline(self, deadline: Union[datetime | str]):
+    def with_deadline(self, deadline: Union[datetime , str]):
         import time, threading, functools
         from time import sleep
 

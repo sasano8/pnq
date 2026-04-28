@@ -1,18 +1,18 @@
 # 環境構築
 
-```
-pyenv local 3.8
+```shell
+uv python install 3.8
 ```
 
-``` shell
-poetry install
-poetry run pre-commit install
+```shell
+uv sync --all-groups
+uv run pre-commit install
 ```
 
 # フォーマット
 
 ```
-poetry run black .
+uv run black .
 ```
 
 # 開発ガイド

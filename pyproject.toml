@@ -1,52 +1,54 @@
-[tool.poetry]
+[project]
 name = "pnq"
 version = "0.0.21"
 description = ""
-authors = ["sasano8 <y-sasahara@ys-method.com>"]
-license = "MIT"
+authors = [{ name = "sasano8", email = "y-sasahara@ys-method.com" }]
+license = { text = "MIT" }
 readme = "README.md"
-repository = "https://github.com/sasano8/pnq"
-
+requires-python = ">=3.8.1"
 classifiers = [
   "Development Status :: 2 - Pre-Alpha",
   "Topic :: Software Development :: Libraries :: Python Modules",
   "Topic :: Scientific/Engineering",
-  "Framework :: AsyncIO"
+  "Framework :: AsyncIO",
+]
+dependencies = []
+
+[project.urls]
+Repository = "https://github.com/sasano8/pnq"
+
+[dependency-groups]
+dev = [
+  "Jinja2>=3.1.2,<4.0.0",
+  "unasync>=0.5.0,<0.6.0",
+  # HTTPやDocker API を叩くときに使用（必須ではない）
+  "requests>=2.28.1,<3.0.0",
+  "requests-unixsocket2>=0.4.2",
+]
+test = [
+  "pre-commit>=2.20,<4.0",
+  "pytest>=7.1.2,<8.0.0",
+  "pytest-cov>=3.0.0,<4.0.0",
+  "black>=22.6.0,<23.0.0",
+  "flake8>=5.0.3,<6.0.0",
+  "mypy>=0.971,<0.972",
+  "isort>=5.10.1,<6.0.0",
+  "pyyaml>=6.0.1,<7.0.0",
+]
+docs = [
+  "mkdocs>=1.3.1,<2.0.0",
+  "mkautodoc>=0.1.0,<0.2.0",
+  "mkdocs-material>=8.3.9,<9.0.0",
+  "pymdown-extensions>=9.5,<10.0.0",
+  "mkdocs-print-site-plugin>=2.3.4,<3.0.0",
 ]
 
-[tool.poetry.dependencies]
-python = "^3.8"
-
-[tool.poetry.group.dev.dependencies]
-Jinja2 = "^3.1.2"
-unasync = "^0.5.0"
-
-# HTTPやDocker API を叩くときに使用（必須ではない）
-requests = "^2.28.1"
-requests-unixsocket = "^0.3.0"
-
-[tool.poetry.group.test.dependencies]
-# optional = true
-pre-commit = ">=2.20,<4.0"
-pytest = "^7.1.2"
-pytest-cov = "^3.0.0"
-black = "^22.6.0"
-flake8 = "^5.0.3"
-mypy = "^0.971"
-isort = "^5.10.1"
-pyyaml = ">=6.0.1,<7.0.0"
-
-[tool.poetry.group.docs.dependencies]
-# optional = true
-mkdocs = "^1.3.1"
-mkautodoc = "^0.1.0"
-mkdocs-material = "^8.3.9"
-pymdown-extensions = "^9.5"
-mkdocs-print-site-plugin = "^2.3.4"
-
 [build-system]
-requires = ["poetry>=0.12"]
-build-backend = "poetry.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["pnq"]
 
 [tool.black]
 extend-exclude = '''

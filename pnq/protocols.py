@@ -1,6 +1,6 @@
 import asyncio
 import concurrent
-from typing import Dict, Iterable, Protocol, runtime_checkable
+from typing import Dict, Iterable, Protocol, runtime_checkable, Union
 
 """
 concurrent.futures.ProcessPoolExecutorはmultiprocessing.Poolのラッパーです。
@@ -75,7 +75,7 @@ class WrapFrame(NamedTuple):
     factory: Union[Callable[..., Any], None]
     target: Any
     args: tuple = ()
-    kwargs: dict[str, Any] = {}
+    kwarg: Dict[str, Any] = {}
 
     def __get_wrapframe__(self) -> "WrapFrame":
         return self
@@ -223,7 +223,7 @@ class FileInfo(TypedDict):
 
     key: str
     size: int
-    updated_at: float | None
+    updated_at: Union[float, None]
 
 
 class FileStore:
@@ -272,7 +272,7 @@ class FileStore:
         path.unlink(missing_ok=True)
         return int(exists)
     
-    async def stat(self, key: str) -> FileInfo | None:
+    async def stat(self, key: str) -> Union[FileInfo, None]:
         path = self.validate_path(key)
         if not path.is_file():
             return None
