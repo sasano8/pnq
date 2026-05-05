@@ -31,14 +31,14 @@ flowchart TB
         direction LR
         qQuery["queries.Query<br/>chainable mixin<br/>(map/filter/select/...)"]
         QueryRoot["QueryRoot<br/>(任意 source 用 bridge +<br/>sync→async wrap)"]
-        qBridges["queries.QuerySeq /<br/>QueryDict / QuerySet /<br/>PnqList<br/>(bridge + ソース固有メソッド)"]
+        qBridges["queries.PnqSeq /<br/>PnqDict / PnqSet /<br/>PnqList<br/>(bridge + ソース固有メソッド)"]
         QueryBuilder["QueryBuilder<br/>(factory)"]
     end
 
     subgraph L2 ["レイヤー2: 具体実装層 (Operators / Sources)"]
         direction LR
         Operators["Operators<br/>Map / Filter / OrderBy /<br/>Select / Enumerate / ..."]
-        Sources["Sources<br/>QueryNormal / QueryAsync /<br/>QuerySeq / QueryDict / QuerySet /<br/>QuerySyncToAsync"]
+        Sources["Sources<br/>QueryNormal / QueryAsync /<br/>PnqInternalSeq / PnqInternalDict / PnqInternalSet /<br/>QuerySyncToAsync"]
     end
 
     subgraph L3 ["レイヤー3: 基底層 (iter 機構)"]
@@ -121,15 +121,15 @@ classDiagram
         <<concrete>>
         async source 用
     }
-    class QuerySeq {
+    class PnqInternalSeq {
         <<concrete>>
         list / tuple
     }
-    class QueryDict {
+    class PnqInternalDict {
         <<concrete>>
         dict
     }
-    class QuerySet {
+    class PnqInternalSet {
         <<concrete>>
         set
     }
@@ -160,13 +160,13 @@ classDiagram
         <<bridge>>
         sync→async wrap
     }
-    class qQuerySeq["queries.QuerySeq"] {
+    class qPnqSeq["queries.PnqSeq"] {
         <<bridge>>
     }
-    class qQueryDict["queries.QueryDict"] {
+    class qPnqDict["queries.PnqDict"] {
         <<bridge>>
     }
-    class qQuerySet["queries.QuerySet"] {
+    class qPnqSet["queries.PnqSet"] {
         <<bridge>>
     }
     class PnqList {
@@ -187,9 +187,9 @@ classDiagram
     QueryNode <|-- QuerySyncToAsync
     QueryNode <|-- QueryOperator
 
-    QueryNormal <|-- QuerySeq
-    QueryNormal <|-- QueryDict
-    QueryNormal <|-- QuerySet
+    QueryNormal <|-- PnqInternalSeq
+    QueryNormal <|-- PnqInternalDict
+    QueryNormal <|-- PnqInternalSet
 
     QueryOperator <|-- Map
     QueryOperator <|-- Filter
@@ -198,18 +198,18 @@ classDiagram
     qQuery <|-- qPairQuery
     qQuery <|-- QueryRoot
     QueryNode <|-- QueryRoot
-    qQuery <|-- qQuerySeq
-    QuerySeq <|-- qQuerySeq
-    qPairQuery <|-- qQueryDict
-    QueryDict <|-- qQueryDict
-    qQuery <|-- qQuerySet
-    QuerySet <|-- qQuerySet
+    qQuery <|-- qPnqSeq
+    PnqInternalSeq <|-- qPnqSeq
+    qPairQuery <|-- qPnqDict
+    PnqInternalDict <|-- qPnqDict
+    qQuery <|-- qPnqSet
+    PnqInternalSet <|-- qPnqSet
     qQuery <|-- PnqList
 
     QueryBuilder ..> QueryRoot : creates
-    QueryBuilder ..> qQuerySeq : creates
-    QueryBuilder ..> qQueryDict : creates
-    QueryBuilder ..> qQuerySet : creates
+    QueryBuilder ..> qPnqSeq : creates
+    QueryBuilder ..> qPnqDict : creates
+    QueryBuilder ..> qPnqSet : creates
 ```
 
 ### 設計の読み方
@@ -222,7 +222,7 @@ classDiagram
    - `QueryBuilder` は source の型に応じて適切な bridge クラスを選んで生成する **factory**。
 
 2. **レイヤー2: 具体実装層 (Operators / Sources)**:
-   - **Sources** (`QueryNormal`/`QueryAsync`/`QuerySeq`/`QueryDict`/`QuerySet`/`QuerySyncToAsync`): source の種類に応じた具体クラス。`QueryNode` の挙動を必要に応じて調整する。
+   - **Sources** (`QueryNormal`/`QueryAsync`/`PnqInternalSeq`/`PnqInternalDict`/`PnqInternalSet`/`QuerySyncToAsync`): source の種類に応じた具体クラス。`QueryNode` の挙動を必要に応じて調整する。
    - **Operators** (`Map`/`Filter`/`OrderBy`/`Select`/...): `QueryOperator` を継承し、`_sit`/`_ait` に sync/async 実装関数の参照を埋める。**操作 1 つにつき 1 クラス**。
 
 3. **レイヤー3: 基底層 (iter 機構)**:

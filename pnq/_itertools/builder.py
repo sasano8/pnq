@@ -2,16 +2,16 @@ from typing import Any, Callable, Coroutine, TypeVar
 
 from pnq.aio import run
 
-from .core import QueryDict, QueryNode, QuerySeq, QuerySet
+from .core import PnqInternalDict, PnqInternalSeq, PnqInternalSet, QueryNode
 
 R = TypeVar("R")
 
 
 class Builder:
     QUERY = QueryNode
-    QUERY_SEQ = QuerySeq
-    QUERY_DICT = QueryDict
-    QUERY_SET = QuerySet
+    QUERY_SEQ = PnqInternalSeq
+    QUERY_DICT = PnqInternalDict
+    QUERY_SET = PnqInternalSet
 
     @classmethod
     def query(cls, source):
