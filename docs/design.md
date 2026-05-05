@@ -4,12 +4,12 @@
 ## モジュール図
 
 * モジュール
-    * pnq/__queries__.py: queries.py 用のテンプレート。型アノテーションなど複雑な一貫性のためにテンプレート化している。
-    * pnq/queries.py: __queries__ から生成された実際のコード。型アノテーションや内部オブジェクトとの連携を行う結合層。pnq/_itertools/queryables を参照する 
+    * pnq/facade.py.template: facade.py 用のテンプレート。型アノテーションなど複雑な一貫性のためにテンプレート化している。
+    * pnq/facade.py: facade.py.template から生成された実際のコード。型アノテーションや内部オブジェクトとの連携を行う結合層。pnq/_itertools/queryables を参照する 
 * クラス・ファンクション
-    * pnq/queries.Query: 基本の型 (mixin: チェーン可能メソッドのみを提供。iter 機構は持たない)
-    * pnq/queries.PairQuery: キーバリュー向けの型
-    * pnq/queries.QueryRoot: list/dict/set 以外の任意 source 用の単一ブリッジ。Query (mixin) と core.QueryNode (iter 機構) を結合。__init__ で source の __iter__/__aiter__ を見て run_iter_type を自動セットし、sync-only source も async wrapping で両対応する。
+    * pnq/facade.Query: 基本の型 (mixin: チェーン可能メソッドのみを提供。iter 機構は持たない)
+    * pnq/facade.PairQuery: キーバリュー向けの型
+    * pnq/facade.QueryRoot: list/dict/set 以外の任意 source 用の単一ブリッジ。Query (mixin) と core.QueryNode (iter 機構) を結合。__init__ で source の __iter__/__aiter__ を見て run_iter_type を自動セットし、sync-only source も async wrapping で両対応する。
     * pnq/pnq/protocols.WrappedQuery: クエリ構造の再帰的内省を提供するクラス
         * pnq/_itertools/core.QueryNode: WrappedQuery(PQuery)を継承。イテレータに関する基本的な実装が含まれる (strict: source の能力をそのまま反映)。
             * pnq/_itertools/queryables.QueryOperator: QueryNode を継承し、Map など具体的な演算子クエリの基底となる。`_ait`（非同期用イテレータクエリ）と `_sit`（同期用イテレータクエリ）の属性に演算子の処理関数への参照を埋める形で派生クラスを定義する。
@@ -29,9 +29,9 @@
 flowchart TB
     subgraph L1 ["レイヤー1: Facade 層 (user-facing)"]
         direction LR
-        qQuery["queries.Query<br/>chainable mixin<br/>(map/filter/select/...)"]
+        qQuery["facade.Query<br/>chainable mixin<br/>(map/filter/select/...)"]
         QueryRoot["QueryRoot<br/>(任意 source 用 bridge +<br/>sync→async wrap)"]
-        qBridges["queries.PnqSeq /<br/>PnqDict / PnqSet /<br/>PnqList<br/>(bridge + ソース固有メソッド)"]
+        qBridges["facade.PnqSeq /<br/>PnqDict / PnqSet /<br/>PnqList<br/>(bridge + ソース固有メソッド)"]
         QueryBuilder["QueryBuilder<br/>(factory)"]
     end
 
@@ -148,25 +148,25 @@ classDiagram
         <<concrete>>
     }
 
-    class qQuery["queries.Query"] {
+    class qQuery["facade.Query"] {
         <<facade>>
         +map() +filter() +select()
         +to() +pipe() +result()
     }
-    class qPairQuery["queries.PairQuery"] {
+    class qPairQuery["facade.PairQuery"] {
         <<facade>>
     }
     class QueryRoot {
         <<bridge>>
         sync→async wrap
     }
-    class qPnqSeq["queries.PnqSeq"] {
+    class qPnqSeq["facade.PnqSeq"] {
         <<bridge>>
     }
-    class qPnqDict["queries.PnqDict"] {
+    class qPnqDict["facade.PnqDict"] {
         <<bridge>>
     }
-    class qPnqSet["queries.PnqSet"] {
+    class qPnqSet["facade.PnqSet"] {
         <<bridge>>
     }
     class PnqList {
@@ -216,8 +216,8 @@ classDiagram
 
 レイヤーは **上 (user-facing) → 下 (foundation)** で説明:
 
-1. **レイヤー1: Facade 層** (`queries.*`):
-   - `queries.Query` は **mixin**: チェーン可能メソッドのみを提供する純粋な mixin で、iter 機構は持たない。
+1. **レイヤー1: Facade 層** (`facade.*`):
+   - `facade.Query` は **mixin**: チェーン可能メソッドのみを提供する純粋な mixin で、iter 機構は持たない。
    - `QueryRoot` 等の **bridge クラス**が Query (mixin) + core の具体実装を多重継承で結合。
    - `QueryBuilder` は source の型に応じて適切な bridge クラスを選んで生成する **factory**。
 
@@ -232,7 +232,7 @@ classDiagram
 4. **レイヤー4: Protocol 層** (`WrappedQuery` / `PResult` / `PAsyncResult`):
    型契約のみ。`__get_wrapframe__` による再帰的内省、`result()`/`__await__()` といった終端契約を定義。
 
-> 設計思想: 「**iter 機構は内部 (core) に閉じ込め、ユーザに見せる API はチェーン可能 mixin (queries.Query) のみ**」を徹底することで、内部実装の変更がユーザ API に波及しないようにしている。
+> 設計思想: 「**iter 機構は内部 (core) に閉じ込め、ユーザに見せる API はチェーン可能 mixin (facade.Query) のみ**」を徹底することで、内部実装の変更がユーザ API に波及しないようにしている。
 
 ## なぜ複雑か？
 
@@ -249,9 +249,9 @@ classDiagram
     * 空ブリッジ (queries.QueryBase / QueryAsync / QueryNormal) を `queries.QueryRoot` 1 つに集約
     * core.Query を `core.QueryNode` にリネーム (内省 + iter_type 管理を担う基底)
     * queryables.Query を `queryables.QueryOperator` にリネーム (Map 等の演算子の基底)
-    * これにより `Query` という名前は user-facing の `queries.Query` (mixin) のみとなり衝突解消
+    * これにより `Query` という名前は user-facing の `facade.Query` (mixin) のみとなり衝突解消
 * [x] Query は継承していたりするが、ネストを少なくする
-    * 空ブリッジ 3 → 1 に集約 ([queries.py:1003](../pnq/queries.py#L1003))
+    * 空ブリッジ 3 → 1 に集約 ([facade.py:1073](../pnq/facade.py#L1073))
     * Builder の QUERY_BOTH / QUERY_ASYNC / QUERY_NORMAL 3 つを `QUERY` 1 つに集約 ([builder.py](../pnq/_itertools/builder.py))
 * [x] とにかく基底クラスを分かりやすくする
     * QueryRoot に「単一ブリッジ + iter_type 自動判定」を集約。役割が docstring で明示

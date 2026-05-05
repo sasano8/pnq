@@ -65,8 +65,8 @@ todir=str(CODE_ROOT / "_sync_generate"),
 
 主に、`Tuple[KEY, VALUE]`型の活用範囲を広げることを目的としています。
 
-- `__queries__.py`: Queryクラスのテンプレートです。クエリを追加したらここへコードを追加します。
-- `queries.py`: `__queries__.py`をテンプレートとして生成されるモジュールです。
+- `facade.py.template`: Queryクラスのテンプレートです。クエリを追加したらここへコードを追加します。
+- `facade.py`: `facade.py.template`をテンプレートとして生成されるモジュールです。
 
 次を実行するとコードが自動生成されます。
 
