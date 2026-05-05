@@ -1155,7 +1155,7 @@ pnq.query([1, 2]).enumerate(0, 10)).to(list)
 </blockquote></div>
 </div>
 <div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>group_by</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7fd94fddce50></em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-signature"><code>pnq.actions.<strong>group_by</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7fd16f15ae50></em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>シーケンスの各要素からセレクタ関数でキーとバリューを取得し、キーでグループ化されたシーケンスを生成します。
 セレクタ関数を指定しない場合、各要素がすでにキーバリューのタプルであることを期待し、キーでグループ化します。</p>
 <p>Args:</p>
@@ -1713,7 +1713,7 @@ pnq.query({1: "a", 2: "b"}).to(dict)
 </blockquote></div>
 </div>
 <div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>each</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">func=<function \<lambda> at 0x7fd94fde01f0></em><span class="autodoc-punctuation">, </span><em class="autodoc-param">unpack=''</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-signature"><code>pnq.actions.<strong>each</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">func=<function \<lambda> at 0x7fd16f15d1f0></em><span class="autodoc-punctuation">, </span><em class="autodoc-param">unpack=''</em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>シーケンスの各要素を指定した関数で逐次的に処理します。
 <code>for x in iterable: ...</code>のショートカットとして機能します。
 関数を指定しない場合、単にイテレーションを実行します。</p>
@@ -1820,7 +1820,7 @@ True</code></p>
 </blockquote></div>
 </div>
 <div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>all</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7fd94fddd670></em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-signature"><code>pnq.actions.<strong>all</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7fd16f15b670></em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>シーケンスの全ての要素がTrueと判定できるか評価します。要素がない場合はTrueを返します。</p>
 <ul>
 <li>selector: 要素から検証する値を抽出する関数</li>
@@ -1845,7 +1845,7 @@ True</code></p>
 </blockquote></div>
 </div>
 <div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>any</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7fd94fddd790></em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-signature"><code>pnq.actions.<strong>any</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7fd16f15b790></em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>シーケンスのいずれかの要素がTrueと判定できるか評価します。要素がない場合はFalseを返します。</p>
 <ul>
 <li>selector: 要素から検証する値を抽出する関数</li>
@@ -1868,7 +1868,7 @@ True</code></p>
 </blockquote></div>
 </div>
 <div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>contains</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">value</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7fd94fddd8b0></em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-signature"><code>pnq.actions.<strong>contains</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">value</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7fd16f15b8b0></em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>既定の等値比較子を使用して、指定した要素がシーケンスに含まれているか評価します。
 辞書をソースとした場合は、キーバリューのタプルを比較します。</p>
 <ul>
@@ -1896,7 +1896,7 @@ True</code></p>
 </blockquote></div>
 </div>
 <div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>min</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7fd94fddd9d0></em><span class="autodoc-punctuation">, </span><em class="autodoc-param">default=typing.NoReturn</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-signature"><code>pnq.actions.<strong>min</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7fd16f15b9d0></em><span class="autodoc-punctuation">, </span><em class="autodoc-param">default=typing.NoReturn</em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>シーケンスの要素から最小の値を取得します。</p>
 <p>Args:</p>
 <ul>
@@ -1919,7 +1919,7 @@ pnq.query([]).min(default=0)
 </blockquote></div>
 </div>
 <div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>max</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7fd94fdddaf0></em><span class="autodoc-punctuation">, </span><em class="autodoc-param">default=typing.NoReturn</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-signature"><code>pnq.actions.<strong>max</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7fd16f15baf0></em><span class="autodoc-punctuation">, </span><em class="autodoc-param">default=typing.NoReturn</em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>シーケンスの要素から最大の値を取得します。</p>
 <p>Args:</p>
 <ul>
@@ -1942,7 +1942,7 @@ pnq.query([]).max(default=0)
 </blockquote></div>
 </div>
 <div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>sum</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7fd94fdddc10></em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-signature"><code>pnq.actions.<strong>sum</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7fd16f15bc10></em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>シーケンスの要素を合計します。</p>
 <ul>
 <li>selector: 要素から計算する値を抽出する関数</li>
@@ -1961,7 +1961,7 @@ pnq.query([1, 2]).sum()
 </blockquote></div>
 </div>
 <div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>average</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7fd94fdddd30></em><span class="autodoc-punctuation">, </span><em class="autodoc-param">exp=1e-05</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">round='ROUND_HALF_UP'</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-signature"><code>pnq.actions.<strong>average</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7fd16f15bd30></em><span class="autodoc-punctuation">, </span><em class="autodoc-param">exp=1e-05</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">round='ROUND_HALF_UP'</em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>シーケンスの要素の平均を求めます。</p>
 <p>Args:</p>
 <ul>
@@ -1983,7 +1983,7 @@ pnq.query([1, 2]).average()
 </blockquote></div>
 </div>
 <div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>reduce</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">seed</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">op='+='</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<pnq.actions.EmptyLambda object at 0x7fd94fff3fa0></em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-signature"><code>pnq.actions.<strong>reduce</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">seed</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">op='+='</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<pnq.actions.EmptyLambda object at 0x7fd16f7261f0></em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>シーケンスの要素を指定した代入演算子でシードに合成し、合成結果を返す。</p>
 <p>Args:</p>
 <ul>
@@ -2011,7 +2011,7 @@ pnq.query([1, 2, 3, 4, 5]).reduce(0, lambda l, r: l + r, lambda x: x * 10)
 </blockquote></div>
 </div>
 <div class="autodoc">
-<div class="autodoc-signature"><code>pnq.actions.<strong>concat</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7fd94fdddee0></em><span class="autodoc-punctuation">, </span><em class="autodoc-param">delimiter=''</em><span class="autodoc-punctuation">)</span></div>
+<div class="autodoc-signature"><code>pnq.actions.<strong>concat</strong></code><span class="autodoc-punctuation">(</span><em class="autodoc-param">self</em><span class="autodoc-punctuation">, </span><em class="autodoc-param">selector=<function \<lambda> at 0x7fd16f15bee0></em><span class="autodoc-punctuation">, </span><em class="autodoc-param">delimiter=''</em><span class="autodoc-punctuation">)</span></div>
 <div class="autodoc-docstring"><p>シーケンスの要素を文字列として連結します。
 Noneは空文字として扱われます。</p>
 <p>Args:</p>
@@ -2641,11 +2641,12 @@ print(f&quot;性能差割合　　：{rate}&quot;)
 </ul>
 </li>
 <li>クラス・ファンクション<ul>
-<li>pnq/queries.Query: 基本の型</li>
+<li>pnq/queries.Query: 基本の型 (mixin: チェーン可能メソッドのみを提供。iter 機構は持たない)</li>
 <li>pnq/queries.PairQuery: キーバリュー向けの型</li>
-<li>pnq/pnq/protocols.WrappedQuery: AST 解析のような機能があるクラス<ul>
-<li>pnq/_itertools/core.Query: WrappedQuery(PQuery)を継承。イテレータに関する基本的な実装が含まれる。<ul>
-<li>pnq/_itertools/queryables.Query: core.Query を継承し、さらに基本的な実装が含まれる。このクラスを規定に Map など具体的なクエリメソッドを実装する。ただし、このクラスには、_ait（非同期用イテレータクエリ）と _sit（同期用イテレータクエリ）の属性が用意され、そこに参照を埋める形。</li>
+<li>pnq/queries.QueryRoot: list/dict/set 以外の任意 source 用の単一ブリッジ。Query (mixin) と core.QueryNode (iter 機構) を結合。<strong>init</strong> で source の <strong>iter</strong>/<strong>aiter</strong> を見て run_iter_type を自動セットし、sync-only source も async wrapping で両対応する。</li>
+<li>pnq/pnq/protocols.WrappedQuery: クエリ構造の再帰的内省を提供するクラス<ul>
+<li>pnq/_itertools/core.QueryNode: WrappedQuery(PQuery)を継承。イテレータに関する基本的な実装が含まれる (strict: source の能力をそのまま反映)。<ul>
+<li>pnq/_itertools/queryables.QueryOperator: QueryNode を継承し、Map など具体的な演算子クエリの基底となる。<code>_ait</code>（非同期用イテレータクエリ）と <code>_sit</code>（同期用イテレータクエリ）の属性に演算子の処理関数への参照を埋める形で派生クラスを定義する。</li>
 </ul>
 </li>
 </ul>
@@ -2660,21 +2661,302 @@ print(f&quot;性能差割合　　：{rate}&quot;)
 </ul>
 </li>
 </ul>
-<h2 id="design-_3">なぜ複雑か？</h2>
+<h2 id="design-_3">クラス関係図</h2>
+<h3 id="design-_4">レイヤ構造 (役割別)</h3>
+<p>上から user-facing、下に向かって foundation。矢印は <strong>依存方向</strong> (上が下を利用 / 継承する)。</p>
+<div class="mermaid">flowchart TB
+    subgraph L1 ["レイヤー1: Facade 層 (user-facing)"]
+        direction LR
+        qQuery["queries.Query&lt;br/&gt;chainable mixin&lt;br/&gt;(map/filter/select/...)"]
+        QueryRoot["QueryRoot&lt;br/&gt;(任意 source 用 bridge +&lt;br/&gt;sync→async wrap)"]
+        qBridges["queries.QuerySeq /&lt;br/&gt;QueryDict / QuerySet /&lt;br/&gt;PnqList&lt;br/&gt;(bridge + ソース固有メソッド)"]
+        QueryBuilder["QueryBuilder&lt;br/&gt;(factory)"]
+    end
+
+    subgraph L2 ["レイヤー2: 具体実装層 (Operators / Sources)"]
+        direction LR
+        Operators["Operators&lt;br/&gt;Map / Filter / OrderBy /&lt;br/&gt;Select / Enumerate / ..."]
+        Sources["Sources&lt;br/&gt;QueryNormal / QueryAsync /&lt;br/&gt;QuerySeq / QueryDict / QuerySet /&lt;br/&gt;QuerySyncToAsync"]
+    end
+
+    subgraph L3 ["レイヤー3: 基底層 (iter 機構)"]
+        direction LR
+        QueryNode["core.QueryNode&lt;br/&gt;source 委譲 (strict)"]
+        QueryOperator["queryables.QueryOperator&lt;br/&gt;_sit / _ait ディスパッチ"]
+    end
+
+    subgraph L4 ["レイヤー4: Protocol 層 (型契約)"]
+        direction LR
+        WrappedQuery["WrappedQuery&lt;br/&gt;(再帰的内省)"]
+        PResult["PResult"]
+        PAsyncResult["PAsyncResult"]
+    end
+
+    L1 --&gt; L2
+    L2 --&gt; L3
+    L3 --&gt; L4
+    QueryBuilder ==&gt;|生成| qBridges
+    QueryBuilder ==&gt;|生成| QueryRoot
+
+    classDef facade fill:#e2d5f5,stroke:#5a3d8a
+    classDef concrete fill:#d4edda,stroke:#155724
+    classDef base fill:#d1ecf1,stroke:#0c5460
+    classDef proto fill:#fff3cd,stroke:#856404
+    class qQuery,QueryRoot,qBridges,QueryBuilder facade
+    class Operators,Sources concrete
+    class QueryNode,QueryOperator base
+    class WrappedQuery,PResult,PAsyncResult proto</div>
+<h3 id="design-_5">詳細継承関係</h3>
+<p>各クラスのステレオタイプ:
+- <code>&lt;&lt;protocol&gt;&gt;</code>: 型契約 (interface)
+- <code>&lt;&lt;base&gt;&gt;</code>: 抽象的な基底クラス
+- <code>&lt;&lt;concrete&gt;&gt;</code>: 具体実装 (source / operator)
+- <code>&lt;&lt;facade&gt;&gt;</code>: チェーン可能 API を提供する mixin
+- <code>&lt;&lt;bridge&gt;&gt;</code>: 複数のクラスを結合する結合層
+- <code>&lt;&lt;factory&gt;&gt;</code>: 生成役</p>
+<div class="mermaid">classDiagram
+    direction TB
+
+    class WrappedQuery {
+        &lt;&lt;protocol&gt;&gt;
+        +__get_wrapframe__()
+        +unwrap_recursive()
+    }
+    class PResult {
+        &lt;&lt;protocol&gt;&gt;
+        +result()
+    }
+    class PAsyncResult {
+        &lt;&lt;protocol&gt;&gt;
+        +__await__()
+    }
+
+    class QueryNode {
+        &lt;&lt;base&gt;&gt;
+        +source
+        +run_iter_type
+        +__iter__()
+        +__aiter__()
+        +_impl_iter()
+        +_impl_aiter()
+    }
+    class QueryOperator {
+        &lt;&lt;base&gt;&gt;
+        +_sit
+        +_ait
+    }
+
+    class QueryNormal {
+        &lt;&lt;concrete&gt;&gt;
+        sync source 用
+    }
+    class QueryAsync {
+        &lt;&lt;concrete&gt;&gt;
+        async source 用
+    }
+    class QuerySeq {
+        &lt;&lt;concrete&gt;&gt;
+        list / tuple
+    }
+    class QueryDict {
+        &lt;&lt;concrete&gt;&gt;
+        dict
+    }
+    class QuerySet {
+        &lt;&lt;concrete&gt;&gt;
+        set
+    }
+    class QuerySyncToAsync {
+        &lt;&lt;concrete&gt;&gt;
+        adapter
+    }
+
+    class Map {
+        &lt;&lt;concrete&gt;&gt;
+    }
+    class Filter {
+        &lt;&lt;concrete&gt;&gt;
+    }
+    class OrderBy {
+        &lt;&lt;concrete&gt;&gt;
+    }
+
+    class qQuery["queries.Query"] {
+        &lt;&lt;facade&gt;&gt;
+        +map() +filter() +select()
+        +to() +pipe() +result()
+    }
+    class qPairQuery["queries.PairQuery"] {
+        &lt;&lt;facade&gt;&gt;
+    }
+    class QueryRoot {
+        &lt;&lt;bridge&gt;&gt;
+        sync→async wrap
+    }
+    class qQuerySeq["queries.QuerySeq"] {
+        &lt;&lt;bridge&gt;&gt;
+    }
+    class qQueryDict["queries.QueryDict"] {
+        &lt;&lt;bridge&gt;&gt;
+    }
+    class qQuerySet["queries.QuerySet"] {
+        &lt;&lt;bridge&gt;&gt;
+    }
+    class PnqList {
+        &lt;&lt;facade&gt;&gt;
+        list[T]
+    }
+    class QueryBuilder {
+        &lt;&lt;factory&gt;&gt;
+        +query(source)
+    }
+
+    PResult &lt;|.. WrappedQuery : implements
+    PAsyncResult &lt;|.. WrappedQuery : implements
+    WrappedQuery &lt;|-- QueryNode
+
+    QueryNode &lt;|-- QueryNormal
+    QueryNode &lt;|-- QueryAsync
+    QueryNode &lt;|-- QuerySyncToAsync
+    QueryNode &lt;|-- QueryOperator
+
+    QueryNormal &lt;|-- QuerySeq
+    QueryNormal &lt;|-- QueryDict
+    QueryNormal &lt;|-- QuerySet
+
+    QueryOperator &lt;|-- Map
+    QueryOperator &lt;|-- Filter
+    QueryOperator &lt;|-- OrderBy
+
+    qQuery &lt;|-- qPairQuery
+    qQuery &lt;|-- QueryRoot
+    QueryNode &lt;|-- QueryRoot
+    qQuery &lt;|-- qQuerySeq
+    QuerySeq &lt;|-- qQuerySeq
+    qPairQuery &lt;|-- qQueryDict
+    QueryDict &lt;|-- qQueryDict
+    qQuery &lt;|-- qQuerySet
+    QuerySet &lt;|-- qQuerySet
+    qQuery &lt;|-- PnqList
+
+    QueryBuilder ..&gt; QueryRoot : creates
+    QueryBuilder ..&gt; qQuerySeq : creates
+    QueryBuilder ..&gt; qQueryDict : creates
+    QueryBuilder ..&gt; qQuerySet : creates</div>
+<h3 id="design-_6">設計の読み方</h3>
+<p>レイヤーは <strong>上 (user-facing) → 下 (foundation)</strong> で説明:</p>
+<ol>
+<li><strong>レイヤー1: Facade 層</strong> (<code>queries.*</code>):</li>
+<li><code>queries.Query</code> は <strong>mixin</strong>: チェーン可能メソッドのみを提供する純粋な mixin で、iter 機構は持たない。</li>
+<li><code>QueryRoot</code> 等の <strong>bridge クラス</strong>が Query (mixin) + core の具体実装を多重継承で結合。</li>
+<li>
+<p><code>QueryBuilder</code> は source の型に応じて適切な bridge クラスを選んで生成する <strong>factory</strong>。</p>
+</li>
+<li>
+<p><strong>レイヤー2: 具体実装層 (Operators / Sources)</strong>:</p>
+</li>
+<li><strong>Sources</strong> (<code>QueryNormal</code>/<code>QueryAsync</code>/<code>QuerySeq</code>/<code>QueryDict</code>/<code>QuerySet</code>/<code>QuerySyncToAsync</code>): source の種類に応じた具体クラス。<code>QueryNode</code> の挙動を必要に応じて調整する。</li>
+<li>
+<p><strong>Operators</strong> (<code>Map</code>/<code>Filter</code>/<code>OrderBy</code>/<code>Select</code>/...): <code>QueryOperator</code> を継承し、<code>_sit</code>/<code>_ait</code> に sync/async 実装関数の参照を埋める。<strong>操作 1 つにつき 1 クラス</strong>。</p>
+</li>
+<li>
+<p><strong>レイヤー3: 基底層 (iter 機構)</strong>:</p>
+</li>
+<li><code>QueryNode</code>: iter_type 管理 + sync/async 振り分けの中核。<strong>strict</strong>(source の能力をそのまま反映)。</li>
+<li>
+<p><code>QueryOperator</code>: <code>_sit</code>/<code>_ait</code> 属性に sync/async 実装関数の参照を埋める方式で演算子を表現する基底。</p>
+</li>
+<li>
+<p><strong>レイヤー4: Protocol 層</strong> (<code>WrappedQuery</code> / <code>PResult</code> / <code>PAsyncResult</code>):
+   型契約のみ。<code>__get_wrapframe__</code> による再帰的内省、<code>result()</code>/<code>__await__()</code> といった終端契約を定義。</p>
+</li>
+</ol>
+<blockquote>
+<p>設計思想: 「<strong>iter 機構は内部 (core) に閉じ込め、ユーザに見せる API はチェーン可能 mixin (queries.Query) のみ</strong>」を徹底することで、内部実装の変更がユーザ API に波及しないようにしている。</p>
+</blockquote>
+<h2 id="design-_7">なぜ複雑か？</h2>
 <ul>
-<li>同期と非同期を一緒に管理しようとしている</li>
+<li>同期と非同期 Iterable を一緒に管理しようとしている</li>
+<li>同期と非同期 Iterable の代わりに Pnq用の独自 Iterable があるとすっきりするのではないか</li>
 <li>同期と非同期用の型アノテーションを一括で管理しようとしている</li>
 <li>非同期コードから同期コードを自動生成している</li>
 <li>その他、整理が進んでいない</li>
 </ul>
-<h2 id="design-_4">リファクタリング計画</h2>
+<h2 id="design-_8">リファクタリング計画</h2>
 <ul>
-<li>Python のバージョンアップで無理やり解決していた型アノテーションをスマートな形に寄せる</li>
-<li>queries.Query, core.Query, queryables.Query で Query クラスを別の名前で区別する。名前が被っているせいで混乱を招く</li>
-<li>Query は継承していたりするが、ネストを少なくする</li>
-<li>とにかく基底クラスを分かりやすくする</li>
-<li>sleep などクエリと領域が違うものを除去する</li>
-</ul></section></div><style>.print-site-enumerate-headings #index > h1:before { content: '1 ' }
+<li>[ ] Python のバージョンアップで無理やり解決していた型アノテーションをスマートな形に寄せる</li>
+<li>[x] queries.Query, core.Query, queryables.Query で Query クラスを別の名前で区別する。名前が被っているせいで混乱を招く<ul>
+<li>空ブリッジ (queries.QueryBase / QueryAsync / QueryNormal) を <code>queries.QueryRoot</code> 1 つに集約</li>
+<li>core.Query を <code>core.QueryNode</code> にリネーム (内省 + iter_type 管理を担う基底)</li>
+<li>queryables.Query を <code>queryables.QueryOperator</code> にリネーム (Map 等の演算子の基底)</li>
+<li>これにより <code>Query</code> という名前は user-facing の <code>queries.Query</code> (mixin) のみとなり衝突解消</li>
+</ul>
+</li>
+<li>[x] Query は継承していたりするが、ネストを少なくする<ul>
+<li>空ブリッジ 3 → 1 に集約 (<a href="../pnq/queries.py#L1003">queries.py:1003</a>)</li>
+<li>Builder の QUERY_BOTH / QUERY_ASYNC / QUERY_NORMAL 3 つを <code>QUERY</code> 1 つに集約 (<a href="../pnq/_itertools/builder.py">builder.py</a>)</li>
+</ul>
+</li>
+<li>[x] とにかく基底クラスを分かりやすくする<ul>
+<li>QueryRoot に「単一ブリッジ + iter_type 自動判定」を集約。役割が docstring で明示</li>
+</ul>
+</li>
+<li>[ ] sleep などクエリと領域が違うものを除去する</li>
+</ul>
+<h2 id="design-_9">インターフェースの再整理</h2>
+<h3 id="design-api">api</h3>
+<p>```</p>
+<h1 id="design-pipe-pandas">pipe は pandas 由来</h1>
+<h1 id="design-httpspandaspydataorgdocsreferenceapipandasdataframepipehtml">https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.pipe.html</h1>
+<h1 id="design-pipe-await">pipe は全て await で実行とする。そうすることで同期イテレータも非同期イテレータも表現を統一できる</h1>
+<p>await pnq.query([1, 2, 3]).map(lambda x: x * 2).pipe(pnq.dispatcher)
+await pnq.query([1, 2, 3]).map(lambda x: x * 2).pipe(pnq.list)</p>
+<h1 id="design-pipe">これでは実体化されない。pipe はまだイテレータの一種。</h1>
+<p>pnq.query([1, 2, 3]).map(lambda x: x * 2).pipe(list)</p>
+<h1 id="design-await-to">実体化するには await するか、to を実行する</h1>
+<p>pnq.query([1, 2, 3]).map(lambda x: x * 2).pipe(list)()</p>
+<h1 id="design-_10">下記は上記のシンタックスシュガー</h1>
+<p>pnq.query([1, 2, 3]).map(lambda x: x * 2).to(list)</p>
+<p>list の代わりに別の関数など与えた場合、
+それが非同期を想定しているか、同期を想定しているか判定できない。
+引き数を判定できない。
+常に非同期イテレータを受け取る想定で</p>
+<p>計画
+まず、async に寄せる！！！
+そのあと同期への逃げ方を決める！！！</p>
+<p>```</p>
+<p>```</p>
+<h1 id="design-pipe_1">pipe とほぼ同じ。ただし、結果を返さずに投げ捨てられ、メモリなどを効率的に使う</h1>
+<p>pnq.query([1, 2, 3]).map(lambda x: x * 2).pipe_each(myfunc)
+```</p>
+<p>```
+await pnq.query([1, 2, 3]).map(lambda x: x * 2).pipe_async(pnq.dispatcher)
+await pnq.query([1, 2, 3]).map(lambda x: x * 2).pipe_async(pnq.list)</p>
+<p>await pnq.query([1, 2, 3]).map(lambda x: x * 2).pipe_sync(pnq.list)
+await pnq.query([1, 2, 3]).map(lambda x: x * 2).pipe_sync(pnq.list)</p>
+<h1 id="design-_11">デフォルトで非同期・同期よしなにやってくれる</h1>
+<p>await pnq.query([1, 2, 3]).map(lambda x: x * 2).pipe(pnq.list)</p>
+<h1 id="design-select-namedtuple-json">select は namedtuple にする(json 出力できる型にする)</h1>
+<p>await pnq.query([1, 2, 3]).select('id', 'fname', 'lname', 'phone').pipe(pnq.dispatcher)
+await pnq.query([1, 2, 3]).select('id', 'fname', 'lname', 'phone').pipe(pnq.list)
+await pnq.query([1, 2, 3]).select('id', 'fname', 'lname', 'phone').pipe(pnq.orderby)</p>
+<p>await pnq.from_([1, 2, 3]).select('id', 'fname', 'lname', 'phone').pipe_sync(list)
+await pnq.from_sync([1, 2, 3]).pipe_sync(list)
+await pnq.from_async([1, 2, 3]).pipe_sync(list)
+```</p>
+<h3 id="design-pypika">pypika</h3>
+<p>```
+q = Query.from_('customers').select('id', 'fname', 'lname', 'phone').orderby('id', order=Order.desc)
+q.get_sql()</p>
+<p>customers = Table('customers')
+q = Query.from_(
+    customers
+).where(
+    customers.lname == 'Mustermann'
+).select(
+    customers.id, customers.fname, customers.lname, customers.phone
+)
+```</p></section></div><style>.print-site-enumerate-headings #index > h1:before { content: '1 ' }
 
                 .print-site-enumerate-headings #index h2:before { content: '1.' counter(counter-index-2) ' ' }
                 .print-site-enumerate-headings #index h2 {  counter-reset: counter-index-3  counter-index-4  counter-index-5  counter-index-6 ;  counter-increment: counter-index-2 }
