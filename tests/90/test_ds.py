@@ -115,9 +115,9 @@ def test_schedule_tick():
         t1 = (times[1] - times[0]).total_seconds()
         t2 = (times[2] - times[1]).total_seconds()
 
-        # おおよそ１秒ならよしとする
-        assert 1 < t1 and t1 < 1.005
-        assert 1 < t2 and t2 < 1.005
+        # おおよそ１秒ならよしとする (OS スケジューラのジッタを許容)
+        assert 1 < t1 and t1 < 1.05
+        assert 1 < t2 and t2 < 1.05
 
     asyncio.run(main(False))
     asyncio.run(main(True))

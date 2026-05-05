@@ -63,8 +63,14 @@ def set_iter_type(self, source):
             raise TypeError("can not convert sync iterator to any iteraotr.")
 
 
-class Query(PQuery[T]):
-    """Queryクラスをチェインするのに使うか、__iter__と__aiter__の挙動をソースに任せる場合に使います。"""
+class QueryNode(PQuery[T]):
+    """イテレータに関する基本的な実装を持つクエリノード基底。
+
+    WrappedQuery (再帰的内省) と iter_type 管理 (sync/async 振り分け) を統合した
+    pnq の基底クラス。本クラスを継承するクラスは __iter__ / __aiter__ の挙動を
+    source に委譲する (strict)。sync→async wrapping のようなブリッジ機能は派生
+    クラス (queries.QueryRoot 等) が担当する。
+    """
 
     iter_type = IterType.BOTH
 
@@ -93,7 +99,7 @@ class Query(PQuery[T]):
         return self.source.__aiter__()
 
 
-class QueryNormal(Query[T]):
+class QueryNormal(QueryNode[T]):
     """同期イテレータを両対応するために使います"""
 
     iter_type = IterType.BOTH
@@ -115,7 +121,7 @@ class QueryNormal(Query[T]):
             yield v
 
 
-class QueryAsync(Query[T]):
+class QueryAsync(QueryNode[T]):
     """非同期イテレータのみ対応のクエリ"""
 
     iter_type = IterType.ASYNC
@@ -167,7 +173,7 @@ async def sync_to_async_iterator(it):
         yield x
 
 
-class QuerySyncToAsync(Query[T]):
+class QuerySyncToAsync(QueryNode[T]):
     """同期イテレータを非同期イテレータに変換します。
     もしくは、同期イテレータを取得できない場合、非同期イテレータの取得を試みます。"""
 

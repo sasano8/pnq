@@ -2,15 +2,13 @@ from typing import Any, Callable, Coroutine, TypeVar
 
 from pnq.aio import run
 
-from .core import Query, QueryAsync, QueryDict, QueryNormal, QuerySeq, QuerySet
+from .core import QueryDict, QueryNode, QuerySeq, QuerySet
 
 R = TypeVar("R")
 
 
 class Builder:
-    QUERY_BOTH = Query
-    QUERY_ASYNC = QueryAsync
-    QUERY_NORMAL = QueryNormal
+    QUERY = QueryNode
     QUERY_SEQ = QuerySeq
     QUERY_DICT = QueryDict
     QUERY_SET = QuerySet
@@ -27,20 +25,10 @@ class Builder:
             return cls.QUERY_SET(source)
         elif isinstance(source, frozenset):
             return cls.QUERY_SET(source)
-        elif isinstance(source, Query):
+        elif isinstance(source, QueryNode):
             return source
         else:
-            has_iter = hasattr(source, "__iter__")
-            has_aiter = hasattr(source, "__aiter__")
-
-            if has_iter and has_aiter:
-                return cls.QUERY_BOTH(source)
-            elif has_iter:
-                return cls.QUERY_NORMAL(source)
-            elif has_aiter:
-                return cls.QUERY_ASYNC(source)
-            else:
-                raise TypeError()
+            return cls.QUERY(source)
 
     def infinite(func, *args, **kwargs):
         def infinite(*args, **kwargs):

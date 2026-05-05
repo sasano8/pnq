@@ -19,9 +19,7 @@ from pnq.types import Arguments
 
 from . import _async as A
 from . import _sync as S
-from .core import IterType
-from .core import Query as QueryBase
-from .core import QueryDict, QuerySeq, QuerySet
+from .core import IterType, QueryDict, QueryNode, QuerySeq, QuerySet
 
 
 def no_implement(*args, **kwargs):
@@ -49,9 +47,15 @@ sm = Staticmethod()
 
 
 #################################
-# query
+# operator
 #################################
-class Query(QueryBase[T]):
+class QueryOperator(QueryNode[T]):
+    """演算子 (Map / Filter / OrderBy 等) の基底クラス。
+
+    QueryNode (iter 機構) を継承し、`_sit` (sync 実装) / `_ait` (async 実装) の
+    属性に演算子の同期/非同期処理関数への参照を埋める形で派生クラスを定義する。
+    """
+
     _iter_type = IterType.BOTH
 
     if TYPE_CHECKING:
@@ -73,7 +77,7 @@ class Query(QueryBase[T]):
 
 
 @export
-class Map(Query):
+class Map(QueryOperator):
     _ait = sm | A.queries._map
     _sit = sm | S.queries._map
 
@@ -111,7 +115,7 @@ class Reflect(Map):
 
 
 @export
-class Flat(Query):
+class Flat(QueryOperator):
     _ait = sm | A.queries.flat
     _sit = sm | S.queries.flat
 
@@ -122,7 +126,7 @@ class Flat(Query):
 
 
 @export
-class Traverse(Query):
+class Traverse(QueryOperator):
     _ait = sm | A.queries.traverse
     _sit = sm | S.queries.traverse
 
@@ -132,7 +136,7 @@ class Traverse(Query):
 
 
 @export
-class PivotUnstack(Query):
+class PivotUnstack(QueryOperator):
     _ait = sm | A.queries.pivot_unstack
     _sit = sm | S.queries.pivot_unstack
 
@@ -142,13 +146,13 @@ class PivotUnstack(Query):
 
 
 @export
-class PivotStack(Query):
+class PivotStack(QueryOperator):
     _ait = sm | A.queries.pivot_stack
     _sit = sm | S.queries.pivot_stack
 
 
 @export
-class Enumerate(Query):
+class Enumerate(QueryOperator):
     _ait = sm | A.queries._enumerate
     _sit = sm | S.queries._enumerate
 
@@ -158,7 +162,7 @@ class Enumerate(Query):
 
 
 @export
-class GroupBy(Query):
+class GroupBy(QueryOperator):
     _ait = sm | A.queries.group_by
     _sit = sm | S.queries.group_by
 
@@ -168,13 +172,13 @@ class GroupBy(Query):
 
 
 @export
-class Join(Query):
+class Join(QueryOperator):
     _ait = sm | A.queries.join
     _sit = sm | S.queries.join
 
 
 @export
-class InnerJoin(Query):
+class InnerJoin(QueryOperator):
     _ait = sm | A.queries.inner_join
     _sit = sm | S.queries.inner_join
 
@@ -184,13 +188,13 @@ class InnerJoin(Query):
 
 
 @export
-class GroupJoin(Query):
+class GroupJoin(QueryOperator):
     _ait = sm | A.queries.group_join
     _sit = sm | S.queries.group_join
 
 
 @export
-class Chain(Query):
+class Chain(QueryOperator):
     _ait = sm | A.queries.chain
     _sit = sm | S.queries.chain
 
@@ -200,7 +204,7 @@ class Chain(Query):
 
 
 @export
-class Chunk(Query):
+class Chunk(QueryOperator):
     _ait = sm | A.queries.chunk
     _sit = sm | S.queries.chunk
 
@@ -213,7 +217,7 @@ class Chunk(Query):
 
 
 @export
-class Tee(Query):
+class Tee(QueryOperator):
     _ait = sm | A.queries.tee
     _sit = sm | S.queries.tee
 
@@ -226,7 +230,7 @@ class Tee(Query):
 
 
 @export
-class Debug(Query):
+class Debug(QueryOperator):
     _ait = sm | A.queries.debug
     _sit = sm | S.queries.debug
 
@@ -236,7 +240,7 @@ class Debug(Query):
 
 
 @export
-class DebugPath(Query):
+class DebugPath(QueryOperator):
     def __init__(self, source, func=lambda x: -10, async_func=lambda x: 10):
         super().__init__(source)
         self._args = Arguments(func, async_func)
@@ -253,49 +257,49 @@ class DebugPath(Query):
 
 
 @export
-class UnionAll(Query):
+class UnionAll(QueryOperator):
     _ait = sm | A.queries.union_all
     _sit = sm | S.queries.union_all
 
 
-# class Extend(Query):
+# class Extend(QueryOperator):
 #     _ait = A.queries.extend
 #     _sit = S.queries.extend
 
 
 @export
 @name_as("Union")
-class _Union(Query):
+class _Union(QueryOperator):
     _ait = sm | A.queries.union
     _sit = sm | S.queries.union
 
 
 @export
-class UnionIntersect(Query):
+class UnionIntersect(QueryOperator):
     _ait = sm | A.queries.union_intersect
     _sit = sm | S.queries.union_intersect
 
 
 @export
-class UnionMinus(Query):
+class UnionMinus(QueryOperator):
     _ait = sm | A.queries.union_intersect
     _sit = sm | S.queries.union_intersect
 
 
 @export
-class Zip(Query):
+class Zip(QueryOperator):
     _ait = sm | no_implement
     _sit = sm | S.queries._zip
 
 
 @export
-class Compress(Query):
+class Compress(QueryOperator):
     _ait = sm | A.queries.compress
     _sit = sm | S.queries.compress
 
 
 @export
-class Cartesian(Query):
+class Cartesian(QueryOperator):
     _ait = sm | A.queries.cartesian
     _sit = sm | S.queries.cartesian
 
@@ -305,7 +309,7 @@ class Cartesian(Query):
 
 
 @export
-class Filter(Query):
+class Filter(QueryOperator):
     _ait = sm | A.queries._filter
     _sit = sm | S.queries._filter
 
@@ -316,7 +320,7 @@ class Filter(Query):
 
 # TODO: Guardに変更する
 @export
-class Must(Query):
+class Must(QueryOperator):
     _ait = sm | A.queries.must
     _sit = sm | S.queries.must
 
@@ -326,7 +330,7 @@ class Must(Query):
 
 
 @export
-class FilterType(Query):
+class FilterType(QueryOperator):
     _ait = sm | A.queries.filter_type
     _sit = sm | S.queries.filter_type
 
@@ -338,7 +342,7 @@ class FilterType(Query):
 
 # TODO: GuardTypeに変更する
 @export
-class MustType(Query):
+class MustType(QueryOperator):
     _ait = sm | A.queries.must_type
     _sit = sm | S.queries.must_type
 
@@ -349,7 +353,7 @@ class MustType(Query):
 
 
 @export
-class FilterUnique(Query):
+class FilterUnique(QueryOperator):
     _ait = sm | A.queries.filter_unique
     _sit = sm | S.queries.filter_unique
 
@@ -359,7 +363,7 @@ class FilterUnique(Query):
 
 
 @export
-class MustUnique(Query):
+class MustUnique(QueryOperator):
     _ait = sm | A.queries.must_unique
     _sit = sm | S.queries.must_unique
 
@@ -394,7 +398,7 @@ def get_many_for_set(query_set, keys):
 
 
 @export
-class FilterKeys(Query):
+class FilterKeys(QueryOperator):
     _ait = sm | A.queries.filter_keys
     _sit = sm | S.queries.filter_keys
 
@@ -447,7 +451,7 @@ def get_for_set(obj: set, k, default):
 
 
 @export
-class MustKeys(Query):
+class MustKeys(QueryOperator):
     _ait = sm | A.queries.must_keys
     _sit = sm | S.queries.must_keys
 
@@ -510,7 +514,7 @@ class MustKeys(Query):
 
 
 @export
-class Take(Query):
+class Take(QueryOperator):
     _ait = sm | A.queries.take
     _sit = sm | S.queries.take
 
@@ -553,7 +557,7 @@ class TakePage(Take):
 
 
 @export
-class TakeWhile(Query):
+class TakeWhile(QueryOperator):
     _ait = sm | A.queries.take_while
     _sit = sm | S.queries.take_while
 
@@ -569,7 +573,7 @@ class SkipWhile(TakeWhile):
 
 
 @export
-class OrderByMap(Query):
+class OrderByMap(QueryOperator):
     _ait = sm | A.queries.order_by
     _sit = sm | S.queries.order_by
 
@@ -579,7 +583,7 @@ class OrderByMap(Query):
 
 
 @export
-class Defrag(Query):
+class Defrag(QueryOperator):
     _ait = sm | A.queries.defrag
     _sit = sm | S.queries.defrag
 
@@ -589,7 +593,7 @@ class Defrag(Query):
 
 
 @export
-class Ngram(Query):
+class Ngram(QueryOperator):
     _ait = sm | A.queries.ngram
     _sit = sm | S.queries.ngram
 
@@ -632,19 +636,19 @@ class OrderBySelect(OrderBy):
 
 
 @export
-class OrderByReverse(Query):
+class OrderByReverse(QueryOperator):
     _ait = sm | A.queries.order_by_reverse
     _sit = sm | S.queries.order_by_reverse
 
 
 @export
-class OrderByShuffle(Query):
+class OrderByShuffle(QueryOperator):
     _ait = sm | A.queries.order_by_shuffle
     _sit = sm | S.queries.order_by_shuffle
 
 
 @export
-class Sleep(Query):
+class Sleep(QueryOperator):
     _ait = sm | A.queries.sleep
     _sit = sm | S.queries.sleep
 
@@ -654,13 +658,13 @@ class Sleep(Query):
 
 
 @export
-class Gather(Query):
+class Gather(QueryOperator):
     _ait = sm | A.concurrent.gather
     _sit = sm | S.concurrent.gather
 
 
 @export
-class Request(Query):
+class Request(QueryOperator):
     # _ait = sm | A.queries.request
     # _sit = sm | S.queries.request
     _ait = sm | A.concurrent.request
@@ -693,7 +697,7 @@ class Request(Query):
 
 
 @export
-class Parallel(Query):
+class Parallel(QueryOperator):
     """
     PEP 3148
     I/Oバウンドを効率化するにはchunksizeを1にする。
@@ -713,7 +717,7 @@ class Parallel(Query):
 
 # いらない！！！
 @export
-class AsyncMap(Query):
+class AsyncMap(QueryOperator):
     iter_type = IterType.ASYNC
 
     def __init__(self, source, selector):
@@ -728,7 +732,7 @@ class AsyncMap(Query):
 
 # TODO： いらない！！！
 @export
-class Lazy(Query):
+class Lazy(QueryOperator):
     def __init__(self, source, finalizer, *args, **kwargs):
         super().__init__(source)
         self.finalizer = finalizer

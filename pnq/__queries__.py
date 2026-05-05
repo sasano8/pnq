@@ -479,18 +479,6 @@ if not TYPE_CHECKING:
     queryables = classess
 
 
-class QueryBase(Query[T], core.Query[T]):
-    pass
-
-
-class QueryAsync(Query[T], core.QueryAsync[T]):
-    pass
-
-
-class QueryNormal(Query[T], core.QueryNormal[T]):
-    pass
-
-
 class QueryDict(PairQuery[K, V], core.QueryDict[K, V]):
     def filter_keys(self, *keys) -> "PairQuery[K, V]":
         return queryables.FilterKeys(self, *keys)
@@ -639,10 +627,42 @@ if TYPE_CHECKING:
             ...
 
 
+class QueryRoot(Query[T], core.QueryNode[T]):
+    """list / dict / set 以外の任意 source 用の単一ブリッジ。
+
+    旧 QueryBase / QueryAsync / QueryNormal の 3 つを 1 つに集約。
+    __init__ で source の __iter__ / __aiter__ の有無を見て run_iter_type を
+    自動セットする。sync-only source は async iter wrapping で両対応にする
+    (旧 QueryNormal の挙動を踏襲)。
+    """
+
+    def __init__(self, source):
+        self.source = source
+        has_iter = hasattr(source, "__iter__")
+        has_aiter = hasattr(source, "__aiter__")
+
+        if has_iter and has_aiter:
+            self.run_iter_type = core.IterType.BOTH
+        elif has_iter:
+            # sync-only: __aiter__ は wrapping で提供
+            self.run_iter_type = core.IterType.BOTH
+        elif has_aiter:
+            self.run_iter_type = core.IterType.ASYNC
+        else:
+            raise TypeError(f"{source} has no __iter__ or __aiter__")
+
+    def _impl_aiter(self):
+        if hasattr(self.source, "__aiter__"):
+            return self.source.__aiter__()
+        return self._pnq_sync_to_async_iter()
+
+    async def _pnq_sync_to_async_iter(self):
+        for v in self.source.__iter__():
+            yield v
+
+
 class QueryBuilder(builder.Builder):
-    QUERY_BOTH = QueryBase
-    QUERY_ASYNC = QueryAsync
-    QUERY_NORMAL = QueryNormal
+    QUERY = QueryRoot
     QUERY_SEQ = QuerySeq
     QUERY_DICT = QueryDict
     QUERY_SET = QuerySet
