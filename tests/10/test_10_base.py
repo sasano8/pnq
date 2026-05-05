@@ -4,7 +4,7 @@ from functools import wraps
 import pytest
 
 from pnq._itertools import AsyncMap, DebugPath, Lazy, Map, Sleep
-from pnq._itertools.core import IterType, Query, QueryNormal, QuerySyncToAsync
+from pnq._itertools.core import IterType, QueryNode, QueryNormal, QuerySyncToAsync
 
 
 def async_test(func):
@@ -59,13 +59,13 @@ def test_iter_type():
 class Test010_Async:
     @async_test
     async def test_async(self):
-        q1 = Query([1, 2, 3])
+        q1 = QueryNode([1, 2, 3])
         assert list(q1) == [1, 2, 3]
 
         with pytest.raises(NotImplementedError):
             [x async for x in q1]
 
-        q2 = Query(create_aiter())
+        q2 = QueryNode(create_aiter())
         assert [x async for x in q2] == [4, 5, 6]
 
         with pytest.raises(NotImplementedError):
@@ -77,7 +77,7 @@ class Test010_Async:
         assert list(q1) == [1, 2, 3]
         assert [x async for x in q1] == [1, 2, 3]
 
-        q2 = Query(q1)
+        q2 = QueryNode(q1)
         assert list(q2) == [1, 2, 3]
         assert [x async for x in q2] == [1, 2, 3]
 
@@ -120,22 +120,26 @@ class Test010_Async:
 
     @async_test
     async def test_lazy(self):
-        assert Lazy(Query([1, 2, 3]), list)() == [1, 2, 3]
-        assert await Lazy(Query(create_aiter()), list_async) == [4, 5, 6]
+        assert Lazy(QueryNode([1, 2, 3]), list)() == [1, 2, 3]
+        assert await Lazy(QueryNode(create_aiter()), list_async) == [4, 5, 6]
 
     @async_test
     async def test_map_debug(self):
         map_five = lambda x: 5  # noqa
         map_ten = lambda x: 10  # noqa
-        assert Lazy(DebugPath(Query([1, 2, 3]), map_five, map_ten), list)() == [5, 5, 5]
+        assert Lazy(DebugPath(QueryNode([1, 2, 3]), map_five, map_ten), list)() == [
+            5,
+            5,
+            5,
+        ]
         assert await Lazy(
-            DebugPath(Query(create_aiter()), map_five, map_ten), list_async
+            DebugPath(QueryNode(create_aiter()), map_five, map_ten), list_async
         ) == [10, 10, 10]
 
     @async_test
     async def test_sleep(self):
-        assert list(Sleep(Query([1, 2, 3]), 0)) == [1, 2, 3]
-        assert [x async for x in Sleep(Query(aiter([1, 2, 3])), 0)] == [1, 2, 3]
+        assert list(Sleep(QueryNode([1, 2, 3]), 0)) == [1, 2, 3]
+        assert [x async for x in Sleep(QueryNode(aiter([1, 2, 3])), 0)] == [1, 2, 3]
 
     def test_builder(self):
         from pnq._itertools.builder import Builder
