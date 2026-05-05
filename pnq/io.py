@@ -3,7 +3,7 @@ from contextlib import _GeneratorContextManager
 from functools import wraps
 from typing import Any, List, cast
 
-from pnq.queries import Query, query
+from pnq.facade import Query, query
 
 
 class PnqContextManager(_GeneratorContextManager):
