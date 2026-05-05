@@ -10,14 +10,14 @@
       
       
       
-        <link rel="canonical" href="https://github.com/sasano8/pnq/quick_start/">
+        <link rel="canonical" href="https://github.com/sasano8/pnq/designe/">
       
       <link rel="icon" href="../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-8.5.10">
     
     
       
-        <title>入門 - PNQ</title>
+        <title>内部設計 - PNQ</title>
       
     
     
@@ -78,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#quick-start" class="md-skip">
+        <a href="#_1" class="md-skip">
           コンテンツにスキップ
         </a>
       
@@ -111,7 +111,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              入門
+              内部設計
             
           </span>
         </div>
@@ -258,59 +258,11 @@
 
   
   
-    
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          入門
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../quick_start/" class="md-nav__link">
         入門
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="目次">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      目次
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#_1" class="md-nav__link">
-    インストール
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
-    クエリを組み立てる
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -462,15 +414,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#_1" class="md-nav__link">
-    インストール
+  <a href="#_2" class="md-nav__link">
+    モジュール図
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
-    クエリを組み立てる
+  <a href="#_3" class="md-nav__link">
+    なぜ複雑か？
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    リファクタリング計画
   </a>
   
 </li>
@@ -497,159 +456,55 @@
 
                   
 
-  <a href="https://github.com/sasano8/pnq/edit/main/docs/quick_start.md" title="編集" class="md-content__button md-icon">
+  <a href="https://github.com/sasano8/pnq/edit/main/docs/designe.md" title="編集" class="md-content__button md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25Z"/></svg>
   </a>
 
 
-<h1 id="quick-start">Quick Start</h1>
-<h2 id="_1">インストール</h2>
-<p>まず、<code>pnq</code>をインストールします。</p>
-<p><code>shell
-$ pip install pnq</code></p>
-<h2 id="_2">クエリを組み立てる</h2>
-<p><code>pnq.query</code>を介して、データソースを加工するパイプラインメソッドをチェインできます。
-組み立てたクエリは、<code>result</code>を実行することでリストとして実体化できます。</p>
-<p>``` python
-import pnq</p>
-<p>pnq.query([1, 2]).map(lambda x: x * 2).filter(lambda x: x &gt; 2).result()</p>
-<h1 id="4">=&gt; [4]</h1>
-<p>```</p>
-<p><code>result</code>で返されるリストは、リストを継承した独自拡張クラス（<code>pnq.list</code>）で、引き続きパイプラインメソッドをチェインできます。</p>
-<p>``` python
-import pnq</p>
-<p>saved = pnq.query([1]).map(lambda x: x * 2).result()
-saved.map(lambda x: x * 2).result()</p>
-<h1 id="4_1">=&gt; [4]</h1>
-<p>```</p>
-<p><code>pnq.list</code>はリストと完全な互換性がありますが、可能な限り副作用を避ける場合は、<code>to(list)</code>または単に<code>list</code>で組込みのリストにできます。</p>
-<p>``` python
-import pnq</p>
-<p>pnq.query([1]).map(lambda x: x * 2).to(list)</p>
-<h1 id="2">=&gt; [2]</h1>
-<p>list(pnq.query([1]).map(lambda x: x * 2))</p>
-<h1 id="2_1">=&gt; [2]</h1>
-<p>```</p>
-<p>データソースが辞書の場合は、キーバリューペアが列挙されることに注意してください。</p>
-<p>``` python
-import pnq</p>
-<p>pnq.query({"a": 1, "b": 2, "c": 3}).filter(lambda x: x[1] &gt; 1).result()</p>
-<h1 id="b-2-c-3">=&gt; [("b", 2), ("c", 3)]</h1>
-<p>```</p>
-<p>リストでなく辞書として実体化したい場合は、<code>result</code>の代わりに<code>to(dict)</code>または単に<code>dict</code>を使用してください。</p>
-<p>``` python
-import pnq</p>
-<p>pnq.query({"a": 1, "b": 2, "c": 3}).filter(lambda x: x[1] &gt; 1).to(dict)</p>
-<h1 id="b-2-c-3_1">=&gt; {"b": 2, "c": 3}</h1>
-<p>dict(pnq.query({"a": 1, "b": 2, "c": 3}).filter(lambda x: x[1] &gt; 1))</p>
-<h1 id="b-2-c-3_2">=&gt; {"b": 2, "c": 3}</h1>
-<p>```</p>
-<p>なお、<code>to</code>はイテラブルを引数とする任意の関数を渡すことができます。</p>
-<h2 id="_3">非同期イテレータを扱う</h2>
-<p><code>pnq.query</code>は非同期イテレータも取り扱うことができます。
-ただし、非同期イテレータを実体化するには<code>result</code>の代わりに<code>await</code>を使用します。</p>
-<p>``` python
-import asyncio
-import pnq</p>
-<p>async def aiter():
-    yield 1
-    yield 2
-    yield 3</p>
-<p>async def main():
-    return await pnq.query(aiter()).map(lambda x: x * 2)</p>
-<p>asyncio.run(main())</p>
-<h1 id="2-4-6">&gt;&gt; [2, 4, 6]</h1>
-<p>```</p>
-<p>クエリは<code>for</code>文でも使用できます。</p>
-<p>``` python
-import asyncio
-import pnq</p>
-<p>async def aiter():
-    yield 4
-    yield 5
-    yield 6</p>
-<p>async def main():
-    for x in pnq.query([1, 2, 3]).map(lambda x: x * 2):
-        print(x)
-    # =&gt; 2, 4, 6</p>
-<div class="highlight"><pre><span></span><code>async for x in pnq.query(aiter()).map(lambda x: x * 2):
-    print(x)
-<span class="gh">#</span> =&gt; 8, 10, 12
-</code></pre></div>
-
-<p>asyncio.run(main())
-```</p>
-<h2 id="_4">クエリを実行する</h2>
-<p><code>pnq.query</code>は可能な限り評価を保留（遅延評価）します。
-クエリは、評価を要求されたとき実際に実行されます。</p>
-<p>すでにいくつか評価方法（<code>for</code>文、<code>result</code>、<code>to</code>）を紹介していますが、ほかにもいくつか評価メソッドを紹介します。</p>
-<p>``` python
-import pnq</p>
-<h1 id="for-x-in-funcx">for x in ...: func(x)のショートカットとして使用できます</h1>
-<p>pnq.query([1, 2, 3]).map(lambda x: x * 2).each(print)</p>
-<h1 id="2-4-6_1">=&gt; 2, 4, 6</h1>
-<h1 id="_5">要素の合計を求めます</h1>
-<p>pnq.query([1, 2, 3]).map(lambda x: x * 2).sum()</p>
-<h1 id="12">=&gt; 12</h1>
-<p>```</p>
-<p>非同期イテレータをデータソースとする場合は、<code>_</code>で明示的に非同期イテレータを評価すると伝え、<code>await</code>する必要があります。</p>
-<p>``` python
-import asyncio
-import pnq</p>
-<p>async def aiter():
-    yield 1
-    yield 2
-    yield 3</p>
-<p>async def main():
-    await pnq.query(aiter()).map(lambda x: x * 2)._.each(print)
-    # =&gt; 2, 4, 6</p>
-<div class="highlight"><pre><span></span><code>await pnq.query(aiter()).map(lambda x: x * 2)._.sum()
-<span class="gh">#</span> =&gt; 12
-</code></pre></div>
-
-<p>asyncio.run(main())
-```</p>
-<h2 id="_6">バッチ処理に活用する</h2>
-<p><code>request</code>メソッドは、簡易的なバッチ処理に活用できます。
-<code>request</code>メソッドはシーケンスの要素を任意の関数に送出し、実行結果（<code>pnq.Response</code>）を返します。</p>
-<p>処理中に例外が発生した場合、例外情報が<code>err</code> <code>msg</code> <code>stack_trace</code>属性にエラー情報が格納されます。</p>
-<p>``` python
-import datetime
-import logging
-import pnq</p>
-<p>log_name = "log_" + datetime.datetime.utcnow().isoformat() + ".jsonl.log"
-log = logging.FileHandler(filename=log_name)</p>
-<p>logger = logging.getLogger()
-logger.addHandler(log)</p>
-<p>params = pnq.query([{"val": 0}, {"val": 1}])</p>
-<h1 id="_7">パラメータを関数に渡します</h1>
-<h1 id="_8">パラメータはキーワード引数としてアンパックされるため、パラメータは辞書互換オブジェクトである必要があります</h1>
-<p>@params.request
-def do_something(val):
-    if not (val &gt; 0):
-        raise ValueError(f"val must be 1 or greater. But got {val}")
-    else:
-        return "success"</p>
-<h1 id="jsonl11json">処理が失敗した場合、実行情報をjsonl（１行１Json）形式で出力します</h1>
-<p>@do_something.each
-def dump_if_error(x: pnq.Response):
-    # エラーだった場合、ログに出力します
-    if x.err:
-        # レスポンスををjsonにシリアライズします
-        # シリアライザはデフォルトで<code>json.dumps</code>(ensure_ascii=False)が使用されます
-        logger.error(x.to_json())</p>
-<h1 id="01">全ての処理が成功した場合は<code>0</code>、いずれかが失敗した場合は<code>1</code>を返します</h1>
-<p>exit(pnq.from_jsonl(log_name).exists())
-```</p>
-<p>エラーログは、次のような出力になります。</p>
-<p><code>`` bash
-cat</code>ls *.jsonl.log`</p>
-<h1 id="func-do_something-kwargs-val-0-err-valueerror-msg-val-must-be-1-or-greater-0-result-none">{"func": "do_something", "kwargs": {"val": 0}, "err": "ValueError", "msg": "val must be 1 or greater: 0", "result": None, ...}</h1>
-<p>```</p>
-<h2 id="_9">もっと知りたい</h2>
-<p>これであなたはクエリを自由に扱えるようになったはずです。</p>
-<p>次章の参考例からお気に入りの機能を見つけましょう。</p>
+<h1 id="_1">内部設計</h1>
+<h2 id="_2">モジュール図</h2>
+<ul>
+<li>モジュール<ul>
+<li>pnq/<strong>queries</strong>.py: queries.py 用のテンプレート。型アノテーションなど複雑な一貫性のためにテンプレート化している。</li>
+<li>pnq/queries.py: <strong>queries</strong> から生成された実際のコード。型アノテーションや内部オブジェクトとの連携を行う結合層。pnq/_itertools/queryables を参照する </li>
+</ul>
+</li>
+<li>クラス・ファンクション<ul>
+<li>pnq/queries.Query: 基本の型</li>
+<li>pnq/queries.PairQuery: キーバリュー向けの型</li>
+<li>pnq/pnq/protocols.WrappedQuery: AST 解析のような機能があるクラス<ul>
+<li>pnq/_itertools/core.Query: WrappedQuery(PQuery)を継承。イテレータに関する基本的な実装が含まれる。<ul>
+<li>pnq/_itertools/queryables.Query: core.Query を継承し、さらに基本的な実装が含まれる。このクラスを規定に Map など具体的なクエリメソッドを実装する。ただし、このクラスには、_ait（非同期用イテレータクエリ）と _sit（同期用イテレータクエリ）の属性が用意され、そこに参照を埋める形。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>pnq/_itertools<ul>
+<li>_async: 非同期用イテレータクエリ。queryables.Query から参照される</li>
+<li>_sync_generate: 同期用イテレータクエリ。_async から自動生成される</li>
+<li>_sync:  同期用イテレータクエリ。自動生成できない部分を管理する。queryables.Query から参照される</li>
+</ul>
+</li>
+<li>pnq/_itertools/generate_unasync.py: pnq/_itertools/_async から非同期コード（_sync_generate）を生成する。</li>
+</ul>
+</li>
+</ul>
+<h2 id="_3">なぜ複雑か？</h2>
+<ul>
+<li>同期と非同期を一緒に管理しようとしている</li>
+<li>同期と非同期用の型アノテーションを一括で管理しようとしている</li>
+<li>非同期コードから同期コードを自動生成している</li>
+<li>その他、整理が進んでいない</li>
+</ul>
+<h2 id="_4">リファクタリング計画</h2>
+<ul>
+<li>Python のバージョンアップで無理やり解決していた型アノテーションをスマートな形に寄せる</li>
+<li>queries.Query, core.Query, queryables.Query で Query クラスを別の名前で区別する。名前が被っているせいで混乱を招く</li>
+<li>Query は継承していたりするが、ネストを少なくする</li>
+<li>とにかく基底クラスを分かりやすくする</li>
+<li>sleep などクエリと領域が違うものを除去する</li>
+</ul>
 
 
 
@@ -666,42 +521,6 @@ cat</code>ls *.jsonl.log`</p>
       </main>
       
         <footer class="md-footer">
-  
-    
-    <nav class="md-footer__inner md-grid" aria-label="フッター" >
-      
-        
-        <a href=".." class="md-footer__link md-footer__link--prev" aria-label="前: はじめに" rel="prev">
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
-          </div>
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                前
-              </span>
-              はじめに
-            </div>
-          </div>
-        </a>
-      
-      
-        
-        <a href="../api/" class="md-footer__link md-footer__link--next" aria-label="次: インターフェース" rel="next">
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                次
-              </span>
-              インターフェース
-            </div>
-          </div>
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
-          </div>
-        </a>
-      
-    </nav>
   
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
