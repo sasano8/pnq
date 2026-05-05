@@ -479,7 +479,7 @@ if not TYPE_CHECKING:
     queryables = classess
 
 
-class QueryDict(PairQuery[K, V], core.QueryDict[K, V]):
+class PnqDict(PairQuery[K, V], core.PnqInternalDict[K, V]):
     def filter_keys(self, *keys) -> "PairQuery[K, V]":
         return queryables.FilterKeys(self, *keys)
 
@@ -511,7 +511,7 @@ class QueryDict(PairQuery[K, V], core.QueryDict[K, V]):
             return result
 
 
-class QuerySeq(Query[T], core.QuerySeq[T]):
+class PnqSeq(Query[T], core.PnqInternalSeq[T]):
     def filter_keys(self, *keys) -> "Query[T]":
         return queryables.FilterKeys(self, *keys)
 
@@ -585,7 +585,7 @@ class PnqList(Query[T], List[T]):
             return result
 
 
-class QuerySet(Query[T], core.QuerySet[T]):
+class PnqSet(Query[T], core.PnqInternalSet[T]):
     def filter_keys(self, *keys) -> "Query[T]":
         return queryables.FilterKeys(self, *keys)
 
@@ -616,10 +616,10 @@ class QuerySet(Query[T], core.QuerySet[T]):
             return result
 
 if TYPE_CHECKING:
-    class QuerySeqPair(PairQuery[K, V], core.QuerySeq[Tuple[K, V]]):
+    class PnqSeqPair(PairQuery[K, V], core.PnqInternalSeq[Tuple[K, V]]):
         ...
 
-    class QuerySetPair(PairQuery[K, V], core.QuerySeq[Tuple[K, V]]):
+    class PnqSetPair(PairQuery[K, V], core.PnqInternalSeq[Tuple[K, V]]):
         ...
 
     class PnqListPair(PairQuery[K, V], PnqList[Tuple[K, V]]):
@@ -663,51 +663,51 @@ class QueryRoot(Query[T], core.QueryNode[T]):
 
 class QueryBuilder(builder.Builder):
     QUERY = QueryRoot
-    QUERY_SEQ = QuerySeq
-    QUERY_DICT = QueryDict
-    QUERY_SET = QuerySet
+    QUERY_SEQ = PnqSeq
+    QUERY_DICT = PnqDict
+    QUERY_SET = PnqSet
 
 
 @overload
-def query(source: Mapping[K, V]) -> QueryDict[K, V]:
+def query(source: Mapping[K, V]) -> PnqDict[K, V]:
     ...
 
 
 @overload
-def query(source: Set[Tuple[K, V]]) -> "QuerySetPair[K, V]":
+def query(source: Set[Tuple[K, V]]) -> "PnqSetPair[K, V]":
     ...
 
 @overload
-def query(source: Set[T]) -> QuerySet[T]:
+def query(source: Set[T]) -> PnqSet[T]:
     ...
 
 @overload
-def query(source: Iterable[Tuple[K, V]]) -> "QuerySeqPair[K, V]":
+def query(source: Iterable[Tuple[K, V]]) -> "PnqSeqPair[K, V]":
     ...
 
 
 @overload
-def query(source: AsyncIterable[Tuple[K, V]]) -> "QuerySeqPair[K, V]":
+def query(source: AsyncIterable[Tuple[K, V]]) -> "PnqSeqPair[K, V]":
     ...
 
 @overload
-def query(source: Generator[T, Any, Any]) -> QuerySeq[T]:
+def query(source: Generator[T, Any, Any]) -> PnqSeq[T]:
     ...
 
 @overload
-def query(source: AsyncGenerator[T, Any]) -> QuerySeq[T]:
+def query(source: AsyncGenerator[T, Any]) -> PnqSeq[T]:
     ...
 
 @overload
-def query(source: Iterable[T]) -> QuerySeq[T]:
+def query(source: Iterable[T]) -> PnqSeq[T]:
     ...
 
 @overload
-def query(source: AsyncIterable[T]) -> QuerySeq[T]:
+def query(source: AsyncIterable[T]) -> PnqSeq[T]:
     ...
 
 @overload
-def query(source: Iterable[T]) -> QuerySeq[T]:
+def query(source: Iterable[T]) -> PnqSeq[T]:
     ...
 
 @overload

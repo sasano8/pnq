@@ -54,7 +54,7 @@ packages = ["pnq"]
 
 [tool.black]
 extend-exclude = '''
-^/pnq/__queries__.py|
+^/pnq/facade.py.template|
 ^/pnq/actions.py
 '''
 

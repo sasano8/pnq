@@ -13,7 +13,7 @@ from typing import (
 )
 
 import pnq
-from pnq.queries import PairQuery, Query, QueryDict, QuerySeq, QuerySet
+from pnq.facade import PairQuery, PnqDict, PnqSeq, PnqSet, Query
 
 T = TypeVar("T")
 

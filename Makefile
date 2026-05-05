@@ -39,7 +39,7 @@ generate: generate_query unasync format
 
 generate_query:
 	@echo [GENERATE_QUERY]
-	@uv run python3 pnq_template/generate.py -i pnq/__queries__.py -o pnq/queries.py
+	@uv run python3 pnq_template/generate.py -i pnq/facade.py.template -o pnq/facade.py
 
 unasync:
 	@echo [GENERATE_UNASYNC]

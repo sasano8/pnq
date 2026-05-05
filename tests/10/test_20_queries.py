@@ -12,7 +12,7 @@ from pnq.exceptions import (
     NotFoundError,
     NotOneElementError,
 )
-from pnq.queries import query
+from pnq.facade import query
 from tests.conftest import to_sync
 
 pnq = query

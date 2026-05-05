@@ -19,7 +19,7 @@ from pnq.types import Arguments
 
 from . import _async as A
 from . import _sync as S
-from .core import IterType, QueryDict, QueryNode, QuerySeq, QuerySet
+from .core import IterType, PnqInternalDict, PnqInternalSeq, PnqInternalSet, QueryNode
 
 
 def no_implement(*args, **kwargs):
@@ -407,7 +407,7 @@ class FilterKeys(QueryOperator):
         keys = dict.fromkeys(keys, None)  # use dict. because set has no order.
         self.keys = keys
 
-        if isinstance(self.source, (QuerySeq, QueryDict, QuerySet)):
+        if isinstance(self.source, (PnqInternalSeq, PnqInternalDict, PnqInternalSet)):
             source = self.source.source
         else:
             source = self.source
@@ -418,7 +418,9 @@ class FilterKeys(QueryOperator):
         elif isinstance(source, AbstractSet):
             filter = get_many_for_set
         else:
-            raise TypeError(f"{source} is not QuerySeq, QueryDict or QuerySet")
+            raise TypeError(
+                f"{source} is not PnqInternalSeq, PnqInternalDict or PnqInternalSet"
+            )
 
         self._ref = source
         self._filter = filter
@@ -463,7 +465,7 @@ class MustKeys(QueryOperator):
         self.keys = keys
         self._args = Arguments.from_obj(keys, {})
 
-        if isinstance(self.source, (QuerySeq, QueryDict, QuerySet)):
+        if isinstance(self.source, (PnqInternalSeq, PnqInternalDict, PnqInternalSet)):
             source = self.source.source
         else:
             source = self.source
@@ -474,7 +476,9 @@ class MustKeys(QueryOperator):
         elif isinstance(source, AbstractSet):
             getter = get_for_set
         else:
-            raise TypeError(f"{source} is not QuerySeq, QueryDict or QuerySet")
+            raise TypeError(
+                f"{source} is not PnqInternalSeq, PnqInternalDict or PnqInternalSet"
+            )
 
         self._ref = source
         self._getter = getter

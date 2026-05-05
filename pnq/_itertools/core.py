@@ -140,7 +140,7 @@ class QueryAsync(QueryNode[T]):
         return self.source.__aiter__()
 
 
-class QuerySeq(QueryNormal[T]):
+class PnqInternalSeq(QueryNormal[T]):
     """リストなどをクエリ化します"""
 
     def _impl_iter(self):
@@ -150,7 +150,7 @@ class QuerySeq(QueryNormal[T]):
     #     return self.source.__reversed__()
 
 
-class QueryDict(QueryNormal[Tuple[K, V]]):
+class PnqInternalDict(QueryNormal[Tuple[K, V]]):
     """辞書などをクエリ化します"""
 
     if TYPE_CHECKING:
@@ -164,7 +164,7 @@ class QueryDict(QueryNormal[Tuple[K, V]]):
     #     return self.source.items().__reversed__()
 
 
-class QuerySet(QueryNormal[T]):
+class PnqInternalSet(QueryNormal[T]):
     pass
 
 
