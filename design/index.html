@@ -627,14 +627,14 @@
 <h2 id="_2">モジュール図</h2>
 <ul>
 <li>モジュール<ul>
-<li>pnq/<strong>queries</strong>.py: queries.py 用のテンプレート。型アノテーションなど複雑な一貫性のためにテンプレート化している。</li>
-<li>pnq/queries.py: <strong>queries</strong> から生成された実際のコード。型アノテーションや内部オブジェクトとの連携を行う結合層。pnq/_itertools/queryables を参照する </li>
+<li>pnq/facade.py.template: facade.py 用のテンプレート。型アノテーションなど複雑な一貫性のためにテンプレート化している。</li>
+<li>pnq/facade.py: facade.py.template から生成された実際のコード。型アノテーションや内部オブジェクトとの連携を行う結合層。pnq/_itertools/queryables を参照する </li>
 </ul>
 </li>
 <li>クラス・ファンクション<ul>
-<li>pnq/queries.Query: 基本の型 (mixin: チェーン可能メソッドのみを提供。iter 機構は持たない)</li>
-<li>pnq/queries.PairQuery: キーバリュー向けの型</li>
-<li>pnq/queries.QueryRoot: list/dict/set 以外の任意 source 用の単一ブリッジ。Query (mixin) と core.QueryNode (iter 機構) を結合。<strong>init</strong> で source の <strong>iter</strong>/<strong>aiter</strong> を見て run_iter_type を自動セットし、sync-only source も async wrapping で両対応する。</li>
+<li>pnq/facade.Query: 基本の型 (mixin: チェーン可能メソッドのみを提供。iter 機構は持たない)</li>
+<li>pnq/facade.PairQuery: キーバリュー向けの型</li>
+<li>pnq/facade.QueryRoot: list/dict/set 以外の任意 source 用の単一ブリッジ。Query (mixin) と core.QueryNode (iter 機構) を結合。<strong>init</strong> で source の <strong>iter</strong>/<strong>aiter</strong> を見て run_iter_type を自動セットし、sync-only source も async wrapping で両対応する。</li>
 <li>pnq/pnq/protocols.WrappedQuery: クエリ構造の再帰的内省を提供するクラス<ul>
 <li>pnq/_itertools/core.QueryNode: WrappedQuery(PQuery)を継承。イテレータに関する基本的な実装が含まれる (strict: source の能力をそのまま反映)。<ul>
 <li>pnq/_itertools/queryables.QueryOperator: QueryNode を継承し、Map など具体的な演算子クエリの基底となる。<code>_ait</code>（非同期用イテレータクエリ）と <code>_sit</code>（同期用イテレータクエリ）の属性に演算子の処理関数への参照を埋める形で派生クラスを定義する。</li>
@@ -658,16 +658,16 @@
 <div class="mermaid">flowchart TB
     subgraph L1 ["レイヤー1: Facade 層 (user-facing)"]
         direction LR
-        qQuery["queries.Query&lt;br/&gt;chainable mixin&lt;br/&gt;(map/filter/select/...)"]
+        qQuery["facade.Query&lt;br/&gt;chainable mixin&lt;br/&gt;(map/filter/select/...)"]
         QueryRoot["QueryRoot&lt;br/&gt;(任意 source 用 bridge +&lt;br/&gt;sync→async wrap)"]
-        qBridges["queries.QuerySeq /&lt;br/&gt;QueryDict / QuerySet /&lt;br/&gt;PnqList&lt;br/&gt;(bridge + ソース固有メソッド)"]
+        qBridges["facade.PnqSeq /&lt;br/&gt;PnqDict / PnqSet /&lt;br/&gt;PnqList&lt;br/&gt;(bridge + ソース固有メソッド)"]
         QueryBuilder["QueryBuilder&lt;br/&gt;(factory)"]
     end
 
     subgraph L2 ["レイヤー2: 具体実装層 (Operators / Sources)"]
         direction LR
         Operators["Operators&lt;br/&gt;Map / Filter / OrderBy /&lt;br/&gt;Select / Enumerate / ..."]
-        Sources["Sources&lt;br/&gt;QueryNormal / QueryAsync /&lt;br/&gt;QuerySeq / QueryDict / QuerySet /&lt;br/&gt;QuerySyncToAsync"]
+        Sources["Sources&lt;br/&gt;QueryNormal / QueryAsync /&lt;br/&gt;PnqInternalSeq / PnqInternalDict / PnqInternalSet /&lt;br/&gt;QuerySyncToAsync"]
     end
 
     subgraph L3 ["レイヤー3: 基底層 (iter 機構)"]
@@ -745,15 +745,15 @@
         &lt;&lt;concrete&gt;&gt;
         async source 用
     }
-    class QuerySeq {
+    class PnqInternalSeq {
         &lt;&lt;concrete&gt;&gt;
         list / tuple
     }
-    class QueryDict {
+    class PnqInternalDict {
         &lt;&lt;concrete&gt;&gt;
         dict
     }
-    class QuerySet {
+    class PnqInternalSet {
         &lt;&lt;concrete&gt;&gt;
         set
     }
@@ -772,25 +772,25 @@
         &lt;&lt;concrete&gt;&gt;
     }
 
-    class qQuery["queries.Query"] {
+    class qQuery["facade.Query"] {
         &lt;&lt;facade&gt;&gt;
         +map() +filter() +select()
         +to() +pipe() +result()
     }
-    class qPairQuery["queries.PairQuery"] {
+    class qPairQuery["facade.PairQuery"] {
         &lt;&lt;facade&gt;&gt;
     }
     class QueryRoot {
         &lt;&lt;bridge&gt;&gt;
         sync→async wrap
     }
-    class qQuerySeq["queries.QuerySeq"] {
+    class qPnqSeq["facade.PnqSeq"] {
         &lt;&lt;bridge&gt;&gt;
     }
-    class qQueryDict["queries.QueryDict"] {
+    class qPnqDict["facade.PnqDict"] {
         &lt;&lt;bridge&gt;&gt;
     }
-    class qQuerySet["queries.QuerySet"] {
+    class qPnqSet["facade.PnqSet"] {
         &lt;&lt;bridge&gt;&gt;
     }
     class PnqList {
@@ -811,9 +811,9 @@
     QueryNode &lt;|-- QuerySyncToAsync
     QueryNode &lt;|-- QueryOperator
 
-    QueryNormal &lt;|-- QuerySeq
-    QueryNormal &lt;|-- QueryDict
-    QueryNormal &lt;|-- QuerySet
+    QueryNormal &lt;|-- PnqInternalSeq
+    QueryNormal &lt;|-- PnqInternalDict
+    QueryNormal &lt;|-- PnqInternalSet
 
     QueryOperator &lt;|-- Map
     QueryOperator &lt;|-- Filter
@@ -822,23 +822,23 @@
     qQuery &lt;|-- qPairQuery
     qQuery &lt;|-- QueryRoot
     QueryNode &lt;|-- QueryRoot
-    qQuery &lt;|-- qQuerySeq
-    QuerySeq &lt;|-- qQuerySeq
-    qPairQuery &lt;|-- qQueryDict
-    QueryDict &lt;|-- qQueryDict
-    qQuery &lt;|-- qQuerySet
-    QuerySet &lt;|-- qQuerySet
+    qQuery &lt;|-- qPnqSeq
+    PnqInternalSeq &lt;|-- qPnqSeq
+    qPairQuery &lt;|-- qPnqDict
+    PnqInternalDict &lt;|-- qPnqDict
+    qQuery &lt;|-- qPnqSet
+    PnqInternalSet &lt;|-- qPnqSet
     qQuery &lt;|-- PnqList
 
     QueryBuilder ..&gt; QueryRoot : creates
-    QueryBuilder ..&gt; qQuerySeq : creates
-    QueryBuilder ..&gt; qQueryDict : creates
-    QueryBuilder ..&gt; qQuerySet : creates</div>
+    QueryBuilder ..&gt; qPnqSeq : creates
+    QueryBuilder ..&gt; qPnqDict : creates
+    QueryBuilder ..&gt; qPnqSet : creates</div>
 <h3 id="_6">設計の読み方</h3>
 <p>レイヤーは <strong>上 (user-facing) → 下 (foundation)</strong> で説明:</p>
 <ol>
-<li><strong>レイヤー1: Facade 層</strong> (<code>queries.*</code>):</li>
-<li><code>queries.Query</code> は <strong>mixin</strong>: チェーン可能メソッドのみを提供する純粋な mixin で、iter 機構は持たない。</li>
+<li><strong>レイヤー1: Facade 層</strong> (<code>facade.*</code>):</li>
+<li><code>facade.Query</code> は <strong>mixin</strong>: チェーン可能メソッドのみを提供する純粋な mixin で、iter 機構は持たない。</li>
 <li><code>QueryRoot</code> 等の <strong>bridge クラス</strong>が Query (mixin) + core の具体実装を多重継承で結合。</li>
 <li>
 <p><code>QueryBuilder</code> は source の型に応じて適切な bridge クラスを選んで生成する <strong>factory</strong>。</p>
@@ -846,7 +846,7 @@
 <li>
 <p><strong>レイヤー2: 具体実装層 (Operators / Sources)</strong>:</p>
 </li>
-<li><strong>Sources</strong> (<code>QueryNormal</code>/<code>QueryAsync</code>/<code>QuerySeq</code>/<code>QueryDict</code>/<code>QuerySet</code>/<code>QuerySyncToAsync</code>): source の種類に応じた具体クラス。<code>QueryNode</code> の挙動を必要に応じて調整する。</li>
+<li><strong>Sources</strong> (<code>QueryNormal</code>/<code>QueryAsync</code>/<code>PnqInternalSeq</code>/<code>PnqInternalDict</code>/<code>PnqInternalSet</code>/<code>QuerySyncToAsync</code>): source の種類に応じた具体クラス。<code>QueryNode</code> の挙動を必要に応じて調整する。</li>
 <li>
 <p><strong>Operators</strong> (<code>Map</code>/<code>Filter</code>/<code>OrderBy</code>/<code>Select</code>/...): <code>QueryOperator</code> を継承し、<code>_sit</code>/<code>_ait</code> に sync/async 実装関数の参照を埋める。<strong>操作 1 つにつき 1 クラス</strong>。</p>
 </li>
@@ -863,7 +863,7 @@
 </li>
 </ol>
 <blockquote>
-<p>設計思想: 「<strong>iter 機構は内部 (core) に閉じ込め、ユーザに見せる API はチェーン可能 mixin (queries.Query) のみ</strong>」を徹底することで、内部実装の変更がユーザ API に波及しないようにしている。</p>
+<p>設計思想: 「<strong>iter 機構は内部 (core) に閉じ込め、ユーザに見せる API はチェーン可能 mixin (facade.Query) のみ</strong>」を徹底することで、内部実装の変更がユーザ API に波及しないようにしている。</p>
 </blockquote>
 <h2 id="_7">なぜ複雑か？</h2>
 <ul>
@@ -880,11 +880,11 @@
 <li>空ブリッジ (queries.QueryBase / QueryAsync / QueryNormal) を <code>queries.QueryRoot</code> 1 つに集約</li>
 <li>core.Query を <code>core.QueryNode</code> にリネーム (内省 + iter_type 管理を担う基底)</li>
 <li>queryables.Query を <code>queryables.QueryOperator</code> にリネーム (Map 等の演算子の基底)</li>
-<li>これにより <code>Query</code> という名前は user-facing の <code>queries.Query</code> (mixin) のみとなり衝突解消</li>
+<li>これにより <code>Query</code> という名前は user-facing の <code>facade.Query</code> (mixin) のみとなり衝突解消</li>
 </ul>
 </li>
 <li>[x] Query は継承していたりするが、ネストを少なくする<ul>
-<li>空ブリッジ 3 → 1 に集約 (<a href="../pnq/queries.py#L1003">queries.py:1003</a>)</li>
+<li>空ブリッジ 3 → 1 に集約 (<a href="../pnq/facade.py#L1073">facade.py:1073</a>)</li>
 <li>Builder の QUERY_BOTH / QUERY_ASYNC / QUERY_NORMAL 3 つを <code>QUERY</code> 1 つに集約 (<a href="../pnq/_itertools/builder.py">builder.py</a>)</li>
 </ul>
 </li>
