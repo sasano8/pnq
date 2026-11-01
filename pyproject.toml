@@ -20,7 +20,7 @@ Repository = "https://github.com/sasano8/pnq"
 [dependency-groups]
 dev = [
   "Jinja2>=3.1.2,<4.0.0",
-  "unasync>=0.5.0,<0.6.0",
+  "unasync>=0.5.0,<0.7.0",
   # unasync が import している（Python 3.12+ では同梱されない）
   "setuptools>=68.0.0",
   # HTTPやDocker API を叩くときに使用（必須ではない）
